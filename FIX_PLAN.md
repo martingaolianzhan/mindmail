@@ -20,6 +20,8 @@
 | CFG-001 | Confirmed Bug | `.env.example`, `src/env.js`, README | P2 | — | Template and runtime validation document all required Clerk, Aurinko, URL, Gemini, and DB variables without values; unused variables are removed or documented. | Synthetic empty/invalid-env validation tests or explicit manual verification. | TODO |
 | CFG-002 | Risk Requiring Verification | `package.json`, README, CI workflow | P2 | TEST-001 | A supported Node/npm policy is declared and verified; npm remains the sole workflow. | Clean install and full checks on declared versions. | TODO |
 
+TEST-001 remains open pending independent final verification of the database-unavailable connection-failure evidence and remaining network/test-isolation evidence. Local validation alone does not change its status.
+
 ---
 
 ## Phase 1A — Security & Ownership
@@ -28,7 +30,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | SEC-001 | Confirmed Bug | `src/app/api/clerk/webhook/route.ts`, webhook event handling | P0 | TEST-001 | Clerk/Svix verification occurs before parsing/persisting; invalid/absent signatures return real 4xx responses; relevant subscribed user event types have explicit handling; duplicate event delivery is idempotent; `user.deleted` has an explicit, documented cleanup/retention policy. Timestamp/replay protections are verified only to the extent supported by the selected Clerk/Svix verifier and documented accurately. | Vitest route tests for valid/invalid/missing signatures, duplicate event, supported event types, `user.deleted`, and verifier-supported timestamp/replay cases. | TODO |
 | SEC-002 | Confirmed Bug | `src/app/api/initial-sync/route.ts`, callback/job boundary, `src/middleware.ts` | P0 | TEST-001 | Initial-sync cannot be invoked by arbitrary public JSON; it requires authenticated ownership or a signed replay-resistant internal-job request. | Route tests for unauthenticated, forged, cross-user, valid job, and replay cases. | TODO |
-| SEC-003 | Confirmed Bug | `src/server/api/routers/account.ts` | P0 | TEST-001 | `getThreads` accepts only a closed inbox/sent/draft enum and always includes the authorised account ID in its query. Invalid categories cannot read any thread. | Router tests for each category, invalid input, and two users/accounts. | TODO |
+| SEC-003 | Confirmed Bug | `src/server/api/routers/account.ts` | P0 | TEST-001 | `getThreads` accepts only a closed inbox/sent/draft enum and always includes the authorised account ID in its query. Invalid categories cannot read any thread. | Router tests for each category, invalid input, and two users/accounts. | DONE |
 | SEC-004 | Confirmed Bug | `src/server/api/routers/account.ts` | P0 | TEST-001 | Reply-detail lookup scopes `threadId` to the authorised account; a valid user cannot read another account's thread by ID. | Two-account IDOR integration test. | TODO |
 | SEC-005 | Risk Requiring Verification | `src/lib/aurinko.ts`, `src/app/api/aurinko/callback/route.ts` | P0 | TEST-001 | OAuth callback has a state/nonce binding to the initiating authenticated user; an existing provider account cannot have its token changed or linked across owners. | Mocked OAuth-state and account-ownership tests. | TODO |
 | SEC-006 | Risk Requiring Verification | `src/server/api/routers/account.ts`, `src/lib/account.ts` | P0 | TEST-001 | Send mutation derives/enforces `from` and `replyTo` from the authorised account and validates recipients; client data cannot spoof another sender. | Router tests for spoofed sender, empty/invalid recipients, and authorised mocked send. | TODO |

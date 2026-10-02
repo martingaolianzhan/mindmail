@@ -30,22 +30,6 @@ export const authoriseAccountAccess = async (accountId: string, userId: string) 
     return account;
 }
 
-const inboxFilter = (accountId: string): Prisma.ThreadWhereInput => ({
-    accountId,
-    inboxStatus: true
-})
-
-const sentFilter = (accountId: string): Prisma.ThreadWhereInput => ({
-    accountId,
-    sentStatus: true
-})
-
-const draftFilter = (accountId: string): Prisma.ThreadWhereInput => ({
-    accountId,
-    draftStatus: true
-})
-
-
 export const accountRouter = createTRPCRouter({
 
     getAccounts: privateProcedure.query(async ({ ctx }) => { 
@@ -91,7 +75,7 @@ export const accountRouter = createTRPCRouter({
     // get threads list by category (inbox, sent, draft, etc..) and status (done or not)
     getThreads: privateProcedure.input(z.object({
         accountId: z.string(),
-        tabCategory: z.string(),
+        tabCategory: z.enum(["inbox", "sent", "draft"]),
         done: z.boolean() // thread status
     })).query(async ({ input, ctx }) => { 
         const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId);
@@ -100,19 +84,18 @@ export const accountRouter = createTRPCRouter({
         const acc = new Account(account.accessToken);
         acc.syncEmails().catch(console.error);
 
-        // filter by the currently selected tab category for Thread model
-        let filter: Prisma.ThreadWhereInput = {}
+        // Always scope a successful thread query to the authenticated user's account.
+        const filter: Prisma.ThreadWhereInput = {
+            accountId: account.id,
+            done: { equals: input.done }
+        };
 
         if (input.tabCategory === "inbox") {
-            filter = inboxFilter(account.id);
+            filter.inboxStatus = true;
         } else if (input.tabCategory === "sent") {
-            filter = sentFilter(account.id);
-        } else if (input.tabCategory === "draft") {
-            filter = draftFilter(account.id);
-        }
-
-        filter.done = {
-            equals: input.done
+            filter.sentStatus = true;
+        } else {
+            filter.draftStatus = true;
         }
 
         return await ctx.db.thread.findMany({
