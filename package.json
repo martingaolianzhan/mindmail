@@ -75,6 +75,7 @@
     "shadcn": "^2.1.8",
     "sonner": "^2.0.1",
     "superjson": "^2.2.1",
+    "svix": "1.99.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "turndown": "^7.2.0",
