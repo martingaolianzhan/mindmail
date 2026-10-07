@@ -1,9 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { exchangeCodeForAccessToken, getAccountDetails } from "~/lib/aurinko";
 import { db } from "~/server/db";
+import { performInitialSync } from "~/lib/initial-sync";
 import { waitUntil } from "@vercel/functions";
-import axios from "axios";
 
 // handle account token after received from Aurinko
 export const GET = async (req: NextRequest) => {
@@ -50,7 +51,6 @@ export const GET = async (req: NextRequest) => {
         });
     }
 
-    console.log("Access Token", token.accessToken);
     // get account details
     const accountDetails = await getAccountDetails(token.accessToken);
 
@@ -72,19 +72,19 @@ export const GET = async (req: NextRequest) => {
         }
     });
 
-    // trigger initial sync endpoint, this will run in background
+    // Run initial sync in the existing background flow using the Clerk-derived
+    // identity directly; no public callback-to-self HTTP boundary is involved.
     waitUntil(
-        // transfer data to endpoint
-        axios.post(`${process.env.NEXT_PUBLIC_URL}/api/initial-sync`, {
-            accountId: token.accountId.toString(),
-            userId
-        }).then(response => {
-            // success notification
-            console.log("Initial Sync Triggered", response.data);
-        }).catch(error => {
-            // handle error
-            console.error("Failed to trigger initial sync", error);
-        })
+        performInitialSync({ accountId: token.accountId.toString(), userId })
+            .then((result) => {
+                if (result !== "completed") {
+                    console.error("Initial sync did not complete.");
+                }
+            })
+            .catch(() => {
+                // Do not include provider errors, tokens, or mailbox data.
+                console.error("Initial sync failed.");
+            }),
     );
 
     // redirect to mail page once authorizationis done, under the same domain as request url

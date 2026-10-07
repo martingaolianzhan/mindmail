@@ -4,7 +4,7 @@
 MindMail is a Next.js 15 App Router application using TypeScript, React, Tailwind/shadcn, Clerk, tRPC, Prisma/PostgreSQL, Aurinko mail APIs, and Gemini AI. Core paths are:
 
 - Authentication and route protection: `src/middleware.ts`, Clerk pages, and `src/app/api/clerk/webhook/route.ts`.
-- OAuth and mail sync: `src/lib/aurinko.ts`, `src/app/api/aurinko/callback/route.ts`, `src/app/api/initial-sync/route.ts`, `src/lib/account.ts`, and `src/lib/sync-to-db.ts`.
+- OAuth and mail sync: `src/lib/aurinko.ts`, `src/app/api/aurinko/callback/route.ts`, `src/lib/initial-sync.ts`, `src/lib/account.ts`, and `src/lib/sync-to-db.ts`.
 - Data and APIs: `prisma/schema.prisma`, `src/server/db.ts`, and `src/server/api/routers/account.ts`.
 - Mail UI and AI: `src/app/mail/**`, `src/hooks/use-threads.ts`, and `src/app/mail/components/ai-compose/**`.
 
