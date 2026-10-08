@@ -149,7 +149,8 @@ export const accountRouter = createTRPCRouter({
 
         const thread = await ctx.db.thread.findFirst({
             where: {
-                id: input.threadId
+                id: input.threadId,
+                accountId: account.id,
             },
             include: {
                 emails: {
