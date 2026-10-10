@@ -52,12 +52,9 @@ const AIComposeBotton = ({ isComposing, onGenerate }: Props) => {
         // add my personal information
         context += `My name is ${account?.name} and my email is ${account?.emailAddress}.`
 
-        console.log(context);
-
         const { output } = await generateEmail(context, prompt);
 
         for await (const snippet of readStreamableValue(output)) { 
-            console.log(snippet);
             if (snippet) { 
                 onGenerate(snippet);
             }

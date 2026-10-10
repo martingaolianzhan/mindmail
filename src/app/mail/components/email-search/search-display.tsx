@@ -26,8 +26,6 @@ const SearchDisplay = () => {
     React.useEffect(() => { 
         if (!accountId || !debouncedSearchValue) return;
         
-        console.log('Searching for:', debouncedSearchValue);
-
         searchResults.mutate({
             accountId: accountId,
             query: debouncedSearchValue

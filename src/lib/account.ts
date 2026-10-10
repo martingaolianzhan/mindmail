@@ -100,13 +100,8 @@ export class Account {
                 emails: allEmails
             }
         
-        } catch (error) {
-            // handle error
-            if (axios.isAxiosError(error)) { // axios error
-                console.error("Error during initial sync", JSON.stringify(error.response?.data));
-            } else { // other error
-                console.error("Error during initial sync", error);
-            }
+        } catch {
+            console.error("Initial sync failed.");
         }
     }
 
@@ -155,19 +150,16 @@ export class Account {
                     Authorization: `Bearer ${this.token}`
                 }
             });
-            console.log("Eamil sent:", response.data);
+            console.log("Email sent successfully.");
             return response.data;
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                console.error("Error sending email", JSON.stringify(error.response?.data));
-            } else { 
-                console.error("Error sending email", error); 
-            }
+            console.error("Email send failed.");
             throw error;
         }
     }
 
     async syncEmails() { 
+        try {
         const account = await db.account.findUnique({
             where: {
                 accessToken: this.token
@@ -201,8 +193,8 @@ export class Account {
         // sync all updated emails to database
         try {
             syncEmailsToDatabase(allEmails, account.id);
-        } catch (error) {
-            console.error("Error syncing emails", error);
+        } catch {
+            console.error("Incremental sync persistence failed.");
         }
 
         // update latest delta token to account table
@@ -218,6 +210,10 @@ export class Account {
         return {
             emails: allEmails,
             latestDeltaToken: storedDeltaToken
+        }
+        } catch (error) {
+            console.error("Incremental sync failed.");
+            throw error;
         }
     }
 }

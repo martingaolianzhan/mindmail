@@ -47,8 +47,6 @@ export const getAurinkoAuthURL = async (serviceType: "Google" | "Office365") => 
 // exchange code for access token
 export const exchangeCodeForAccessToken = async (code: string) => {
 
-    console.log(code)
-
     // send http request to Aurinko code exchange api
     try {
         
@@ -66,13 +64,10 @@ export const exchangeCodeForAccessToken = async (code: string) => {
             userSession: string
         };
     } catch (error) {
-        // throw error
-        // throw axios error
+        console.error("Aurinko token exchange failed.");
         if (axios.isAxiosError(error)) {
             throw error;
         }
-        // throw other error
-        console.error(error);
     }
 }
 
@@ -92,14 +87,7 @@ export const getAccountDetails = async (accessToken: string) => {
             name: string
         }
     } catch (error) {
-        // throw error
-        // throw axios error
-        if (axios.isAxiosError(error)) {
-            console.error("Error fetching account details", error.response?.data);
-        } else {
-            // throw other error
-            console.error("Execeptected error fetching account details", error);
-        }
+        console.error("Failed to fetch account details.");
         throw error;
     }
 }

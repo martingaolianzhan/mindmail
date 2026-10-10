@@ -26,10 +26,7 @@ const Mail = ({ defaultLayout = [20, 32, 48], navCollapseSize, defaultCollapsed 
     return (
          // define the delay time of tooltip pop-up
          <TooltipProvider delayDuration={0}>
-             <ResizablePanelGroup direction="horizontal" onLayout={(sizes: number[]) => {
-                 // notice new sizes of panel group while change
-                 console.log(sizes)
-            }} className="items-stretch h-full min-h-screen">
+             <ResizablePanelGroup direction="horizontal" className="items-stretch h-full min-h-screen">
                 { /* Side Bar Area */ }
                 <ResizablePanel
                     defaultSize={defaultLayout[0]}

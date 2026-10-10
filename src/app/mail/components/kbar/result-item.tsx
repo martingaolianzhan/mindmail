@@ -18,7 +18,6 @@ const ResultItem = React.forwardRef(
     ) => {
         // calculate ancestors of current item
         const ancestors = React.useMemo(() => {
-            console.log(currentRootActionId);
             // if no current root action id, means not enters sub-action, return all ancestors one the top level
             if (!currentRootActionId) return action.ancestors;
             // find ancestor based on current root action id (represents its position / level in action tree)
@@ -28,7 +27,6 @@ const ResultItem = React.forwardRef(
 
             const newAncestor = action.ancestors.slice(index + 1);
 
-            console.log("new", newAncestor)
 
             return newAncestor;
         }, [action.ancestors, currentRootActionId]);

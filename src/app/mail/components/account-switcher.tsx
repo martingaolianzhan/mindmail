@@ -62,8 +62,8 @@ const AccountSwitcher = ({ isCollapsed }: Props) => {
                         try {
                             const url = await getAurinkoAuthURL('Google');
                             window.location.href = url;
-                        } catch (error) {
-                            console.error(error);
+                        } catch {
+                            console.error("Unable to start account linking.");
                         }
                     }}
                 >

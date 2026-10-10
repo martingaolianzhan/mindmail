@@ -15,7 +15,6 @@ export default async function Home() {
             }
         });
 
-        console.log("Current account num:", num);
 
         if (num > 0) {
             // If there is an email account linked, redirect to the mail page

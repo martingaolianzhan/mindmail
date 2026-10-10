@@ -1,8 +1,6 @@
 import { EmailMessage, EmailAddress, EmailAttachment } from "~/type";
 import pLimit from "p-limit";
 import { db } from "~/server/db";
-import { Prisma } from "@prisma/client";
-
 
 export const syncEmailsToDatabase = async (emails: EmailMessage[], accountId: string) => { 
     console.log("Syncing emails to database...", emails.length);
@@ -26,8 +24,8 @@ export const syncEmailsToDatabase = async (emails: EmailMessage[], accountId: st
             // sync email to database
             await upsertEmail(email, accountId, 0);
         }
-    } catch (error) {
-        throw new Error(`Failed to sync emails to database: ${error}`);
+    } catch {
+        throw new Error("Failed to sync emails to database.");
     }
 }
 
@@ -83,7 +81,7 @@ const upsertEmail = async (email: EmailMessage, accountId: string, index: number
         const fromAddress = addressMap.get(email.from.address);
         // check existence
         if (!fromAddress) {
-            console.log(`Failed to upsert from address for email ${email.bodySnippet}`);
+            console.error("Failed to upsert an email sender address.");
             return;
         }
         // get other relevant email addresses of this email (parameter)
@@ -229,12 +227,8 @@ const upsertEmail = async (email: EmailMessage, accountId: string, index: number
         }
         
 
-    } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-            console.log(`Prisma error for email ${email.id}: ${error.message}`);
-        } else {
-            console.log(`Unknown error for email ${email.id}: ${error}`);
-        }
+    } catch {
+        console.error("Failed to persist an email record.");
     }
 
 }
@@ -271,8 +265,8 @@ const upsertEmailAddress = async (address: EmailAddress, accountId: string) => {
             })
         }
         
-    } catch (error) {
-        console.error("Error upserting email address", error);
+    } catch {
+        console.error("Failed to persist an email address.");
         return null;
     }
 }
@@ -302,7 +296,7 @@ async function upsertAttachment(emailId: string, attachment: EmailAttachment) {
                 contentLocation: attachment.contentLocation,
             },
         });
-    } catch (error) {
-        console.log(`Failed to upsert attachment for email ${emailId}: ${error}`);
+    } catch {
+        console.error("Failed to persist an email attachment.");
     }
 }

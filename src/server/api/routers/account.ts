@@ -2,14 +2,13 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc";
 import z from "zod";
 import { db } from "~/server/db";
 import { Prisma } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 import { emailAddressSchema } from "~/type";
 import { Account } from "~/lib/account";
 import { searchEmails } from "~/lib/search";
 
 // based on user id and account id, find matched account (whether the user has the account or not)
 export const authoriseAccountAccess = async (accountId: string, userId: string) => { 
-
-    console.log("Account id is:" + accountId, "User id is:" + userId)
 
     const account = await db.account.findFirst({
         where: {
@@ -82,7 +81,7 @@ export const accountRouter = createTRPCRouter({
 
         // everytime get threads, update emails
         const acc = new Account(account.accessToken);
-        acc.syncEmails().catch(console.error);
+        acc.syncEmails().catch(() => console.error("Background account sync failed."));
 
         // Always scope a successful thread query to the authenticated user's account.
         const filter: Prisma.ThreadWhereInput = {
@@ -220,17 +219,24 @@ export const accountRouter = createTRPCRouter({
         const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId);
         const acct = new Account(account.accessToken);
         const sender = { name: account.name, address: account.emailAddress };
-        await acct.sendEmail({
-            from: sender,
-            to: input.to,
-            cc: input.cc,
-            bcc: input.bcc,
-            replyTo: sender,
-            subject: input.subject,
-            body: input.body,
-            inReplyTo: input.inReplyTo,
-            threadId: input.threadId
-        })
+        try {
+            await acct.sendEmail({
+                from: sender,
+                to: input.to,
+                cc: input.cc,
+                bcc: input.bcc,
+                replyTo: sender,
+                subject: input.subject,
+                body: input.body,
+                inReplyTo: input.inReplyTo,
+                threadId: input.threadId
+            });
+        } catch {
+            throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: "Unable to send email.",
+            });
+        }
     }),
     getSearchResults: privateProcedure.input(z.object({
         accountId: z.string(),
@@ -238,7 +244,6 @@ export const accountRouter = createTRPCRouter({
     })).mutation(async ({ ctx, input }) => { 
         const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId);
         const searchResults = await searchEmails(account.id, input.query);
-        console.log(searchResults.length);
         return searchResults;
     })
 });

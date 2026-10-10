@@ -27,8 +27,6 @@ const useThreads = () => {
         // set auto-refetch interval，therefore, after update any information, the UI will be updated every 5 seconds
         refetchInterval: 5000
     })
-    
-    console.log("Got Threads length is:", threads?.length);
 
     return {
         // threads of current account

@@ -67,9 +67,6 @@ const Component = ({ replyDetails }: { replyDetails: RouterOutputs["account"]["g
         if (!replyDetails) { 
             return
         }
-
-        console.log("Carbon copy:", ccValues);
-        console.log("CC from reply details:", replyDetails.to.map(to => ({ address: to.address, name: to.name ?? to.address })));
         sendEmail.mutate({
             accountId,
             threadId: threadId ?? undefined,
