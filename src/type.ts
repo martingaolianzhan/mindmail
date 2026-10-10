@@ -76,6 +76,6 @@ export interface EmailHeader {
 }
 
 export const emailAddressSchema = z.object({
-    name: z.string(),
-    address: z.string(),
+    name: z.string().optional(),
+    address: z.string().email(),
 })

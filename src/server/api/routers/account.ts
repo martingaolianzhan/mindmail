@@ -210,23 +210,22 @@ export const accountRouter = createTRPCRouter({
             accountId: z.string(),
             body: z.string(),
             subject: z.string(),
-            from: emailAddressSchema,
-            to: z.array(emailAddressSchema),
+            to: z.array(emailAddressSchema).min(1),
             cc: z.array(emailAddressSchema).optional(),
             bcc: z.array(emailAddressSchema).optional(),
-            replyTo: emailAddressSchema,
             inReplyTo: z.string().optional(),
             threadId: z.string().optional(),
         })
     ).mutation(async ({ ctx, input }) => { 
         const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId);
         const acct = new Account(account.accessToken);
+        const sender = { name: account.name, address: account.emailAddress };
         await acct.sendEmail({
-            from: input.from,
+            from: sender,
             to: input.to,
             cc: input.cc,
             bcc: input.bcc,
-            replyTo: input.replyTo,
+            replyTo: sender,
             subject: input.subject,
             body: input.body,
             inReplyTo: input.inReplyTo,

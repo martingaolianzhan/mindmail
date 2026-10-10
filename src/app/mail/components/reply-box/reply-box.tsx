@@ -75,10 +75,8 @@ const Component = ({ replyDetails }: { replyDetails: RouterOutputs["account"]["g
             threadId: threadId ?? undefined,
             body: value,
             subject,
-            from: replyDetails.from,
             to: replyDetails.to.map(to => ({ address: to.address, name: to.name ?? to.address})).concat(toValues.map(to => ({ address: to.value, name: to.value }))),
             cc: replyDetails.cc.map(cc => ({ address: cc.address, name: cc.name ?? cc.address })).concat(ccValues.map(cc => ({ address: cc.value, name: cc.value }))),
-            replyTo: replyDetails.from,
             inReplyTo: replyDetails.internetMessageId
         }, {
             onSuccess: () => {

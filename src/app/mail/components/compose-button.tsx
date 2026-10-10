@@ -39,14 +39,6 @@ const ComposeButton = () => {
             threadId: undefined,
             body: value,
             subject,
-            from: {
-                name: account.name ?? "Martin Lianzhan Gao",
-                address: account.emailAddress
-            },
-            replyTo: {
-                name: account.name ?? "Martin Lianzhan Gao",
-                address: account.emailAddress
-            },
             inReplyTo: undefined,
             to: toValues.map(to => ({ name: to.value, address: to.value })),
             cc: ccValues.map(cc => ({ name: cc.value, address: cc.value }))
