@@ -1,92 +1,120 @@
 import { auth } from "@clerk/nextjs/server";
+import { waitUntil } from "@vercel/functions";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { exchangeCodeForAccessToken, getAccountDetails } from "~/lib/aurinko";
-import { db } from "~/server/db";
+import {
+  AURINKO_OAUTH_STATE_COOKIE,
+  verifyAurinkoOAuthCorrelation,
+} from "~/lib/aurinko-oauth-state";
 import { performInitialSync } from "~/lib/initial-sync";
-import { waitUntil } from "@vercel/functions";
+import { db } from "~/server/db";
 
-// handle account token after received from Aurinko
-export const GET = async (req: NextRequest) => {
-
-    console.log("Callback received from Aurinko");
-    // check user login status first
-    const { userId } = await auth();
-    if (!userId) { 
-        return NextResponse.json({
-            message: "Unauthorized",
-            status: 401 // unauthorized error code
-        })
-    };
-
-    // get return params from Aurinko
-    const params = req.nextUrl.searchParams;
-
-    // get status
-    const status = params.get("status");
-    // check wehether it is success
-    if (status !== "success") {
-        return NextResponse.json({
-            message: "Authorization failed",
-            status: 403 // forbidden error code
-        })
-    };
-
-    // get code for exchange token
-    const code = params.get("code");
-    
-    // check whether code exists
-    if (!code) {
-        return NextResponse.json({
-            message: "No code received",
-            status: 400 // bad request error code
-        })
-    };
-    // exchange code for token
-    const token = await exchangeCodeForAccessToken(code);
-    // check whether token exists
-    if (!token) {
-        return NextResponse.json({
-            message:"Failed to exchange code for access token."
-        });
-    }
-
-    // get account details
-    const accountDetails = await getAccountDetails(token.accessToken);
-
-    // save details to database
-    // "upsert": if no record, insert it. Otherwise update it if exists, e.g.update new access token
-    await db.account.upsert({
-        where: { // check if record exists by account id
-            id: token.accountId.toString()
-        },
-        update: { // if exists, update
-            accessToken: token.accessToken,
-        },
-        create: { // otherwise insert new record into db
-            id: token.accountId.toString(),
-            userId,
-            emailAddress: accountDetails.email,
-            name: accountDetails.name,
-            accessToken: token.accessToken
-        }
-    });
-
-    // Run initial sync in the existing background flow using the Clerk-derived
-    // identity directly; no public callback-to-self HTTP boundary is involved.
-    waitUntil(
-        performInitialSync({ accountId: token.accountId.toString(), userId })
-            .then((result) => {
-                if (result !== "completed") {
-                    console.error("Initial sync did not complete.");
-                }
-            })
-            .catch(() => {
-                // Do not include provider errors, tokens, or mailbox data.
-                console.error("Initial sync failed.");
-            }),
-    );
-
-    // redirect to mail page once authorizationis done, under the same domain as request url
-    return NextResponse.redirect(new URL("/mail", req.url));
+function failure(message: string, status: number) {
+  return NextResponse.json({ message }, { status });
 }
+
+function consumeCorrelation(response: NextResponse) {
+  response.cookies.set(AURINKO_OAUTH_STATE_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/api/aurinko/callback",
+    maxAge: 0,
+  });
+  return response;
+}
+
+function isUniqueConstraintError(error: unknown): boolean {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "P2002";
+}
+
+// This function intentionally returns unconsumed responses. GET applies the
+// one post-validation consumption boundary to both successful and failed work.
+async function completeValidatedOAuthCallback(req: NextRequest, userId: string): Promise<NextResponse> {
+  const status = req.nextUrl.searchParams.get("status");
+  if (status !== "success") return failure("Authorization failed", 403);
+
+  const code = req.nextUrl.searchParams.get("code");
+  if (!code) return failure("No code received", 400);
+
+  const token = await exchangeCodeForAccessToken(code);
+  if (!token) return failure("Failed to exchange code for access token", 502);
+
+  const accountId = token.accountId.toString();
+  const existingAccount = await db.account.findUnique({ where: { id: accountId } });
+  if (existingAccount && existingAccount.userId !== userId) {
+    return failure("Unable to link this account", 403);
+  }
+
+  if (existingAccount) {
+    // The persistence boundary itself includes userId, so an ownership change
+    // after the read above cannot turn into an ownership-blind token update.
+    const updated = await db.account.updateMany({
+      where: { id: accountId, userId },
+      data: { accessToken: token.accessToken },
+    });
+    if (updated.count !== 1) return failure("Unable to link this account", 403);
+  } else {
+    const accountDetails = await getAccountDetails(token.accessToken);
+    try {
+      await db.account.create({
+        data: {
+          id: accountId,
+          userId,
+          emailAddress: accountDetails.email,
+          name: accountDetails.name,
+          accessToken: token.accessToken,
+        },
+      });
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) throw error;
+
+      // A create race never falls back to an ID-only update. Re-evaluate the
+      // winner and use the same ownership-scoped write for same-owner retries.
+      const racedAccount = await db.account.findUnique({ where: { id: accountId } });
+      if (!racedAccount || racedAccount.userId !== userId) {
+        return failure("Unable to link this account", 403);
+      }
+      const updated = await db.account.updateMany({
+        where: { id: accountId, userId },
+        data: { accessToken: token.accessToken },
+      });
+      if (updated.count !== 1) return failure("Unable to link this account", 403);
+    }
+  }
+
+  waitUntil(
+    performInitialSync({ accountId, userId })
+      .then((result) => {
+        if (result !== "completed") console.error("Initial sync did not complete.");
+      })
+      .catch(() => console.error("Initial sync failed.")),
+  );
+
+  return NextResponse.redirect(new URL("/mail", req.url));
+}
+
+// Handles the provider redirect only after proving that the current Clerk user
+// is the same user that initiated this short-lived OAuth flow.
+export const GET = async (req: NextRequest) => {
+  const { userId } = await auth();
+  if (!userId) return failure("Unauthorized", 401);
+
+  const state = req.nextUrl.searchParams.get("state");
+  try {
+    if (!verifyAurinkoOAuthCorrelation(req.cookies.get(AURINKO_OAUTH_STATE_COOKIE)?.value, state, userId)) {
+      return failure("Invalid OAuth state", 403);
+    }
+  } catch {
+    // This includes a missing signing secret. Do not fall back to unsigned state.
+    return failure("OAuth state verification is unavailable", 503);
+  }
+
+  // Once validation succeeds, every exit below consumes the browser cookie.
+  try {
+    return consumeCorrelation(await completeValidatedOAuthCallback(req, userId));
+  } catch {
+    return consumeCorrelation(failure("Unable to complete account linking", 500));
+  }
+};

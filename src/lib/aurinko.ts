@@ -1,7 +1,13 @@
 "use server"; // this doc should run in server side
 
-import { auth } from "@clerk/nextjs/server"
+import { auth } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 import axios from "axios";
+import {
+    AURINKO_OAUTH_STATE_COOKIE,
+    aurinkoOAuthStateCookieOptions,
+    createAurinkoOAuthCorrelation,
+} from "~/lib/aurinko-oauth-state";
 
 // get the authentication url 
 export const getAurinkoAuthURL = async (serviceType: "Google" | "Office365") => {
@@ -15,6 +21,12 @@ export const getAurinkoAuthURL = async (serviceType: "Google" | "Office365") => 
         throw new Error("User not found");
     }
 
+    // A signed, short-lived HttpOnly correlation cookie binds this redirect to
+    // the Clerk identity that started it. A newer flow intentionally replaces it.
+    const correlation = createAurinkoOAuthCorrelation(userId);
+    const cookieStore = await cookies();
+    cookieStore.set(AURINKO_OAUTH_STATE_COOKIE, correlation.value, aurinkoOAuthStateCookieOptions);
+
     // make search params, as defined as Aurinko API
     const params = new URLSearchParams(
         {
@@ -22,6 +34,7 @@ export const getAurinkoAuthURL = async (serviceType: "Google" | "Office365") => 
             serviceType,
             scopes: "Mail.Read Mail.ReadWrite Mail.Send Mail.Drafts Mail.All",
             responseType: "code",
+            state: correlation.state,
             // return url for receiving the authorization code or token
             returnUrl: `${process.env.NEXT_PUBLIC_URL}/api/aurinko/callback`
         }
