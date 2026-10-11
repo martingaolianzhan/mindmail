@@ -73,23 +73,30 @@ export class Account {
             let deltaToken = syncResponse.syncUpdatedToken;
 
             // get updated emails content (maybe more than one page)
-            const updatedResponse = await this.getUpdatedEmails({ deltaToken });
+            let updatedResponse = await this.getUpdatedEmails({ deltaToken });
             // get nextDeltaToken, always track the latest one
             if (updatedResponse.nextPageToken) {
                 deltaToken = updatedResponse.nextDeltaToken;
             }
             // store returned email contents
             let allEmails: EmailMessage[] = updatedResponse.records;
+            const seenPageTokens = new Set<string>();
 
             // while there is a next page
-            while (updatedResponse.nextPageToken) { 
-                const updatedReponse = await this.getUpdatedEmails({ pageToken: updatedResponse.nextPageToken });
+            while (updatedResponse.nextPageToken) {
+                const pageToken = updatedResponse.nextPageToken;
+                if (seenPageTokens.has(pageToken)) {
+                    throw new Error("Repeated initial sync page token");
+                }
+                seenPageTokens.add(pageToken);
+
+                updatedResponse = await this.getUpdatedEmails({ pageToken });
                 // always keep the latest delta token
-                if (updatedReponse.nextPageToken) { 
-                    deltaToken = updatedReponse.nextDeltaToken;
+                if (updatedResponse.nextPageToken) {
+                    deltaToken = updatedResponse.nextDeltaToken;
                 }
                 // store returned email contents
-                allEmails = allEmails.concat(updatedReponse.records);
+                allEmails = allEmails.concat(updatedResponse.records);
             }
 
             console.log("Initial sync done, got total emails:", allEmails.length, "waiting to upsert to database...");
