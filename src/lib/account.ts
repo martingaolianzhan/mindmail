@@ -197,12 +197,8 @@ export class Account {
             }
             allEmails = allEmails.concat(response.records);
         }
-        // sync all updated emails to database
-        try {
-            syncEmailsToDatabase(allEmails, account.id);
-        } catch {
-            console.error("Incremental sync persistence failed.");
-        }
+        // sync all updated emails to database before advancing the checkpoint
+        await syncEmailsToDatabase(allEmails, account.id);
 
         // update latest delta token to account table
         await db.account.update({
