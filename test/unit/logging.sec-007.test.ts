@@ -165,9 +165,9 @@ describe("SEC-007 sensitive logging boundaries", () => {
       internetHeaders: [], nativeProperties: null, folderId: "", webLink: "", omitted: [],
     } as never;
 
-    await expect(syncEmailsToDatabase([email], "access-token-SECRET-SENTINEL")).resolves.toBeUndefined();
+    await expect(syncEmailsToDatabase([email], "access-token-SECRET-SENTINEL")).rejects.toThrow("Failed to sync emails to database.");
 
-    expect(errorSpy).toHaveBeenCalledWith("Failed to persist an email address.");
+    expect(errorSpy).toHaveBeenCalledWith("Failed to sync emails to database.");
     expectNoSensitiveLogs(errorSpy);
     expectNoSensitiveLogs(logSpy);
   });
