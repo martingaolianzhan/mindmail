@@ -28,14 +28,16 @@ export async function performInitialSync({ accountId, userId }: InitialSyncInput
 
   const { emails, latestDeltaToken } = response;
 
-  // Preserve the existing initial-sync persistence ordering. SYNC-003 owns
-  // the durable delta-commit policy.
-  await db.account.update({
-    where: { accessToken: dbAccount.accessToken },
+  // The provider token is only a candidate until all represented mail is persisted.
+  await syncEmailsToDatabase(emails, accountId);
+
+  const checkpoint = await db.account.updateMany({
+    where: { id: accountId, userId },
     data: { latestDeltaToken },
   });
-
-  await syncEmailsToDatabase(emails, accountId);
+  if (checkpoint.count !== 1) {
+    return "sync-failed";
+  }
 
   return "completed";
 }
