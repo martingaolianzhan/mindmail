@@ -31,8 +31,10 @@ export async function performInitialSync({ accountId, userId }: InitialSyncInput
   // The provider token is only a candidate until all represented mail is persisted.
   await syncEmailsToDatabase(emails, accountId);
 
+  // Bind the final write to the credential snapshot used by this run.
+  // This is a narrow direct-relink guard, not full execution-generation fencing.
   const checkpoint = await db.account.updateMany({
-    where: { id: accountId, userId },
+    where: { id: accountId, userId, accessToken: dbAccount.accessToken },
     data: { latestDeltaToken },
   });
   if (checkpoint.count !== 1) {

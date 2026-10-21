@@ -89,7 +89,7 @@ describe("SYNC-003 real mail persistence and sequential same-input recovery", ()
     }) as typeof realUpdateMany);
     await expect(f.run()).resolves.toBe("completed");
     expect(write).toHaveBeenCalledOnce();
-    expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId }, data: { latestDeltaToken: "D1" } });
+    expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId, accessToken: `${f.id}-token` }, data: { latestDeltaToken: "D1" } });
     expectConverged(await state(f.id, f.emails), f.emails);
   });
 
@@ -132,7 +132,7 @@ describe("SYNC-003 real mail persistence and sequential same-input recovery", ()
       throw new Error("synthetic lost acknowledgement");
     }) as typeof realUpdateMany);
     await expect(f.run()).rejects.toThrow("synthetic lost acknowledgement");
-    expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId }, data: { latestDeltaToken: "D1" } });
+    expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId, accessToken: `${f.id}-token` }, data: { latestDeltaToken: "D1" } });
     const reread = await state(f.id, f.emails);
     expectConverged(reread, f.emails); // D1 committed even though caller saw failure.
     restoreDelegates();

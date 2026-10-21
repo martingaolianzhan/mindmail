@@ -37,7 +37,7 @@ describe("SYNC-003 initial-sync service", () => {
   it("commits only after persistence and requires an authorised exactly-one-row result", async () => {
     await expect(run()).resolves.toBe("completed");
     expect(persist).toHaveBeenCalledWith([{ id: "E1" }], "A1");
-    expect(updateMany).toHaveBeenCalledWith({ where: { id: "A1", userId: "U1" }, data: { latestDeltaToken: "D1" } });
+    expect(updateMany).toHaveBeenCalledWith({ where: { id: "A1", userId: "U1", accessToken: "synthetic-token" }, data: { latestDeltaToken: "D1" } });
     expect(persist.mock.invocationCallOrder[0]).toBeLessThan(updateMany.mock.invocationCallOrder[0]!);
   });
 
