@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { EmailMessage } from "~/type";
+import { execution } from "../fixtures/sync-execution";
+import type * as SyncExecutionModule from "~/lib/sync-execution";
+vi.mock("~/lib/sync-execution", async (original) => ({
+  ...await original<typeof SyncExecutionModule>(),
+  claimSyncExecution: vi.fn(async () => execution), releaseSyncExecution: vi.fn(),
+}));
 
 const { provider, persist, findFirst, updateMany } = vi.hoisted(() => ({
   provider: vi.fn(), persist: vi.fn(), findFirst: vi.fn(), updateMany: vi.fn(),
@@ -36,8 +42,8 @@ describe("SYNC-003 initial-sync service", () => {
 
   it("commits only after persistence and requires an authorised exactly-one-row result", async () => {
     await expect(run()).resolves.toBe("completed");
-    expect(persist).toHaveBeenCalledWith([{ id: "E1" }], "A1");
-    expect(updateMany).toHaveBeenCalledWith({ where: { id: "A1", userId: "U1", accessToken: "synthetic-token" }, data: { latestDeltaToken: "D1" } });
+    expect(persist).toHaveBeenCalledWith([{ id: "E1" }], execution);
+    expect(updateMany).toHaveBeenCalledWith({ where: { id: execution.accountId, userId: execution.userId, accessToken: execution.originalAccessToken, syncGeneration: 0, activeSyncRunId: execution.runId }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
     expect(persist.mock.invocationCallOrder[0]).toBeLessThan(updateMany.mock.invocationCallOrder[0]!);
   });
 

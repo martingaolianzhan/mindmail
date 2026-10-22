@@ -1,12 +1,20 @@
 import type { EmailAddress, EmailAttachment, EmailMessage } from "~/type";
 import { db } from "~/server/db";
+import type { Prisma } from "@prisma/client";
+import { lockSyncExecution, type SyncExecution } from "./sync-execution";
 
-export const syncEmailsToDatabase = async (emails: EmailMessage[], accountId: string) => {
+export const syncEmailsToDatabase = async (emails: EmailMessage[], execution: SyncExecution) => {
     console.log("Syncing emails to database...", emails.length);
 
     try {
-        for (const email of emails) {
-            await upsertEmail(email, accountId);
+        // Even an empty round must prove authority; missing context never enables
+        // legacy writes. Each email is one bounded protected unit. Earlier units
+        // may remain committed on failure; same-input retry still converges.
+        for (const email of emails.length ? emails : [undefined]) {
+            await db.$transaction(async (tx) => {
+                await lockSyncExecution(tx, execution);
+                if (email) await upsertEmail(tx, email, execution.accountId);
+            }, { isolationLevel: "ReadCommitted" });
         }
     } catch {
         console.error("Failed to sync emails to database.");
@@ -14,7 +22,7 @@ export const syncEmailsToDatabase = async (emails: EmailMessage[], accountId: st
     }
 };
 
-const upsertEmail = async (email: EmailMessage, accountId: string) => {
+const upsertEmail = async (db: Prisma.TransactionClient, email: EmailMessage, accountId: string) => {
     let emailLabelType: "inbox" | "sent" | "draft" = "inbox";
     if (email.sysLabels.includes("inbox") || email.sysLabels.includes("important")) {
         emailLabelType = "inbox";
@@ -31,7 +39,7 @@ const upsertEmail = async (email: EmailMessage, accountId: string) => {
 
     const upsertedEmailAddresses: (Awaited<ReturnType<typeof upsertEmailAddress>>)[] = [];
     for (const address of emailAddressForUpsert.values()) {
-        upsertedEmailAddresses.push(await upsertEmailAddress(address, accountId));
+        upsertedEmailAddresses.push(await upsertEmailAddress(db, address, accountId));
     }
 
     const addressMap = new Map(upsertedEmailAddresses.map((address) => [address.address, address]));
@@ -167,11 +175,11 @@ const upsertEmail = async (email: EmailMessage, accountId: string) => {
     });
 
     for (const attachment of email.attachments) {
-        await upsertAttachment(email.id, attachment);
+        await upsertAttachment(db, email.id, attachment);
     }
 };
 
-const upsertEmailAddress = async (address: EmailAddress, accountId: string) => {
+const upsertEmailAddress = async (db: Prisma.TransactionClient, address: EmailAddress, accountId: string) => {
     const existingEmailAddress = await db.emailAddress.findUnique({
         where: { accountId_address: { accountId, address: address.address ?? "" } },
     });
@@ -185,7 +193,7 @@ const upsertEmailAddress = async (address: EmailAddress, accountId: string) => {
     });
 };
 
-async function upsertAttachment(emailId: string, attachment: EmailAttachment) {
+async function upsertAttachment(db: Prisma.TransactionClient, emailId: string, attachment: EmailAttachment) {
     await db.emailAttachment.upsert({
         where: { id: attachment.id },
         update: {

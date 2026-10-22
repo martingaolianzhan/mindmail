@@ -8,6 +8,7 @@ vi.mock("~/lib/sync-to-db", () => ({ syncEmailsToDatabase: vi.fn() }));
 import { performInitialSync } from "~/lib/initial-sync";
 import { syncEmailsToDatabase } from "~/lib/sync-to-db";
 import { db } from "~/server/db";
+import { interceptCheckpoints } from "../helpers/transactions";
 
 const prefix = `sync003-order-${crypto.randomUUID()}`;
 const userId = `${prefix}-user`;
@@ -51,17 +52,17 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
     const invoked = new Promise<void>((r) => { started = r; });
     const pending = new Promise<void>((r) => { resolve = r; });
     vi.mocked(syncEmailsToDatabase).mockImplementationOnce(() => { started(); return pending; });
-    const write = vi.spyOn(db.account, "updateMany").mockImplementation(realUpdateMany);
+    const write = interceptCheckpoints();
 
     const run = performInitialSync(input(id));
     await invoked;
-    expect(syncEmailsToDatabase).toHaveBeenCalledWith(emails, id);
+    expect(syncEmailsToDatabase).toHaveBeenCalledWith(emails, expect.objectContaining({ accountId: id, userId, generation: 0 }));
     expect(write).not.toHaveBeenCalled();
     expect(await token(id)).toBe("D0");
     resolve();
     await expect(run).resolves.toBe("completed");
     expect(write).toHaveBeenCalledOnce();
-    expect(write).toHaveBeenCalledWith({ where: { id, userId, accessToken: `${id}-token` }, data: { latestDeltaToken: "D1" } });
+    expect(write).toHaveBeenCalledWith({ where: { id, userId, accessToken: `${id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
     expect(await token(id)).toBe("D1");
   });
 
@@ -72,7 +73,7 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
     const id = await createAccount(suffix, previous);
     provider.mockResolvedValue({ emails: [], latestDeltaToken: "D1" });
     vi.mocked(syncEmailsToDatabase).mockRejectedValueOnce(new Error("synthetic persistence failure"));
-    const write = vi.spyOn(db.account, "updateMany").mockImplementation(realUpdateMany);
+    const write = interceptCheckpoints();
 
     await expect(performInitialSync(input(id))).rejects.toThrow("synthetic persistence failure");
     expect(write).not.toHaveBeenCalled();
@@ -94,7 +95,7 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
       return pendingPersistence;
     });
     const updateCounts: number[] = [];
-    const write = vi.spyOn(db.account, "updateMany").mockImplementation((async (args) => {
+    const write = interceptCheckpoints((async (args) => {
       const result = await realUpdateMany(args);
       updateCounts.push(result.count);
       return result;
@@ -102,7 +103,7 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
 
     const oldRun = performInitialSync(input(id));
     await persistenceStarted;
-    expect(syncEmailsToDatabase).toHaveBeenCalledWith(emails, id);
+    expect(syncEmailsToDatabase).toHaveBeenCalledWith(emails, expect.objectContaining({ accountId: id, userId, generation: 0 }));
     expect(write).not.toHaveBeenCalled();
     expect(await db.account.findUniqueOrThrow({ where: { id } })).toMatchObject({
       id, userId, accessToken: originalAccessToken, latestDeltaToken: "D0",
@@ -123,8 +124,8 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
     await expect(oldRun).resolves.toBe("sync-failed");
     expect(write).toHaveBeenCalledOnce();
     expect(write).toHaveBeenCalledWith({
-      where: { id, userId, accessToken: originalAccessToken },
-      data: { latestDeltaToken: "D1" },
+      where: { id, userId, accessToken: originalAccessToken, syncGeneration: 0, activeSyncRunId: expect.any(String) },
+      data: { latestDeltaToken: "D1", activeSyncRunId: null },
     });
     expect(updateCounts).toEqual([0]);
     expect(await db.account.findUniqueOrThrow({ where: { id } })).toMatchObject({
@@ -136,7 +137,7 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
     const id = await createAccount("ownership", "D0");
     provider.mockResolvedValue({ emails: [], latestDeltaToken: "D1" });
     vi.mocked(syncEmailsToDatabase).mockResolvedValueOnce(undefined);
-    const write = vi.spyOn(db.account, "updateMany").mockImplementation((async (args) => {
+    const write = interceptCheckpoints((async (args) => {
       // Simulate ownership changing after the initial read, before the real scoped write.
       await db.account.update({ where: { id }, data: { userId: `${prefix}-other-user` } });
       return realUpdateMany(args);
@@ -144,7 +145,7 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
     await db.user.create({ data: { id: `${prefix}-other-user`, emailAddress: "other@example.test", firstName: "Other", lastName: "Test" } });
     try {
       await expect(performInitialSync(input(id))).resolves.toBe("sync-failed");
-      expect(write).toHaveBeenCalledWith({ where: { id, userId, accessToken: `${id}-token` }, data: { latestDeltaToken: "D1" } });
+      expect(write).toHaveBeenCalledWith({ where: { id, userId, accessToken: `${id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
       expect(await token(id)).toBe("D0");
     } finally {
       await db.account.update({ where: { id }, data: { userId } });

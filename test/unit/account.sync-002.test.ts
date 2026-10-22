@@ -1,10 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { EmailMessage, SyncUpdatedEmailsReponse } from "~/type";
+import { execution } from "../fixtures/sync-execution";
+import type * as SyncExecutionModule from "~/lib/sync-execution";
+vi.mock("~/lib/sync-execution", async (original) => ({
+  ...await original<typeof SyncExecutionModule>(),
+  claimSyncExecution: vi.fn(async () => execution), releaseSyncExecution: vi.fn(),
+}));
 
 const { axiosMock, dbMock, syncEmailsToDatabaseMock } = vi.hoisted(() => ({
   axiosMock: { get: vi.fn() },
-  dbMock: { account: { findUnique: vi.fn(), update: vi.fn() } },
+  dbMock: { account: { findUnique: vi.fn(), updateMany: vi.fn() } },
   syncEmailsToDatabaseMock: vi.fn(),
 }));
 
@@ -33,7 +39,7 @@ function configureAccount(responses: SyncUpdatedEmailsReponse[]) {
     const response = responses[index++];
     return response ? Promise.resolve({ data: response }) : Promise.reject(new Error("Unexpected request"));
   });
-  dbMock.account.update.mockResolvedValue({ ...account, latestDeltaToken: "D2" });
+  dbMock.account.updateMany.mockResolvedValue({ count: 1 });
   return requests;
 }
 
@@ -61,13 +67,13 @@ describe("SYNC-002 Account.syncEmails persistence ordering", () => {
     await persistenceStarted;
 
     expect(requests).toEqual([{ deltaToken: "D1" }]);
-    expect(dbMock.account.update).not.toHaveBeenCalled();
+    expect(dbMock.account.updateMany).not.toHaveBeenCalled();
 
     resolvePersistence();
     await expect(sync).resolves.toMatchObject({ emails: [email("A")], latestDeltaToken: "D2" });
-    expect(dbMock.account.update).toHaveBeenCalledWith({
-      where: { id: "account-id" },
-      data: { latestDeltaToken: "D2" },
+    expect(dbMock.account.updateMany).toHaveBeenCalledWith({
+      where: { id: execution.accountId, userId: execution.userId, accessToken: execution.originalAccessToken, syncGeneration: 0, activeSyncRunId: execution.runId },
+      data: { latestDeltaToken: "D2", activeSyncRunId: null },
     });
   });
 
@@ -78,8 +84,8 @@ describe("SYNC-002 Account.syncEmails persistence ordering", () => {
 
     await expect(new Account("synthetic-token").syncEmails()).rejects.toThrow("synthetic persistence failure");
 
-    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([email("A")], "account-id");
-    expect(dbMock.account.update).not.toHaveBeenCalled();
+    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([email("A")], execution);
+    expect(dbMock.account.updateMany).not.toHaveBeenCalled();
     expect(errorSpy).toHaveBeenCalledWith("Incremental sync failed.");
   });
 
@@ -96,7 +102,7 @@ describe("SYNC-002 Account.syncEmails persistence ordering", () => {
     });
 
     expect(requests).toEqual([{ deltaToken: "D1" }, { pageToken: "P2" }, { pageToken: "P3" }]);
-    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([first, second, third], "account-id");
-    expect(dbMock.account.update).toHaveBeenCalledOnce();
+    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([first, second, third], execution);
+    expect(dbMock.account.updateMany).toHaveBeenCalledOnce();
   });
 });

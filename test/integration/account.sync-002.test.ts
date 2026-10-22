@@ -12,12 +12,13 @@ vi.mock("~/lib/sync-to-db", () => ({ syncEmailsToDatabase: syncEmailsToDatabaseM
 
 import { Account } from "~/lib/account";
 import { db } from "~/server/db";
+import { interceptCheckpoints } from "../helpers/transactions";
 
 type Request = { deltaToken?: string; pageToken?: string };
 
 const prefix = `sync002-${crypto.randomUUID()}`;
 const userId = `${prefix}-user`;
-const realAccountUpdate = db.account.update.bind(db.account);
+const realAccountUpdate = db.account.updateMany.bind(db.account);
 const email = (id: string) => ({ id }) as EmailMessage;
 const page = (records: EmailMessage[], nextPageToken?: string): SyncUpdatedEmailsReponse => ({
   records,
@@ -59,7 +60,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.restoreAllMocks();
   // Vitest restoration removes Prisma delegate methods rather than replacing them.
-  db.account.update = realAccountUpdate;
+  db.account.updateMany = realAccountUpdate;
 });
 
 afterAll(async () => {
@@ -73,7 +74,7 @@ describe("SYNC-002 real PostgreSQL checkpoint ordering", () => {
     const account = await createAccount("deferred");
     configureProvider([page([email("A")])]);
     // Preserve Prisma's real delegate method; this spy is timing observation only.
-    const updateSpy = vi.spyOn(db.account, "update").mockImplementation(realAccountUpdate);
+    const updateSpy = interceptCheckpoints();
     let resolvePersistence!: () => void;
     let signalPersistenceStarted!: () => void;
     const persistenceStarted = new Promise<void>((resolve) => { signalPersistenceStarted = resolve; });
@@ -102,7 +103,7 @@ describe("SYNC-002 real PostgreSQL checkpoint ordering", () => {
 
     await expect(new Account(account.accessToken).syncEmails()).rejects.toThrow("synthetic-persistence-SECRET-SENTINEL");
 
-    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([email("A")], account.id);
+    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([email("A")], expect.objectContaining({ accountId: account.id, userId, generation: 0, runId: expect.any(String) }));
     expect(await db.account.findUnique({ where: { id: account.id } })).toMatchObject({ latestDeltaToken: "D1" });
     expect(errorSpy).toHaveBeenCalledTimes(1);
     expect(errorSpy).toHaveBeenCalledWith("Incremental sync failed.");
@@ -122,7 +123,7 @@ describe("SYNC-002 real PostgreSQL checkpoint ordering", () => {
     });
 
     expect(requests).toEqual([{ deltaToken: "D1" }, { pageToken: "P2" }, { pageToken: "P3" }]);
-    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([first, second, third], account.id);
+    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([first, second, third], expect.objectContaining({ accountId: account.id, userId, generation: 0, runId: expect.any(String) }));
     expect(await db.account.findUnique({ where: { id: account.id } })).toMatchObject({ latestDeltaToken: "D2" });
   });
 });

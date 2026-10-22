@@ -1,7 +1,8 @@
 import axios from "axios";
 import { db } from "~/server/db";
-import { SyncResponse, SyncUpdatedEmailsReponse, EmailMessage, EmailAddress, emailAddressSchema } from "~/type";
+import type { SyncResponse, SyncUpdatedEmailsReponse, EmailMessage, EmailAddress } from "~/type";
 import { syncEmailsToDatabase } from "./sync-to-db";
+import { claimSyncExecution, completeSyncExecution, releaseSyncExecution, type SyncExecution } from "./sync-execution";
 
 export class Account {
     // the token represents the email account
@@ -165,7 +166,9 @@ export class Account {
         }
     }
 
-    async syncEmails() { 
+    async syncEmails() {
+        let execution: SyncExecution | undefined;
+        let completed = false;
         try {
         const account = await db.account.findUnique({
             where: {
@@ -179,6 +182,7 @@ export class Account {
         if (!account.latestDeltaToken) { 
             throw new Error("Account not ready for sync");
         }
+        execution = await claimSyncExecution(account);
         // request for updated emails by latest delta token
         let response = await this.getUpdatedEmails({ deltaToken: account.latestDeltaToken });
         let storedDeltaToken = account.latestDeltaToken;
@@ -198,17 +202,10 @@ export class Account {
             allEmails = allEmails.concat(response.records);
         }
         // sync all updated emails to database before advancing the checkpoint
-        await syncEmailsToDatabase(allEmails, account.id);
+        await syncEmailsToDatabase(allEmails, execution);
 
-        // update latest delta token to account table
-        await db.account.update({
-            where: {
-                id: account.id
-            },
-            data: {
-                latestDeltaToken: storedDeltaToken
-            }
-        })
+        await completeSyncExecution(execution, storedDeltaToken);
+        completed = true;
 
         return {
             emails: allEmails,
@@ -217,6 +214,8 @@ export class Account {
         } catch (error) {
             console.error("Incremental sync failed.");
             throw error;
+        } finally {
+            if (execution && !completed) await releaseSyncExecution(execution);
         }
     }
 }

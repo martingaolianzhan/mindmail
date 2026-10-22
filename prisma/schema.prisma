@@ -30,6 +30,10 @@ model Account {
     // latest delta token of email account, from Aurinko, optional
     latestDeltaToken String?
 
+    // Durable authority only; crash/restart owner reclamation belongs to SYNC-005.
+    syncGeneration Int @default(0)
+    activeSyncRunId String?
+
     threads Thread[] // email threads
 
     // store each email this account has interacted with

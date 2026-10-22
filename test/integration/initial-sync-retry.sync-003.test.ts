@@ -6,6 +6,7 @@ vi.mock("~/lib/account", () => ({ Account: vi.fn(() => ({ performInitialSync: pr
 
 import { performInitialSync } from "~/lib/initial-sync";
 import { db } from "~/server/db";
+import { interceptCheckpoints, interceptTransactions, restoreTransactions } from "../helpers/transactions";
 
 const prefix = `sync003-retry-${crypto.randomUUID()}`;
 const userId = `${prefix}-user`;
@@ -32,7 +33,7 @@ async function fixture(suffix: string) {
   await db.account.create({ data: {
     id, userId, accessToken: `${id}-token`, emailAddress: `${suffix}@example.test`, name: suffix, latestDeltaToken: "D0",
   } });
-  const emails = [message(`${suffix}-first`, true), message(`${suffix}-second`, false)];
+  const emails = [message(`${suffix}-first`, false), message(`${suffix}-second`, true)];
   provider.mockResolvedValue({ emails, latestDeltaToken: "D1" });
   return { id, emails, run: () => performInitialSync({ accountId: id, userId }) };
 }
@@ -53,11 +54,12 @@ function expectConverged(s: Awaited<ReturnType<typeof state>>, emails: EmailMess
   expect(s.addresses.map((a) => a.address).sort()).toEqual([
     `${prefix}-recipient@example.test`, `${prefix}-sender@example.test`,
   ]);
-  expect(s.attachments.map((a) => a.id)).toEqual([emails[0]!.attachments[0]!.id]);
+  expect(s.attachments.map((a) => a.id)).toEqual([emails[1]!.attachments[0]!.id]);
 }
 function restoreDelegates() {
   vi.restoreAllMocks();
   db.account.updateMany = realUpdateMany;
+  restoreTransactions();
   db.emailAttachment.upsert = realAttachmentUpsert;
 }
 beforeAll(async () => {
@@ -78,7 +80,7 @@ afterAll(async () => {
 describe("SYNC-003 real mail persistence and sequential same-input recovery", () => {
   it("persists real mail before exactly one ownership-scoped checkpoint commit", async () => {
     const f = await fixture("success");
-    const write = vi.spyOn(db.account, "updateMany").mockImplementation((async (args) => {
+    const write = interceptCheckpoints((async (args) => {
       const before = await state(f.id, f.emails);
       expect(before.token).toBe("D0");
       expect(before.threads).toHaveLength(2);
@@ -89,14 +91,14 @@ describe("SYNC-003 real mail persistence and sequential same-input recovery", ()
     }) as typeof realUpdateMany);
     await expect(f.run()).resolves.toBe("completed");
     expect(write).toHaveBeenCalledOnce();
-    expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId, accessToken: `${f.id}-token` }, data: { latestDeltaToken: "D1" } });
+    expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId, accessToken: `${f.id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
     expectConverged(await state(f.id, f.emails), f.emails);
   });
 
   it("leaves partial mail and D0 on real attachment failure; retry converges without duplicates", async () => {
     const f = await fixture("partial");
-    vi.spyOn(db.emailAttachment, "upsert").mockRejectedValueOnce(new Error("synthetic failure"));
-    const write = vi.spyOn(db.account, "updateMany").mockImplementation(realUpdateMany);
+    interceptTransactions((tx) => ({ ...tx, emailAttachment: { ...tx.emailAttachment, upsert: (() => { throw new Error("synthetic failure"); }) as typeof tx.emailAttachment.upsert } }));
+    const write = interceptCheckpoints();
     await expect(f.run()).rejects.toThrow("Failed to sync emails to database.");
     expect(write).not.toHaveBeenCalled();
     const partial = await state(f.id, f.emails);
@@ -110,7 +112,7 @@ describe("SYNC-003 real mail persistence and sequential same-input recovery", ()
 
   it("retains D0 after a deterministic pre-write failure, then re-upserts mail and commits", async () => {
     const f = await fixture("prewrite");
-    vi.spyOn(db.account, "updateMany").mockRejectedValueOnce(new Error("synthetic no-commit failure"));
+    interceptCheckpoints((() => { throw new Error("synthetic no-commit failure"); }) as typeof realUpdateMany);
     await expect(f.run()).rejects.toThrow("synthetic no-commit failure");
     const first = await state(f.id, f.emails);
     expect(first.token).toBe("D0");
@@ -126,13 +128,13 @@ describe("SYNC-003 real mail persistence and sequential same-input recovery", ()
 
   it("does not claim completion when acknowledgement fails after the real D1 commit; re-read and retry converge", async () => {
     const f = await fixture("postcommit");
-    const write = vi.spyOn(db.account, "updateMany").mockImplementation((async (args) => {
+    const write = interceptCheckpoints((async (args) => {
       const result = await realUpdateMany(args);
       expect(result.count).toBe(1);
       throw new Error("synthetic lost acknowledgement");
     }) as typeof realUpdateMany);
     await expect(f.run()).rejects.toThrow("synthetic lost acknowledgement");
-    expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId, accessToken: `${f.id}-token` }, data: { latestDeltaToken: "D1" } });
+    expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId, accessToken: `${f.id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
     const reread = await state(f.id, f.emails);
     expectConverged(reread, f.emails); // D1 committed even though caller saw failure.
     restoreDelegates();

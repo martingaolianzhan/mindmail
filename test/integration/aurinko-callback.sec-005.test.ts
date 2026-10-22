@@ -71,7 +71,7 @@ describe("SEC-005 real PostgreSQL provider-account ownership", () => {
     const response = await callbackFor(p3, `${prefix}-new-p3`);
 
     expect(response.status).toBe(307);
-    expect(await db.account.findUnique({ where: { id: p3 } })).toMatchObject({ userId: alice, accessToken: `${prefix}-new-p3` });
+    expect(await db.account.findUnique({ where: { id: p3 } })).toMatchObject({ userId: alice, accessToken: `${prefix}-new-p3`, syncGeneration: 0, activeSyncRunId: null });
     expect(initialSyncMock).toHaveBeenCalledWith({ accountId: p3, userId: alice });
   });
 
@@ -84,9 +84,9 @@ describe("SEC-005 real PostgreSQL provider-account ownership", () => {
     expect(response.status).toBe(307);
     expect(updateSpy).toHaveBeenCalledWith({
       where: { id: p1, userId: alice },
-      data: { accessToken: `${prefix}-new-p1` },
+      data: { accessToken: `${prefix}-new-p1`, syncGeneration: { increment: 1 }, activeSyncRunId: null },
     });
-    expect(await db.account.findUnique({ where: { id: p1 } })).toMatchObject({ userId: alice, accessToken: `${prefix}-new-p1` });
+    expect(await db.account.findUnique({ where: { id: p1 } })).toMatchObject({ userId: alice, accessToken: `${prefix}-new-p1`, syncGeneration: 1, activeSyncRunId: null });
     expect(initialSyncMock).toHaveBeenCalledWith({ accountId: p1, userId: alice });
   });
 

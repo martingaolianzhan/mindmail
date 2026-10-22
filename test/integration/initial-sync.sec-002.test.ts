@@ -52,7 +52,7 @@ describe("SEC-002 trusted initial-sync service ownership", () => {
 
     expect(AccountMock).toHaveBeenCalledWith(`${prefix}-token-a1`);
     expect(performInitialSyncMock).toHaveBeenCalledOnce();
-    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([], a1);
+    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([], expect.objectContaining({ accountId: a1, userId: alice, generation: 0, runId: expect.any(String) }));
     expect(await db.account.findUnique({ where: { id: a1 } })).toMatchObject({ latestDeltaToken: `${prefix}-delta` });
   });
 

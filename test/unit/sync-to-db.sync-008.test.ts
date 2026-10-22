@@ -4,6 +4,8 @@ import type { EmailMessage } from "~/type";
 
 const { dbMock } = vi.hoisted(() => ({
   dbMock: {
+    $transaction: vi.fn(),
+    $queryRaw: vi.fn(),
     emailAddress: { create: vi.fn(), findUnique: vi.fn() },
     email: { findMany: vi.fn(), upsert: vi.fn() },
     emailAttachment: { upsert: vi.fn() },
@@ -14,6 +16,7 @@ const { dbMock } = vi.hoisted(() => ({
 vi.mock("~/server/db", () => ({ db: dbMock }));
 
 import { syncEmailsToDatabase } from "~/lib/sync-to-db";
+import { execution } from "../fixtures/sync-execution";
 
 const baseEmail = (id = "email-a"): EmailMessage => ({
   id,
@@ -43,6 +46,8 @@ function configureSuccess() {
 beforeEach(() => {
   vi.clearAllMocks();
   configureSuccess();
+  dbMock.$queryRaw.mockResolvedValue([{ id: execution.accountId }]);
+  dbMock.$transaction.mockImplementation((callback: (tx: typeof dbMock) => unknown) => callback(dbMock));
   vi.spyOn(console, "log").mockImplementation(() => undefined);
 });
 
@@ -52,7 +57,7 @@ afterEach(() => {
 
 describe("SYNC-008 persistence failure propagation", () => {
   it("resolves for a complete valid persistence path", async () => {
-    await expect(syncEmailsToDatabase([baseEmail()], "account-a")).resolves.toBeUndefined();
+    await expect(syncEmailsToDatabase([baseEmail()], execution)).resolves.toBeUndefined();
     expect(dbMock.thread.update).toHaveBeenCalledOnce();
   });
 
@@ -64,7 +69,7 @@ describe("SYNC-008 persistence failure propagation", () => {
     const email = baseEmail();
     injectFailure(email);
 
-    await expect(syncEmailsToDatabase([email], "account-a")).rejects.toThrow("Failed to sync emails to database.");
+    await expect(syncEmailsToDatabase([email], execution)).rejects.toThrow("Failed to sync emails to database.");
 
     expect(dbMock.thread.upsert).not.toHaveBeenCalled();
     expect(errorSpy).toHaveBeenCalledWith("Failed to sync emails to database.");
@@ -81,7 +86,7 @@ describe("SYNC-008 persistence failure propagation", () => {
     if (_name === "attachment") email.attachments = [{ id: "attachment-a", name: "a", mimeType: "text/plain", size: 1, inline: false }];
     injectFailure();
 
-    await expect(syncEmailsToDatabase([email], "account-a")).rejects.toThrow("Failed to sync emails to database.");
+    await expect(syncEmailsToDatabase([email], execution)).rejects.toThrow("Failed to sync emails to database.");
   });
 
   it("fails fast without intentionally persisting a later email", async () => {
@@ -90,7 +95,7 @@ describe("SYNC-008 persistence failure propagation", () => {
     const later = baseEmail("email-c");
     dbMock.thread.upsert.mockImplementation(({ where }: { where: { id: string } }) => where.id === failing.threadId ? Promise.reject(new Error("failure")) : Promise.resolve({ id: where.id }));
 
-    await expect(syncEmailsToDatabase([first, failing, later], "account-a")).rejects.toThrow("Failed to sync emails to database.");
+    await expect(syncEmailsToDatabase([first, failing, later], execution)).rejects.toThrow("Failed to sync emails to database.");
 
     expect(dbMock.thread.upsert).toHaveBeenCalledTimes(2);
     expect(dbMock.thread.upsert).not.toHaveBeenCalledWith(expect.objectContaining({ where: { id: later.threadId } }));

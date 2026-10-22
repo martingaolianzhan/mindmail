@@ -1,23 +1,17 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type { EmailMessage } from "~/type";
-
 const { axiosMock } = vi.hoisted(() => ({ axiosMock: { get: vi.fn() } }));
 vi.mock("axios", () => ({ default: axiosMock }));
-
 import { Account } from "~/lib/account";
 import { syncEmailsToDatabase } from "~/lib/sync-to-db";
+import { claimSyncExecution } from "~/lib/sync-execution";
 import { db } from "~/server/db";
+import { interceptTransactions, restoreTransactions } from "../helpers/transactions";
 
 const prefix = `sync008-${crypto.randomUUID()}`;
 const userId = `${prefix}-user`;
-const realEmailUpsert = db.email.upsert.bind(db.email);
-const realThreadUpdate = db.thread.update.bind(db.thread);
-const realAttachmentUpsert = db.emailAttachment.upsert.bind(db.emailAttachment);
-
 const email = (suffix: string, attachment = false): EmailMessage => ({
-  id: `${prefix}-email-${suffix}`,
-  threadId: `${prefix}-thread-${suffix}`,
+  id: `${prefix}-email-${suffix}`, threadId: `${prefix}-thread-${suffix}`,
   createdTime: "2025-01-01T00:00:00.000Z", lastModifiedTime: "2025-01-01T00:00:00.000Z",
   sentAt: "2025-01-01T00:00:00.000Z", receivedAt: "2025-01-01T00:00:00.000Z",
   internetMessageId: `<${prefix}-${suffix}@example.test>`, subject: "Synthetic subject", sysLabels: ["inbox"],
@@ -28,31 +22,14 @@ const email = (suffix: string, attachment = false): EmailMessage => ({
   inReplyTo: "", references: "", threadIndex: "", internetHeaders: [], nativeProperties: {} as never,
   folderId: "", webLink: "", omitted: [],
 });
-
 async function createAccount(suffix: string) {
   const id = `${prefix}-account-${suffix}`;
-  const accessToken = `${prefix}-token-${suffix}`;
-  await db.account.create({ data: { id, userId, accessToken, emailAddress: `${suffix}@example.test`, name: suffix, latestDeltaToken: "D1" } });
-  return { id, accessToken };
+  return db.account.create({ data: { id, userId, accessToken: `${prefix}-token-${suffix}`, emailAddress: `${suffix}@example.test`, name: suffix, latestDeltaToken: "D1" } });
 }
-
 beforeAll(async () => {
-  await db.$connect();
   await db.user.create({ data: { id: userId, emailAddress: `${userId}@example.test`, firstName: "Synthetic", lastName: "User" } });
 });
-
-beforeEach(() => {
-  vi.clearAllMocks();
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
-  // Vitest removes Prisma delegate methods on restoration; restore real delegates.
-  db.email.upsert = realEmailUpsert;
-  db.thread.update = realThreadUpdate;
-  db.emailAttachment.upsert = realAttachmentUpsert;
-});
-
+afterEach(() => { vi.restoreAllMocks(); restoreTransactions(); });
 afterAll(async () => {
   await db.emailAttachment.deleteMany({ where: { id: { startsWith: prefix } } });
   await db.email.deleteMany({ where: { id: { startsWith: prefix } } });
@@ -63,34 +40,33 @@ afterAll(async () => {
   await db.$disconnect();
 });
 
-describe("SYNC-008 real persistence failure contract", () => {
+describe("SYNC-008 real persistence failure contract under execution fencing", () => {
   it("persists a valid email successfully", async () => {
     const account = await createAccount("success");
     const message = email("success");
-
-    await expect(syncEmailsToDatabase([message], account.id)).resolves.toBeUndefined();
-
+    const execution = await claimSyncExecution(account);
+    await expect(syncEmailsToDatabase([message], execution)).resolves.toBeUndefined();
     expect(await db.thread.count({ where: { id: message.threadId, accountId: account.id } })).toBe(1);
     expect(await db.email.count({ where: { id: message.id } })).toBe(1);
     expect(await db.emailAddress.count({ where: { accountId: account.id } })).toBe(2);
   });
 
-  it("rejects a partial attachment failure, then same-account retry converges without duplicate logical rows", async () => {
+  it("rejects an attachment failure after a prior email committed; retry converges without duplicate logical rows", async () => {
     const account = await createAccount("retry");
     const message = email("retry", true);
-    const attachmentSpy = vi.spyOn(db.emailAttachment, "upsert").mockRejectedValueOnce(new Error("SECRET-SENTINEL"));
+    const prior = { ...message, id: `${message.id}-prior`, attachments: [], hasAttachments: false };
+    const execution = await claimSyncExecution(account);
+    interceptTransactions((tx) => ({ ...tx, emailAttachment: { ...tx.emailAttachment, upsert: (() => { throw new Error("SECRET-SENTINEL"); }) as typeof tx.emailAttachment.upsert } }));
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
-
-    await expect(syncEmailsToDatabase([message], account.id)).rejects.toThrow("Failed to sync emails to database.");
-    expect(await db.email.count({ where: { id: message.id } })).toBe(1);
+    await expect(syncEmailsToDatabase([prior, message], execution)).rejects.toThrow("Failed to sync emails to database.");
+    expect(await db.email.count({ where: { id: prior.id } })).toBe(1);
+    expect(await db.email.count({ where: { id: message.id } })).toBe(0);
     expect(errorSpy.mock.calls.flat().join(" ")).not.toContain("SECRET-SENTINEL");
-
-    attachmentSpy.mockRestore();
-    db.emailAttachment.upsert = realAttachmentUpsert;
-    await expect(syncEmailsToDatabase([message], account.id)).resolves.toBeUndefined();
-
+    vi.restoreAllMocks();
+    restoreTransactions();
+    await expect(syncEmailsToDatabase([prior, message], execution)).resolves.toBeUndefined();
     expect(await db.thread.count({ where: { id: message.threadId, accountId: account.id } })).toBe(1);
-    expect(await db.email.count({ where: { id: message.id } })).toBe(1);
+    expect(await db.email.count({ where: { id: { in: [prior.id, message.id] } } })).toBe(2);
     expect(await db.emailAddress.count({ where: { accountId: account.id } })).toBe(2);
     expect(await db.emailAttachment.count({ where: { id: message.attachments[0]!.id } })).toBe(1);
   });
@@ -99,15 +75,10 @@ describe("SYNC-008 real persistence failure contract", () => {
     const account = await createAccount("bridge");
     const message = email("bridge");
     axiosMock.get.mockResolvedValue({ data: { records: [message], nextDeltaToken: "D2" } });
-    vi.spyOn(db.email, "upsert").mockImplementation((args) => {
-      if (args.where.id === message.id) return Promise.reject(new Error("SECRET-SENTINEL")) as never;
-      return realEmailUpsert(args);
-    });
+    interceptTransactions((tx) => ({ ...tx, email: { ...tx.email, upsert: (() => { throw new Error("SECRET-SENTINEL"); }) as typeof tx.email.upsert } }));
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
-
     await expect(new Account(account.accessToken).syncEmails()).rejects.toThrow("Failed to sync emails to database.");
-
-    expect(await db.account.findUnique({ where: { id: account.id } })).toMatchObject({ latestDeltaToken: "D1" });
+    expect(await db.account.findUnique({ where: { id: account.id } })).toMatchObject({ latestDeltaToken: "D1", activeSyncRunId: null });
     expect(errorSpy).toHaveBeenCalledWith("Failed to sync emails to database.");
     expect(errorSpy).toHaveBeenCalledWith("Incremental sync failed.");
     expect(errorSpy.mock.calls.flat().join(" ")).not.toContain("SECRET-SENTINEL");

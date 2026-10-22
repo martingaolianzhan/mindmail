@@ -3,7 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const { axiosMock, dbMock, streamTextMock, streamableValueMock } = vi.hoisted(() => ({
   axiosMock: { get: vi.fn(), isAxiosError: vi.fn(), post: vi.fn() },
   dbMock: {
-    account: { findUnique: vi.fn(), update: vi.fn() },
+    account: { findUnique: vi.fn(), updateMany: vi.fn() },
+    $transaction: vi.fn(), $queryRaw: vi.fn(),
     email: { findMany: vi.fn(), upsert: vi.fn() },
     emailAddress: { create: vi.fn(), findUnique: vi.fn() },
     emailAttachment: { upsert: vi.fn() },
@@ -22,6 +23,7 @@ vi.mock("@ai-sdk/google", () => ({ google: vi.fn(() => "synthetic-model") }));
 import { getAccountDetails, exchangeCodeForAccessToken } from "~/lib/aurinko";
 import { Account } from "~/lib/account";
 import { syncEmailsToDatabase } from "~/lib/sync-to-db";
+import { execution } from "../fixtures/sync-execution";
 import { autoAIComplete, generateEmail } from "~/app/mail/components/ai-compose/ai-actions";
 
 const sentinels = [
@@ -49,6 +51,9 @@ function expectNoSensitiveLogs(spy: ReturnType<typeof vi.spyOn>) {
 
 beforeEach(() => {
   axiosMock.isAxiosError.mockReturnValue(true);
+  dbMock.account.updateMany.mockResolvedValue({ count: 1 });
+  dbMock.$queryRaw.mockResolvedValue([{ id: execution.accountId }]);
+  dbMock.$transaction.mockImplementation((callback: (tx: typeof dbMock) => unknown) => callback(dbMock));
   streamableValueMock.mockImplementation(() => ({ done: vi.fn(), error: vi.fn(), update: vi.fn(), value: {} }));
 });
 
@@ -165,7 +170,7 @@ describe("SEC-007 sensitive logging boundaries", () => {
       internetHeaders: [], nativeProperties: null, folderId: "", webLink: "", omitted: [],
     } as never;
 
-    await expect(syncEmailsToDatabase([email], "access-token-SECRET-SENTINEL")).rejects.toThrow("Failed to sync emails to database.");
+    await expect(syncEmailsToDatabase([email], { ...execution, originalAccessToken: "access-token-SECRET-SENTINEL" })).rejects.toThrow("Failed to sync emails to database.");
 
     expect(errorSpy).toHaveBeenCalledWith("Failed to sync emails to database.");
     expectNoSensitiveLogs(errorSpy);
@@ -174,7 +179,7 @@ describe("SEC-007 sensitive logging boundaries", () => {
 
   it("logs incremental provider failures generically while preserving rejection", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
-    dbMock.account.findUnique.mockResolvedValue({ id: "account-1", latestDeltaToken: "delta" });
+    dbMock.account.findUnique.mockResolvedValue({ id: "account-1", userId: "synthetic-user", accessToken: "access-token-SECRET-SENTINEL", syncGeneration: 0, activeSyncRunId: null, latestDeltaToken: "delta" });
     axiosMock.get.mockRejectedValue({ response: { data: { body: "mail-body-SECRET-SENTINEL", token: "access-token-SECRET-SENTINEL", secret: "provider-secret-SECRET-SENTINEL" } } });
 
     await expect(new Account("access-token-SECRET-SENTINEL").syncEmails()).rejects.toBeDefined();

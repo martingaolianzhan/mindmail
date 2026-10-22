@@ -157,7 +157,7 @@ describe("SEC-005 callback state validation", () => {
     expect(response.status).toBe(307);
     expect(accountUpdateManyMock).toHaveBeenCalledWith({
       where: { id: "41", userId: "alice" },
-      data: { accessToken: "synthetic-new-token" },
+      data: { accessToken: "synthetic-new-token", syncGeneration: { increment: 1 }, activeSyncRunId: null },
     });
     expect(initialSyncMock).toHaveBeenCalledWith({ accountId: "41", userId: "alice" });
     expectConsumedCorrelation(response);
