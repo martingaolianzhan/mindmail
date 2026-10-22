@@ -1,0 +1,1324 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@ai-sdk/google": {
+      "name": "@ai-sdk/google",
+      "severity": "low",
+      "isDirect": true,
+      "via": [
+        "@ai-sdk/provider-utils"
+      ],
+      "effects": [],
+      "range": "<=2.0.76",
+      "nodes": [
+        "node_modules/@ai-sdk/google"
+      ],
+      "fixAvailable": {
+        "name": "@ai-sdk/google",
+        "version": "4.0.102",
+        "isSemVerMajor": true
+      }
+    },
+    "@ai-sdk/provider-utils": {
+      "name": "@ai-sdk/provider-utils",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1193660,
+          "name": "@ai-sdk/provider-utils",
+          "dependency": "@ai-sdk/provider-utils",
+          "title": "@ai-sdk/provider-utils has an Uncontrolled Resource Consumption issue",
+          "url": "https://github.com/advisories/GHSA-866g-f22w-33x8",
+          "severity": "low",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 4.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<3.0.28"
+        }
+      ],
+      "effects": [
+        "@ai-sdk/google",
+        "@ai-sdk/react",
+        "@ai-sdk/ui-utils",
+        "ai"
+      ],
+      "range": "<3.0.28",
+      "nodes": [
+        "node_modules/@ai-sdk/provider-utils",
+        "node_modules/@ai-sdk/react/node_modules/@ai-sdk/provider-utils",
+        "node_modules/@ai-sdk/ui-utils/node_modules/@ai-sdk/provider-utils",
+        "node_modules/ai/node_modules/@ai-sdk/provider-utils"
+      ],
+      "fixAvailable": {
+        "name": "ai",
+        "version": "7.0.148",
+        "isSemVerMajor": true
+      }
+    },
+    "@ai-sdk/react": {
+      "name": "@ai-sdk/react",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/ui-utils"
+      ],
+      "effects": [
+        "ai"
+      ],
+      "range": "<=2.0.208",
+      "nodes": [
+        "node_modules/@ai-sdk/react"
+      ],
+      "fixAvailable": {
+        "name": "ai",
+        "version": "7.0.148",
+        "isSemVerMajor": true
+      }
+    },
+    "@ai-sdk/ui-utils": {
+      "name": "@ai-sdk/ui-utils",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "@ai-sdk/provider-utils"
+      ],
+      "effects": [
+        "@ai-sdk/react",
+        "ai"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@ai-sdk/ui-utils"
+      ],
+      "fixAvailable": {
+        "name": "ai",
+        "version": "7.0.148",
+        "isSemVerMajor": true
+      }
+    },
+    "@next/eslint-plugin-next": {
+      "name": "@next/eslint-plugin-next",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "fast-glob"
+      ],
+      "effects": [
+        "eslint-config-next"
+      ],
+      "range": ">=14.3.0-canary.0",
+      "nodes": [
+        "node_modules/@next/eslint-plugin-next"
+      ],
+      "fixAvailable": {
+        "name": "eslint-config-next",
+        "version": "14.2.35",
+        "isSemVerMajor": true
+      }
+    },
+    "@tailwindcss/typography": {
+      "name": "@tailwindcss/typography",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "postcss-selector-parser"
+      ],
+      "effects": [],
+      "range": "<=0.0.0-insiders.fda8ce5 || >=0.5.5",
+      "nodes": [
+        "node_modules/@tailwindcss/typography"
+      ],
+      "fixAvailable": {
+        "name": "@tailwindcss/typography",
+        "version": "0.5.4",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/core": {
+      "name": "@tiptap/core",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1158508,
+          "name": "@tiptap/core",
+          "dependency": "@tiptap/core",
+          "title": "Tiptap: mergeAttributes() turns an own __proto__ key into inherited executable DOM attributes",
+          "url": "https://github.com/advisories/GHSA-cp6q-959q-f8rh",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=2.0.0-alpha.0 <3.30.4"
+        }
+      ],
+      "effects": [
+        "@tiptap/extension-blockquote",
+        "@tiptap/extension-bold",
+        "@tiptap/extension-bubble-menu",
+        "@tiptap/extension-bullet-list",
+        "@tiptap/extension-code",
+        "@tiptap/extension-code-block",
+        "@tiptap/extension-document",
+        "@tiptap/extension-dropcursor",
+        "@tiptap/extension-floating-menu",
+        "@tiptap/extension-gapcursor",
+        "@tiptap/extension-hard-break",
+        "@tiptap/extension-heading",
+        "@tiptap/extension-history",
+        "@tiptap/extension-horizontal-rule",
+        "@tiptap/extension-italic",
+        "@tiptap/extension-list-item",
+        "@tiptap/extension-ordered-list",
+        "@tiptap/extension-paragraph",
+        "@tiptap/extension-strike",
+        "@tiptap/extension-text",
+        "@tiptap/extension-text-style",
+        "@tiptap/react",
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/core"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-blockquote": {
+      "name": "@tiptap/extension-blockquote",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-blockquote"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-bold": {
+      "name": "@tiptap/extension-bold",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-bold"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-bubble-menu": {
+      "name": "@tiptap/extension-bubble-menu",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/react"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-bubble-menu"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/react",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-bullet-list": {
+      "name": "@tiptap/extension-bullet-list",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=2.27.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-bullet-list"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-code": {
+      "name": "@tiptap/extension-code",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-code"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-code-block": {
+      "name": "@tiptap/extension-code-block",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-code-block"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-document": {
+      "name": "@tiptap/extension-document",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-document"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-dropcursor": {
+      "name": "@tiptap/extension-dropcursor",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=2.27.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-dropcursor"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-floating-menu": {
+      "name": "@tiptap/extension-floating-menu",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/react"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-floating-menu"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/react",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-gapcursor": {
+      "name": "@tiptap/extension-gapcursor",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=2.27.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-gapcursor"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-hard-break": {
+      "name": "@tiptap/extension-hard-break",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-hard-break"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-heading": {
+      "name": "@tiptap/extension-heading",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-heading"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-history": {
+      "name": "@tiptap/extension-history",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=2.27.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-history"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-horizontal-rule": {
+      "name": "@tiptap/extension-horizontal-rule",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-horizontal-rule"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-italic": {
+      "name": "@tiptap/extension-italic",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-italic"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-list-item": {
+      "name": "@tiptap/extension-list-item",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=2.27.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-list-item"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-ordered-list": {
+      "name": "@tiptap/extension-ordered-list",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=2.27.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-ordered-list"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-paragraph": {
+      "name": "@tiptap/extension-paragraph",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-paragraph"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-strike": {
+      "name": "@tiptap/extension-strike",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-strike"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-text": {
+      "name": "@tiptap/extension-text",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-text"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/extension-text",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/extension-text-style": {
+      "name": "@tiptap/extension-text-style",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@tiptap/core"
+      ],
+      "effects": [
+        "@tiptap/starter-kit"
+      ],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/extension-text-style"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/react": {
+      "name": "@tiptap/react",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@tiptap/core",
+        "@tiptap/extension-bubble-menu",
+        "@tiptap/extension-floating-menu"
+      ],
+      "effects": [],
+      "range": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/react"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/react",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@tiptap/starter-kit": {
+      "name": "@tiptap/starter-kit",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@tiptap/core",
+        "@tiptap/extension-blockquote",
+        "@tiptap/extension-bold",
+        "@tiptap/extension-bullet-list",
+        "@tiptap/extension-code",
+        "@tiptap/extension-code-block",
+        "@tiptap/extension-document",
+        "@tiptap/extension-dropcursor",
+        "@tiptap/extension-gapcursor",
+        "@tiptap/extension-hard-break",
+        "@tiptap/extension-heading",
+        "@tiptap/extension-history",
+        "@tiptap/extension-horizontal-rule",
+        "@tiptap/extension-italic",
+        "@tiptap/extension-list-item",
+        "@tiptap/extension-ordered-list",
+        "@tiptap/extension-paragraph",
+        "@tiptap/extension-strike",
+        "@tiptap/extension-text",
+        "@tiptap/extension-text-style"
+      ],
+      "effects": [],
+      "range": "<=3.0.0-next.8 || 3.30.0 - 3.30.3",
+      "nodes": [
+        "node_modules/@tiptap/starter-kit"
+      ],
+      "fixAvailable": {
+        "name": "@tiptap/starter-kit",
+        "version": "3.32.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@typescript-eslint/eslint-plugin": {
+      "name": "@typescript-eslint/eslint-plugin",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@typescript-eslint/type-utils",
+        "@typescript-eslint/utils"
+      ],
+      "effects": [],
+      "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "nodes": [
+        "node_modules/@typescript-eslint/eslint-plugin"
+      ],
+      "fixAvailable": true
+    },
+    "@typescript-eslint/parser": {
+      "name": "@typescript-eslint/parser",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@typescript-eslint/typescript-estree"
+      ],
+      "effects": [],
+      "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "nodes": [
+        "node_modules/@typescript-eslint/parser"
+      ],
+      "fixAvailable": true
+    },
+    "@typescript-eslint/type-utils": {
+      "name": "@typescript-eslint/type-utils",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@typescript-eslint/typescript-estree",
+        "@typescript-eslint/utils"
+      ],
+      "effects": [
+        "@typescript-eslint/eslint-plugin"
+      ],
+      "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "nodes": [
+        "node_modules/@typescript-eslint/type-utils"
+      ],
+      "fixAvailable": true
+    },
+    "@typescript-eslint/typescript-estree": {
+      "name": "@typescript-eslint/typescript-estree",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "fast-glob"
+      ],
+      "effects": [
+        "@typescript-eslint/parser",
+        "@typescript-eslint/type-utils",
+        "@typescript-eslint/utils"
+      ],
+      "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "nodes": [
+        "node_modules/@typescript-eslint/typescript-estree"
+      ],
+      "fixAvailable": true
+    },
+    "@typescript-eslint/utils": {
+      "name": "@typescript-eslint/utils",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@typescript-eslint/typescript-estree"
+      ],
+      "effects": [
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/type-utils"
+      ],
+      "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "nodes": [
+        "node_modules/@typescript-eslint/utils"
+      ],
+      "fixAvailable": true
+    },
+    "@vitest/mocker": {
+      "name": "@vitest/mocker",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1193684,
+          "name": "@vitest/mocker",
+          "dependency": "@vitest/mocker",
+          "title": "Vitest: Path Traversal / Arbitrary File Read via @vitest/mocker Redirect Mock",
+          "url": "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": ">=2.1.0 <4.1.11"
+        },
+        {
+          "source": 1242767,
+          "name": "@vitest/mocker",
+          "dependency": "@vitest/mocker",
+          "title": "Vitest: Code injection via unauthenticated manual mock registration",
+          "url": "https://github.com/advisories/GHSA-qxg6-89mg-rqv8",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-94",
+            "CWE-116",
+            "CWE-306"
+          ],
+          "cvss": {
+            "score": 4.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=2.1.0-beta.7 <4.1.12"
+        }
+      ],
+      "effects": [
+        "vitest"
+      ],
+      "range": "<=4.1.11",
+      "nodes": [
+        "node_modules/vitest/node_modules/@vitest/mocker"
+      ],
+      "fixAvailable": {
+        "name": "vitest",
+        "version": "5.0.5",
+        "isSemVerMajor": true
+      }
+    },
+    "ai": {
+      "name": "ai",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/react",
+        "@ai-sdk/ui-utils",
+        {
+          "source": 1111095,
+          "name": "ai",
+          "dependency": "ai",
+          "title": "Vercel’s AI SDK's filetype whitelists can be bypassed when uploading files",
+          "url": "https://github.com/advisories/GHSA-rwvc-j5jr-mgvh",
+          "severity": "low",
+          "cwe": [
+            "CWE-20",
+            "CWE-682"
+          ],
+          "cvss": {
+            "score": 3.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": "<5.0.52"
+        },
+        "jsondiffpatch"
+      ],
+      "effects": [],
+      "range": "<=5.0.206 || 7.0.0-beta.0 - 7.0.0-beta.1-gr2m-test",
+      "nodes": [
+        "node_modules/ai"
+      ],
+      "fixAvailable": {
+        "name": "ai",
+        "version": "7.0.148",
+        "isSemVerMajor": true
+      }
+    },
+    "braces": {
+      "name": "braces",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1240992,
+          "name": "braces",
+          "dependency": "braces",
+          "title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "cwe": [
+            "CWE-674"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<=3.0.3"
+        }
+      ],
+      "effects": [
+        "chokidar",
+        "micromatch"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/braces"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "chokidar": {
+      "name": "chokidar",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "braces"
+      ],
+      "effects": [
+        "tailwindcss"
+      ],
+      "range": "2.0.0 - 3.6.0",
+      "nodes": [
+        "node_modules/chokidar"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "eslint-config-next": {
+      "name": "eslint-config-next",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@next/eslint-plugin-next"
+      ],
+      "effects": [],
+      "range": ">=14.3.0-canary.0",
+      "nodes": [
+        "node_modules/eslint-config-next"
+      ],
+      "fixAvailable": {
+        "name": "eslint-config-next",
+        "version": "14.2.35",
+        "isSemVerMajor": true
+      }
+    },
+    "eslint-import-resolver-typescript": {
+      "name": "eslint-import-resolver-typescript",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "fast-glob"
+      ],
+      "effects": [],
+      "range": "3.6.0 - 3.7.0",
+      "nodes": [
+        "node_modules/eslint-import-resolver-typescript"
+      ],
+      "fixAvailable": true
+    },
+    "fast-glob": {
+      "name": "fast-glob",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "micromatch"
+      ],
+      "effects": [
+        "@next/eslint-plugin-next",
+        "@typescript-eslint/typescript-estree",
+        "eslint-import-resolver-typescript",
+        "tailwindcss"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@next/eslint-plugin-next/node_modules/fast-glob",
+        "node_modules/fast-glob"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "jsondiffpatch": {
+      "name": "jsondiffpatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1108189,
+          "name": "jsondiffpatch",
+          "dependency": "jsondiffpatch",
+          "title": "jsondiffpatch is vulnerable to Cross-site Scripting (XSS) via HtmlFormatter::nodeBegin",
+          "url": "https://github.com/advisories/GHSA-33vc-wfww-vjfv",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 4.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": "<0.7.2"
+        },
+        {
+          "source": 1147954,
+          "name": "jsondiffpatch",
+          "dependency": "jsondiffpatch",
+          "title": " jsondiffpatch patch APIs are vulnerable to prototype pollution",
+          "url": "https://github.com/advisories/GHSA-j4fx-xxwh-2485",
+          "severity": "high",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 8.2,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:L"
+          },
+          "range": "<0.7.6"
+        }
+      ],
+      "effects": [
+        "ai"
+      ],
+      "range": "<=0.7.5",
+      "nodes": [
+        "node_modules/jsondiffpatch"
+      ],
+      "fixAvailable": {
+        "name": "ai",
+        "version": "7.0.148",
+        "isSemVerMajor": true
+      }
+    },
+    "micromatch": {
+      "name": "micromatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "braces"
+      ],
+      "effects": [
+        "fast-glob",
+        "tailwindcss"
+      ],
+      "range": ">=0.2.0",
+      "nodes": [
+        "node_modules/micromatch"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "next": {
+      "name": "next",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "postcss"
+      ],
+      "effects": [],
+      "range": "9.3.4-canary.0 - 16.3.0-preview.10",
+      "nodes": [
+        "node_modules/next"
+      ],
+      "fixAvailable": {
+        "name": "next",
+        "version": "16.4.2",
+        "isSemVerMajor": true
+      }
+    },
+    "postcss": {
+      "name": "postcss",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1117015,
+          "name": "postcss",
+          "dependency": "postcss",
+          "title": "PostCSS has XSS via Unescaped </style> in its CSS Stringify Output",
+          "url": "https://github.com/advisories/GHSA-qx2v-qp2m-jg93",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": "<8.5.10"
+        },
+        {
+          "source": 1124252,
+          "name": "postcss",
+          "dependency": "postcss",
+          "title": "PostCSS: Arbitrary file read and information disclosure via attacker-controlled sourceMappingURL in CSS comments",
+          "url": "https://github.com/advisories/GHSA-6g55-p6wh-862q",
+          "severity": "high",
+          "cwe": [
+            "CWE-22",
+            "CWE-200"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": "<=8.5.11"
+        },
+        {
+          "source": 1130709,
+          "name": "postcss",
+          "dependency": "postcss",
+          "title": "PostCSS: incomplete fix of GHSA-6g55-p6wh-862q — attacker-controlled sourceMappingURL reads arbitrary .map files when `from` is unset",
+          "url": "https://github.com/advisories/GHSA-fxqj-rqcc-2cmp",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22",
+            "CWE-200"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=8.5.22"
+        },
+        {
+          "source": 1139510,
+          "name": "postcss",
+          "dependency": "postcss",
+          "title": "PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure",
+          "url": "https://github.com/advisories/GHSA-r28c-9q8g-f849",
+          "severity": "high",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": "<=8.5.17"
+        }
+      ],
+      "effects": [
+        "next"
+      ],
+      "range": "<=8.5.22",
+      "nodes": [
+        "node_modules/next/node_modules/postcss"
+      ],
+      "fixAvailable": {
+        "name": "next",
+        "version": "16.4.2",
+        "isSemVerMajor": true
+      }
+    },
+    "postcss-nested": {
+      "name": "postcss-nested",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "postcss-selector-parser"
+      ],
+      "effects": [
+        "tailwindcss"
+      ],
+      "range": "2.0.3 - 6.2.0",
+      "nodes": [
+        "node_modules/postcss-nested"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "postcss-selector-parser": {
+      "name": "postcss-selector-parser",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1241232,
+          "name": "postcss-selector-parser",
+          "dependency": "postcss-selector-parser",
+          "title": "PostCSS: Quadratic complexity in flat selector parsing allows CPU exhaustion",
+          "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400",
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<7.1.6"
+        }
+      ],
+      "effects": [
+        "@tailwindcss/typography",
+        "postcss-nested",
+        "tailwindcss"
+      ],
+      "range": "<7.1.6",
+      "nodes": [
+        "node_modules/@tailwindcss/typography/node_modules/postcss-selector-parser",
+        "node_modules/postcss-selector-parser"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "tailwindcss": {
+      "name": "tailwindcss",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "chokidar",
+        "fast-glob",
+        "micromatch",
+        "postcss-nested",
+        "postcss-selector-parser"
+      ],
+      "effects": [],
+      "range": "<=0.0.0-oxide-insiders.ff2c25f || 0.5.0 - 3.4.19",
+      "nodes": [
+        "node_modules/tailwindcss"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "tinypool": {
+      "name": "tinypool",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1241260,
+          "name": "tinypool",
+          "dependency": "tinypool",
+          "title": "Tinypool: Prototype Pollution gadget in worker options leads to Remote Code Execution",
+          "url": "https://github.com/advisories/GHSA-5gmw-xhrv-c9v3",
+          "severity": "critical",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=2.1.0"
+        },
+        {
+          "source": 1241261,
+          "name": "tinypool",
+          "dependency": "tinypool",
+          "title": "Tinypool: Prototype Pollution Gadget to RCE in run() options",
+          "url": "https://github.com/advisories/GHSA-85c8-ppgw-ccpr",
+          "severity": "critical",
+          "cwe": [
+            "CWE-94",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<2.1.2"
+        }
+      ],
+      "effects": [
+        "vitest"
+      ],
+      "range": "<=2.1.1",
+      "nodes": [
+        "node_modules/tinypool"
+      ],
+      "fixAvailable": {
+        "name": "vitest",
+        "version": "5.0.5",
+        "isSemVerMajor": true
+      }
+    },
+    "vitest": {
+      "name": "vitest",
+      "severity": "critical",
+      "isDirect": true,
+      "via": [
+        "@vitest/mocker",
+        {
+          "source": 1193683,
+          "name": "vitest",
+          "dependency": "vitest",
+          "title": "Vitest: Path Traversal / Arbitrary File Read via @vitest/mocker Redirect Mock",
+          "url": "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": ">=2.1.0 <4.1.11"
+        },
+        "tinypool"
+      ],
+      "effects": [],
+      "range": "0.0.95 - 4.1.10",
+      "nodes": [
+        "node_modules/vitest"
+      ],
+      "fixAvailable": {
+        "name": "vitest",
+        "version": "5.0.5",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 4,
+      "moderate": 30,
+      "high": 15,
+      "critical": 2,
+      "total": 51
+    },
+    "dependencies": {
+      "prod": 430,
+      "dev": 330,
+      "optional": 93,
+      "peer": 1,
+      "peerOptional": 0,
+      "total": 801
+    }
+  }
+}

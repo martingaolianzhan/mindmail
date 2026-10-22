@@ -1,0 +1,3639 @@
+{
+  "capturedAt": "2026-10-22T17:10:46.613Z",
+  "environment": {
+    "node": "v24.20.0",
+    "workspaceNpm": "11.19.0",
+    "declaredNpm": "10.5.0",
+    "candidateCiNpm": "10.5.0"
+  },
+  "before": {
+    "audit": {
+      "command": "npm audit --json",
+      "exit": 1,
+      "stdout": "before-audit.json",
+      "stderr": ""
+    },
+    "ls": {
+      "command": "npm ls --depth=0",
+      "exit": 0,
+      "stdout": "mind-mail@0.1.0 <workspace>\n├── @ai-sdk/google@1.1.16\n├── @babel/runtime@7.27.0\n├── @clerk/nextjs@6.8.2\n├── @orama/orama@3.1.1\n├── @orama/plugin-data-persistence@3.1.1\n├── @prisma/client@5.22.0\n├── @radix-ui/react-avatar@1.1.2\n├── @radix-ui/react-dialog@1.1.6\n├── @radix-ui/react-dropdown-menu@2.1.5\n├── @radix-ui/react-select@2.1.4\n├── @radix-ui/react-separator@1.1.1\n├── @radix-ui/react-slot@1.1.1\n├── @radix-ui/react-tabs@1.1.2\n├── @radix-ui/react-tooltip@1.1.6\n├── @t3-oss/env-nextjs@0.10.1\n├── @tailwindcss/typography@0.5.16\n├── @tanstack/react-query@5.62.3\n├── @tiptap/extension-text@2.11.5\n├── @tiptap/react@2.11.5\n├── @tiptap/starter-kit@2.11.5\n├── @trpc/client@11.0.0-rc.660+74625d5e4\n├── @trpc/react-query@11.0.0-rc.660+74625d5e4\n├── @trpc/server@11.0.0-rc.660+74625d5e4\n├── @types/classnames@2.3.0\n├── @types/eslint@8.56.12\n├── @types/node@20.17.9\n├── @types/react-dom@18.3.2\n├── @types/react@18.3.1\n├── @types/turndown@5.0.5\n├── @typescript-eslint/eslint-plugin@8.17.0\n├── @typescript-eslint/parser@8.17.0\n├── @vercel/functions@1.5.2\n├── ai@4.1.50\n├── axios@1.8.4\n├── class-variance-authority@0.7.1\n├── clsx@2.1.1\n├── data-fns@1.1.0\n├── date-fns@4.1.0\n├── dompurify@3.2.4\n├── eslint-config-next@15.0.4\n├── eslint@8.57.1\n├── framer-motion@12.0.6\n├── geist@1.3.1\n├── jotai@2.11.0\n├── kbar@0.1.0-beta.45\n├── lucide-react@0.468.0\n├── next-themes@0.4.4\n├── next@15.2.3\n├── nock@14.0.5\n├── p-limit@6.2.0\n├── postcss@8.5.28\n├── prettier-plugin-tailwindcss@0.6.9\n├── prettier@3.4.2\n├── prisma@5.22.0\n├── react-avatar@5.0.3\n├── react-dom@18.3.1\n├── react-letter@0.4.0\n├── react-resizable-panels@2.1.7\n├── react-select@5.10.0\n├── react@18.3.1\n├── select@1.1.2\n├── server-only@0.0.1\n├── shadcn@2.3.0\n├── sonner@2.0.1\n├── superjson@2.2.2\n├── svix@1.99.1\n├── tailwind-merge@2.5.5\n├── tailwindcss-animate@1.0.7\n├── tailwindcss@3.4.16\n├── turndown@7.2.0\n├── typescript@5.7.2\n├── usehooks-ts@3.1.0\n├── vaul@1.1.2\n├── vitest@3.2.4\n└── zod@3.24.2\n\n",
+      "stderr": ""
+    },
+    "peers": {
+      "command": "npm ls react react-dom react-virtual @tanstack/react-virtual kbar --all",
+      "exit": 1,
+      "stdout": "mind-mail@0.1.0 <workspace>\n├─┬ @clerk/nextjs@6.8.2\n│ ├─┬ @clerk/clerk-react@5.19.2\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @clerk/shared@2.19.3\n│ │ ├── react-dom@18.3.1 deduped\n│ │ ├── react@18.3.1 deduped\n│ │ └─┬ swr@2.2.5\n│ │   └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-avatar@1.1.2\n│ ├─┬ @radix-ui/react-context@1.1.1\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-primitive@2.0.1\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-use-callback-ref@1.1.0\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-use-layout-effect@1.1.0\n│ │ └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-dialog@1.1.6\n│ ├─┬ @radix-ui/react-compose-refs@1.1.1\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-dismissable-layer@1.1.5\n│ │ ├─┬ @radix-ui/react-use-escape-keydown@1.1.0\n│ │ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-focus-guards@1.1.1\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-focus-scope@1.1.2\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-id@1.1.0\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-portal@1.1.4\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-presence@1.1.2\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-primitive@2.0.2\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-slot@1.1.2\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-use-controllable-state@1.1.0\n│ │ └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ ├─┬ react-remove-scroll@2.6.3\n│ │ ├─┬ react-remove-scroll-bar@2.3.8\n│ │ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ │ ├─┬ react-style-singleton@2.2.3\n│ │ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ │ ├── react@18.3.1 deduped\n│ │ ├─┬ use-callback-ref@1.3.3\n│ │ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ │ └─┬ use-sidecar@1.1.3\n│ │   └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-dropdown-menu@2.1.5\n│ ├─┬ @radix-ui/react-menu@2.1.5\n│ │ ├─┬ @radix-ui/react-dismissable-layer@1.1.4\n│ │ │ ├── react-dom@18.3.1 deduped\n│ │ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-select@2.1.4\n│ ├─┬ @radix-ui/react-collection@1.1.1\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-direction@1.1.0\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-dismissable-layer@1.1.3\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-focus-scope@1.1.1\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-popper@1.2.1\n│ │ ├─┬ @floating-ui/react-dom@2.1.2\n│ │ │ ├── react-dom@18.3.1 deduped\n│ │ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ │ ├─┬ @radix-ui/react-arrow@1.1.1\n│ │ │ ├── react-dom@18.3.1 deduped\n│ │ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ │ ├─┬ @radix-ui/react-use-rect@1.1.0\n│ │ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ │ ├─┬ @radix-ui/react-use-size@1.1.0\n│ │ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-portal@1.1.3\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-use-previous@1.1.0\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-visually-hidden@1.1.1\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-separator@1.1.1\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-slot@1.1.1\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-tabs@1.1.2\n│ ├─┬ @radix-ui/react-roving-focus@1.1.1\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-tooltip@1.1.6\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @tanstack/react-query@5.62.3\n│ └── react@18.3.1 deduped\n├─┬ @tiptap/react@2.11.5\n│ ├── react-dom@18.3.1 deduped\n│ ├── react@18.3.1 deduped\n│ └─┬ use-sync-external-store@1.4.0\n│   └── react@18.3.1 deduped\n├─┬ @trpc/react-query@11.0.0-rc.660+74625d5e4\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ ai@4.1.50\n│ ├─┬ @ai-sdk/react@1.1.20\n│ │ └── react@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ framer-motion@12.0.6\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ jotai@2.11.0\n│ └── react@18.3.1 deduped\n├─┬ kbar@0.1.0-beta.45\n│ ├── react-dom@18.3.1 deduped\n│ ├─┬ react-virtual@2.10.4\n│ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ └── react@18.3.1 deduped\n├─┬ lucide-react@0.468.0\n│ └── react@18.3.1 deduped\n├─┬ next-themes@0.4.4\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ next@15.2.3\n│ ├── react-dom@18.3.1 deduped\n│ ├── react@18.3.1 deduped\n│ └─┬ styled-jsx@5.1.6\n│   └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n├─┬ react-avatar@5.0.3\n│ └── react@18.3.1 deduped\n├─┬ react-dom@18.3.1\n│ └── react@18.3.1 deduped\n├─┬ react-letter@0.4.0\n│ └── react@18.3.1 deduped\n├─┬ react-resizable-panels@2.1.7\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ react-select@5.10.0\n│ ├─┬ @emotion/react@11.14.0\n│ │ ├─┬ @emotion/use-insertion-effect-with-fallbacks@1.2.0\n│ │ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ ├── react-dom@18.3.1 deduped\n│ ├─┬ react-transition-group@4.4.5\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n│ ├── react@18.3.1 deduped\n│ └─┬ use-isomorphic-layout-effect@1.2.0\n│   └── react@18.3.1 deduped invalid: \"^16.6.3 || ^17.0.0\" from node_modules/kbar/node_modules/react-virtual\n├── react@18.3.1\n├─┬ sonner@2.0.1\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ usehooks-ts@3.1.0\n│ └── react@18.3.1 deduped\n└─┬ vaul@1.1.2\n  ├── react-dom@18.3.1 deduped\n  └── react@18.3.1 deduped\n\n",
+      "stderr": "npm error code ELSPROBLEMS\nnpm error invalid: react@18.3.1 <workspace>/node_modules/react\nnpm error A complete log of this run can be found in: <home>/.npm/_logs/2026-10-22T16_54_04_768Z-debug-0.log\n"
+    }
+  },
+  "after": {
+    "audit": {
+      "command": "npm audit --json",
+      "exit": 1,
+      "stdout": "after-audit.json",
+      "stderr": ""
+    },
+    "ls": {
+      "command": "npm ls --depth=0",
+      "exit": 0,
+      "stdout": "mind-mail@0.1.0 <workspace>\n├── @ai-sdk/google@1.1.16\n├── @babel/runtime@7.27.0\n├── @clerk/nextjs@6.39.8\n├── @orama/orama@3.1.1\n├── @orama/plugin-data-persistence@3.1.1\n├── @prisma/client@5.22.0\n├── @radix-ui/react-avatar@1.1.2\n├── @radix-ui/react-dialog@1.1.6\n├── @radix-ui/react-dropdown-menu@2.1.5\n├── @radix-ui/react-select@2.1.4\n├── @radix-ui/react-separator@1.1.1\n├── @radix-ui/react-slot@1.1.1\n├── @radix-ui/react-tabs@1.1.2\n├── @radix-ui/react-tooltip@1.1.6\n├── @t3-oss/env-nextjs@0.10.1\n├── @tailwindcss/typography@0.5.16\n├── @tanstack/react-query@5.62.3\n├── @tiptap/extension-text@2.11.5\n├── @tiptap/react@2.11.5\n├── @tiptap/starter-kit@2.11.5\n├── @trpc/client@11.0.0-rc.660+74625d5e4\n├── @trpc/react-query@11.0.0-rc.660+74625d5e4\n├── @trpc/server@11.0.0-rc.660+74625d5e4\n├── @types/classnames@2.3.0\n├── @types/eslint@8.56.12\n├── @types/node@20.19.43\n├── @types/react-dom@18.3.2\n├── @types/react@18.3.1\n├── @types/turndown@5.0.5\n├── @typescript-eslint/eslint-plugin@8.17.0\n├── @typescript-eslint/parser@8.17.0\n├── @vercel/functions@1.5.2\n├── ai@4.1.50\n├── axios@1.20.0\n├── class-variance-authority@0.7.1\n├── clsx@2.1.1\n├── data-fns@1.1.0\n├── date-fns@4.1.0\n├── dompurify@3.4.17\n├── eslint-config-next@15.5.28\n├── eslint@8.57.1\n├── framer-motion@12.0.6\n├── geist@1.3.1\n├── jotai@2.11.0\n├── kbar@1.0.0\n├── lucide-react@0.468.0\n├── next-themes@0.4.4\n├── next@15.5.28\n├── nock@14.0.5\n├── p-limit@6.2.0\n├── postcss@8.5.28\n├── prettier-plugin-tailwindcss@0.6.9\n├── prettier@3.4.2\n├── prisma@5.22.0\n├── react-avatar@5.0.3\n├── react-dom@18.3.1\n├── react-letter@0.4.0\n├── react-resizable-panels@2.1.7\n├── react-select@5.10.0\n├── react@18.3.1\n├── select@1.1.2\n├── server-only@0.0.1\n├── sonner@2.0.1\n├── superjson@2.2.2\n├── svix@1.99.1\n├── tailwind-merge@2.5.5\n├── tailwindcss-animate@1.0.7\n├── tailwindcss@3.4.16\n├── turndown@7.2.0\n├── typescript@5.7.2\n├── usehooks-ts@3.1.0\n├── vaul@1.1.2\n├── vitest@3.2.7\n└── zod@3.24.2\n\n",
+      "stderr": ""
+    },
+    "fullTree": {
+      "command": "npm ls --all",
+      "exit": 0,
+      "stderr": ""
+    },
+    "peers": {
+      "command": "npm ls react react-dom react-virtual @tanstack/react-virtual kbar --all",
+      "exit": 0,
+      "stdout": "mind-mail@0.1.0 <workspace>\n├─┬ @clerk/nextjs@6.39.8\n│ ├─┬ @clerk/clerk-react@5.61.11\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @clerk/shared@3.48.0\n│ │ ├── react-dom@18.3.1 deduped\n│ │ ├── react@18.3.1 deduped\n│ │ └─┬ swr@2.3.4\n│ │   └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-avatar@1.1.2\n│ ├─┬ @radix-ui/react-context@1.1.1\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-primitive@2.0.1\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-use-callback-ref@1.1.0\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-use-layout-effect@1.1.0\n│ │ └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-dialog@1.1.6\n│ ├─┬ @radix-ui/react-compose-refs@1.1.1\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-dismissable-layer@1.1.5\n│ │ ├─┬ @radix-ui/react-use-escape-keydown@1.1.0\n│ │ │ └── react@18.3.1 deduped\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-focus-guards@1.1.1\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-focus-scope@1.1.2\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-id@1.1.0\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-portal@1.1.4\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-presence@1.1.2\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-primitive@2.0.2\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-slot@1.1.2\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-use-controllable-state@1.1.0\n│ │ └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ ├─┬ react-remove-scroll@2.6.3\n│ │ ├─┬ react-remove-scroll-bar@2.3.8\n│ │ │ └── react@18.3.1 deduped\n│ │ ├─┬ react-style-singleton@2.2.3\n│ │ │ └── react@18.3.1 deduped\n│ │ ├── react@18.3.1 deduped\n│ │ ├─┬ use-callback-ref@1.3.3\n│ │ │ └── react@18.3.1 deduped\n│ │ └─┬ use-sidecar@1.1.3\n│ │   └── react@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-dropdown-menu@2.1.5\n│ ├─┬ @radix-ui/react-menu@2.1.5\n│ │ ├─┬ @radix-ui/react-dismissable-layer@1.1.4\n│ │ │ ├── react-dom@18.3.1 deduped\n│ │ │ └── react@18.3.1 deduped\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-select@2.1.4\n│ ├─┬ @radix-ui/react-collection@1.1.1\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-direction@1.1.0\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-dismissable-layer@1.1.3\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-focus-scope@1.1.1\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-popper@1.2.1\n│ │ ├─┬ @floating-ui/react-dom@2.1.2\n│ │ │ ├── react-dom@18.3.1 deduped\n│ │ │ └── react@18.3.1 deduped\n│ │ ├─┬ @radix-ui/react-arrow@1.1.1\n│ │ │ ├── react-dom@18.3.1 deduped\n│ │ │ └── react@18.3.1 deduped\n│ │ ├─┬ @radix-ui/react-use-rect@1.1.0\n│ │ │ └── react@18.3.1 deduped\n│ │ ├─┬ @radix-ui/react-use-size@1.1.0\n│ │ │ └── react@18.3.1 deduped\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-portal@1.1.3\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-use-previous@1.1.0\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @radix-ui/react-visually-hidden@1.1.1\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-separator@1.1.1\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-slot@1.1.1\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-tabs@1.1.2\n│ ├─┬ @radix-ui/react-roving-focus@1.1.1\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @radix-ui/react-tooltip@1.1.6\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ @tanstack/react-query@5.62.3\n│ └── react@18.3.1 deduped\n├─┬ @tiptap/react@2.11.5\n│ ├── react-dom@18.3.1 deduped\n│ ├── react@18.3.1 deduped\n│ └─┬ use-sync-external-store@1.4.0\n│   └── react@18.3.1 deduped\n├─┬ @trpc/react-query@11.0.0-rc.660+74625d5e4\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ ai@4.1.50\n│ ├─┬ @ai-sdk/react@1.1.20\n│ │ └── react@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ framer-motion@12.0.6\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ jotai@2.11.0\n│ └── react@18.3.1 deduped\n├─┬ kbar@1.0.0\n│ ├─┬ @radix-ui/react-portal@1.2.0\n│ │ ├─┬ @radix-ui/react-primitive@2.2.0\n│ │ │ ├─┬ @radix-ui/react-slot@1.5.0\n│ │ │ │ ├─┬ @radix-ui/react-compose-refs@1.1.5\n│ │ │ │ │ └── react@18.3.1 deduped\n│ │ │ │ └── react@18.3.1 deduped\n│ │ │ ├── react-dom@18.3.1 deduped\n│ │ │ └── react@18.3.1 deduped\n│ │ ├─┬ @radix-ui/react-use-layout-effect@1.1.4\n│ │ │ └── react@18.3.1 deduped\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├─┬ @tanstack/react-virtual@3.14.22\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ lucide-react@0.468.0\n│ └── react@18.3.1 deduped\n├─┬ next-themes@0.4.4\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ next@15.5.28\n│ ├── react-dom@18.3.1 deduped\n│ ├── react@18.3.1 deduped\n│ └─┬ styled-jsx@5.1.6\n│   └── react@18.3.1 deduped\n├─┬ react-avatar@5.0.3\n│ └── react@18.3.1 deduped\n├─┬ react-dom@18.3.1\n│ └── react@18.3.1 deduped\n├─┬ react-letter@0.4.0\n│ └── react@18.3.1 deduped\n├─┬ react-resizable-panels@2.1.7\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ react-select@5.10.0\n│ ├─┬ @emotion/react@11.14.0\n│ │ ├─┬ @emotion/use-insertion-effect-with-fallbacks@1.2.0\n│ │ │ └── react@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├── react-dom@18.3.1 deduped\n│ ├─┬ react-transition-group@4.4.5\n│ │ ├── react-dom@18.3.1 deduped\n│ │ └── react@18.3.1 deduped\n│ ├── react@18.3.1 deduped\n│ └─┬ use-isomorphic-layout-effect@1.2.0\n│   └── react@18.3.1 deduped\n├── react@18.3.1\n├─┬ sonner@2.0.1\n│ ├── react-dom@18.3.1 deduped\n│ └── react@18.3.1 deduped\n├─┬ usehooks-ts@3.1.0\n│ └── react@18.3.1 deduped\n└─┬ vaul@1.1.2\n  ├── react-dom@18.3.1 deduped\n  └── react@18.3.1 deduped\n\n",
+      "stderr": ""
+    }
+  },
+  "candidate": {
+    "command": "npm exec --yes --package=npm@10.5.0 -- npm ci --no-audit",
+    "node": "v24.20.0",
+    "npm": "10.5.0",
+    "exit": 0,
+    "stdout": "\n> mind-mail@0.1.0 postinstall\n> prisma generate\n\nPrisma schema loaded from prisma/schema.prisma\n\n✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 58ms\n\nStart by importing your Prisma Client (See: https://pris.ly/d/importing-client)\n\nTip: Want real-time updates to your database without manual polling? Discover how with Pulse: https://pris.ly/tip-0-pulse\n\n\nadded 721 packages in 8s\n\n204 packages are looking for funding\n  run `npm fund` for details\n",
+    "stderr": "npm WARN deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.\nnpm WARN deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead\nnpm WARN deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported\nnpm WARN deprecated @clerk/types@4.101.28: This package is no longer supported. Please import types from @clerk/shared/types instead. See the upgrade guide for more info: https://clerk.com/docs/guides/development/upgrading/upgrade-guides/core-3\nnpm WARN deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported\nnpm WARN deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead\nnpm WARN deprecated @clerk/clerk-react@5.61.11: This package is no longer supported. Please use @clerk/react instead. See the upgrade guide for more info: https://clerk.com/docs/guides/development/upgrading/upgrade-guides/core-3\nnpm WARN deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me\nnpm WARN deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.\n",
+    "dependencyFilesUnchangedAfterCi": true,
+    "topLevelLsExit": 0,
+    "hashes": {
+      "package.json": "24ab3ae8b71cf9a20e9ed0b0250511fb33dbdbf61ffb24da35039fdbe9095332",
+      "package-lock.json": "2546010fb8f5c503e27ab2093f68b81e85222038c9689292e6b169de144e8427"
+    }
+  },
+  "beforeFindings": [
+    {
+      "name": "@ai-sdk/google",
+      "severity": "low",
+      "isDirect": true,
+      "vulnerableRange": "<=2.0.76",
+      "via": [
+        "@ai-sdk/provider-utils"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@ai-sdk/google",
+          "version": "1.1.16",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@ai-sdk/provider-utils",
+      "severity": "low",
+      "isDirect": false,
+      "vulnerableRange": "<3.0.28",
+      "via": [
+        "https://github.com/advisories/GHSA-866g-f22w-33x8"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@ai-sdk/provider-utils",
+          "version": "2.1.9",
+          "devOnly": false,
+          "optional": false
+        },
+        {
+          "path": "node_modules/@ai-sdk/react/node_modules/@ai-sdk/provider-utils",
+          "version": "2.1.10",
+          "devOnly": false,
+          "optional": false
+        },
+        {
+          "path": "node_modules/@ai-sdk/ui-utils/node_modules/@ai-sdk/provider-utils",
+          "version": "2.1.10",
+          "devOnly": false,
+          "optional": false
+        },
+        {
+          "path": "node_modules/ai/node_modules/@ai-sdk/provider-utils",
+          "version": "2.1.10",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@ai-sdk/react",
+      "severity": "low",
+      "isDirect": false,
+      "vulnerableRange": "<=2.0.208",
+      "via": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/ui-utils"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@ai-sdk/react",
+          "version": "1.1.20",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@ai-sdk/ui-utils",
+      "severity": "low",
+      "isDirect": false,
+      "vulnerableRange": "*",
+      "via": [
+        "@ai-sdk/provider-utils"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@ai-sdk/ui-utils",
+          "version": "1.1.16",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@babel/core",
+      "severity": "low",
+      "isDirect": false,
+      "vulnerableRange": "<=7.29.0",
+      "via": [
+        "https://github.com/advisories/GHSA-4x5r-pxfx-6jf8"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@babel/core",
+          "version": "7.26.10",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@clerk/backend",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "0.30.0-staging.131c831 - 1.24.3-snapshot.v20250303105446 || 3.0.0-canary.v20251209150846 - 3.0.0-snapshot.v20260303200735 || 3.0.1-canary.v20260303211310 - 3.0.1-canary.v20260304021901 || 3.0.2-canary.v20260304025552 - 3.0.2-snapshot.v20260309193756 || 3.0.3-canary.v20260309212303 - 3.2.0-snapshot.v20260310165744 || 3.2.1-canary.v20260311015003 - 3.2.1-snapshot.v20260320211535 || 3.2.2-canary.v20260317165823 - 3.2.2-canary.v20260320105540 || 3.2.3-canary.v20260320124654 - 3.2.3-snapshot.v20260327200941 || 3.2.4-canary.v20260325192814 - 3.2.4-snapshot.v20260331162920 || 3.2.5-canary.v20260401005640 - 3.2.7-canary.v20260407012548 || 3.2.8-canary.v20260407013936 - 3.2.8-snapshot.v20260408154640 || 3.2.9-canary.v20260408184934 - 3.2.9-snapshot.v20260413190318 || 3.2.10-canary.v20260413184503 - 3.2.10-snapshot.v20260414205636 || 3.2.11-canary.v20260414213403 - 3.2.11-canary.v20260415142102 || 3.2.12-canary.v20260415142548 - 3.2.12-snapshot.v20260416221307 || 3.2.13-canary.v20260416174321 - 3.2.13-canary.v20260417194309 || 3.2.14-canary.v20260417200155 - 3.2.14-snapshot.v20260421194054 || 3.2.15-canary.v20260422163039 - 3.3.0-canary.v20260422165959 || 3.3.1-canary.v20260422213819 - 3.4.0-canary.v20260424215946 || 3.4.1-canary.v20260424223357 - 3.4.1-canary.v20260425023419 || 3.4.2-canary.v20260425025027 - 3.4.2-snapshot.v20260429150611 || 3.4.3-canary.v20260429155628 - 3.4.3-canary.v20260430175623 || 3.4.4-canary.v20260430183935 - 3.4.4-canary.v20260501062222 || 3.4.5-canary.v20260501153259 - 3.4.5-snapshot.v20260501171802 || 3.4.6-canary.v20260505194523 - 3.4.6-canary.v20260506230029 || 3.4.7-canary.v20260507023520 - 3.4.7-snapshot.v20260508180306 || 3.4.8-canary.v20260508190534 - 3.4.8-snapshot.v20260513155808 || 3.4.9-canary.v20260514171305 - 3.4.9-snapshot.v20260515233846 || 3.4.10-canary.v20260515235351 - 3.4.10-snapshot.v20260522175603 || 3.4.11-canary.v20260518160549 - 3.4.11-canary.v20260518191051 || 3.4.12-canary.v20260518192440 - 3.4.12-snapshot.v20260527161602 || 3.4.13-canary.v20260521140614 - 3.4.13-canary.v20260522193509 || 3.4.15-canary.v20260527214303 - 3.5.0-snapshot.v20260520220646 || 3.6.1-canary.v20260610135056 - 3.6.1-canary.v20260610150055 || 3.18.1-canary.v20260915144302 - 3.18.1-canary.v20260915191810 || 3.19.1-canary.v20260923141849 - 3.19.1-canary.v20260923212351",
+      "via": [
+        "@clerk/shared"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@clerk/backend",
+          "version": "1.20.2",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@clerk/clerk-react",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "3.0.0-alpha.0 || 4.19.0-mytag.691991c - 5.61.5",
+      "via": [
+        "@clerk/shared",
+        "https://github.com/advisories/GHSA-w24r-5266-9c3c"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@clerk/clerk-react",
+          "version": "5.19.2",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@clerk/nextjs",
+      "severity": "critical",
+      "isDirect": true,
+      "vulnerableRange": "1.1.1-staging.0 - 1.2.0-staging.0 || 1.2.1 - 1.4.2 || 4.24.3-snapshot.3bbf63f - 6.39.2 || 7.0.0-canary.v20251209150846 - 7.0.0-snapshot.v20260303200735 || 7.0.1-canary.v20260303211310 - 7.0.1-canary.v20260304021901 || 7.0.2-canary.v20260304025552 - 7.0.2-snapshot.v20260309193756 || 7.0.3-canary.v20260309212303 - 7.0.4-snapshot.v20260310165744 || 7.0.5-canary.v20260311015003 - 7.0.5-snapshot.v20260320211535 || 7.0.6-canary.v20260317165823 - 7.0.6-canary.v20260320105540 || 7.0.7-canary.v20260320124654 - 7.0.7-snapshot.v20260327200941 || 7.0.8-canary.v20260325192814 - 7.0.8-snapshot.v20260331162920 || 7.0.9-canary.v20260401005640 - 7.0.11-canary.v20260407012548 || 7.0.12-canary.v20260407013936 - 7.0.12-snapshot.v20260408154640 || 7.0.13-canary.v20260408184934 - 7.1.0-snapshot.v20260413190318 || 7.1.1-canary.v20260413184503 - 7.2.0-snapshot.v20260414205636 || 7.2.1-canary.v20260414213403 - 7.2.1-canary.v20260415142102 || 7.2.2-canary.v20260415142548 - 7.2.2-snapshot.v20260416221307 || 7.2.3-canary.v20260416174321 - 7.2.3-canary.v20260417194309 || 7.2.4-canary.v20260417200155 - 7.2.4-snapshot.v20260421194054 || 7.2.5-canary.v20260422163039 - 7.2.5-canary.v20260422165959 || 7.2.6-canary.v20260422213819 - 7.2.6-snapshot.v20260423044224 || 7.2.7-canary.v20260424223357 - 7.2.7-canary.v20260425023419 || 7.2.8-canary.v20260425025027 - 7.2.8-snapshot.v20260429150611 || 7.2.9-canary.v20260429155628 - 7.2.9-canary.v20260430175623 || 7.2.10-canary.v20260430183935 - 7.3.0-canary.v20260501062222 || 7.3.1-canary.v20260501153259 - 7.3.1-snapshot.v20260501171802 || 7.3.2-canary.v20260505194523 - 7.3.2-canary.v20260506230029 || 7.3.3-canary.v20260507023520 - 7.3.3-snapshot.v20260508180306 || 7.3.4-canary.v20260508190534 - 7.3.4-snapshot.v20260513155808 || 7.3.5-canary.v20260514171305 - 7.3.5-snapshot.v20260515233846 || 7.3.6-canary.v20260515235351 - 7.3.6-snapshot.v20260522175603 || 7.3.7-canary.v20260518160549 - 7.3.7-canary.v20260518191051 || 7.3.8-canary.v20260518192440 - 7.4.0-snapshot.v20260527161602 || 7.4.1-canary.v20260521140614 - 7.4.1-canary.v20260522193509 || 7.5.1-canary.v20260610135056 - 7.5.1-canary.v20260610150055 || 7.7.4-canary.v20260810205943 - 7.7.4-canary.v20260811115755 || 7.9.6-canary.v20260923141849 - 7.9.6-canary.v20260923212351",
+      "via": [
+        "@clerk/backend",
+        "@clerk/clerk-react",
+        "@clerk/shared",
+        "https://github.com/advisories/GHSA-9mp4-77wg-rwx9",
+        "https://github.com/advisories/GHSA-vqx2-fgx2-5wq9",
+        "https://github.com/advisories/GHSA-w24r-5266-9c3c"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@clerk/nextjs",
+          "version": "6.8.2",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@clerk/shared",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "0.18.0-mytag.691991c - 3.47.5 || 4.0.0-canary.v20251209150846 - 4.13.1-canary.v20260522193509",
+      "via": [
+        "js-cookie"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@clerk/shared",
+          "version": "2.19.3",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@next/eslint-plugin-next",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": ">=14.3.0-canary.0",
+      "via": [
+        "fast-glob"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@next/eslint-plugin-next",
+          "version": "15.0.4",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tailwindcss/typography",
+      "severity": "moderate",
+      "isDirect": true,
+      "vulnerableRange": "<=0.0.0-insiders.fda8ce5 || >=0.5.5",
+      "via": [
+        "postcss-selector-parser"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tailwindcss/typography",
+          "version": "0.5.16",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/core",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.30.3",
+      "via": [
+        "https://github.com/advisories/GHSA-cp6q-959q-f8rh"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/core",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-blockquote",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-blockquote",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-bold",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-bold",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-bubble-menu",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-bubble-menu",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-bullet-list",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=2.27.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-bullet-list",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-code",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-code",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-code-block",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-code-block",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-document",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-document",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-dropcursor",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=2.27.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-dropcursor",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-floating-menu",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-floating-menu",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-gapcursor",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=2.27.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-gapcursor",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-hard-break",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-hard-break",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-heading",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-heading",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-history",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=2.27.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-history",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-horizontal-rule",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-horizontal-rule",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-italic",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-italic",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-list-item",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=2.27.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-list-item",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-ordered-list",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=2.27.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-ordered-list",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-paragraph",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-paragraph",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-strike",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-strike",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-text",
+      "severity": "moderate",
+      "isDirect": true,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-text",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-text-style",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-text-style",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/react",
+      "severity": "moderate",
+      "isDirect": true,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core",
+        "@tiptap/extension-bubble-menu",
+        "@tiptap/extension-floating-menu"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/react",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/starter-kit",
+      "severity": "moderate",
+      "isDirect": true,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.30.0 - 3.30.3",
+      "via": [
+        "@tiptap/core",
+        "@tiptap/extension-blockquote",
+        "@tiptap/extension-bold",
+        "@tiptap/extension-bullet-list",
+        "@tiptap/extension-code",
+        "@tiptap/extension-code-block",
+        "@tiptap/extension-document",
+        "@tiptap/extension-dropcursor",
+        "@tiptap/extension-gapcursor",
+        "@tiptap/extension-hard-break",
+        "@tiptap/extension-heading",
+        "@tiptap/extension-history",
+        "@tiptap/extension-horizontal-rule",
+        "@tiptap/extension-italic",
+        "@tiptap/extension-list-item",
+        "@tiptap/extension-ordered-list",
+        "@tiptap/extension-paragraph",
+        "@tiptap/extension-strike",
+        "@tiptap/extension-text",
+        "@tiptap/extension-text-style"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/starter-kit",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@ts-morph/common",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "0.2.0 - 0.24.0 || 0.26.0 - 0.27.0",
+      "via": [
+        "fast-glob"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@ts-morph/common",
+          "version": "0.19.0",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@typescript-eslint/eslint-plugin",
+      "severity": "high",
+      "isDirect": true,
+      "vulnerableRange": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "via": [
+        "@typescript-eslint/type-utils",
+        "@typescript-eslint/utils"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@typescript-eslint/eslint-plugin",
+          "version": "8.17.0",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@typescript-eslint/parser",
+      "severity": "high",
+      "isDirect": true,
+      "vulnerableRange": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "via": [
+        "@typescript-eslint/typescript-estree"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@typescript-eslint/parser",
+          "version": "8.17.0",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@typescript-eslint/type-utils",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "via": [
+        "@typescript-eslint/typescript-estree",
+        "@typescript-eslint/utils"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@typescript-eslint/type-utils",
+          "version": "8.17.0",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@typescript-eslint/typescript-estree",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "via": [
+        "fast-glob"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@typescript-eslint/typescript-estree",
+          "version": "8.17.0",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@typescript-eslint/utils",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "via": [
+        "@typescript-eslint/typescript-estree"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@typescript-eslint/utils",
+          "version": "8.17.0",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@vitest/mocker",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=4.1.11",
+      "via": [
+        "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+        "https://github.com/advisories/GHSA-qxg6-89mg-rqv8"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/vitest/node_modules/@vitest/mocker",
+          "version": "3.2.4",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "ai",
+      "severity": "moderate",
+      "isDirect": true,
+      "vulnerableRange": "<=5.0.206 || 7.0.0-beta.0 - 7.0.0-beta.1-gr2m-test",
+      "via": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/react",
+        "@ai-sdk/ui-utils",
+        "https://github.com/advisories/GHSA-rwvc-j5jr-mgvh",
+        "jsondiffpatch"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/ai",
+          "version": "4.1.50",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "ajv",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<6.14.0",
+      "via": [
+        "https://github.com/advisories/GHSA-2g4f-4pwh-qvx6"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/ajv",
+          "version": "6.12.6",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "axios",
+      "severity": "high",
+      "isDirect": true,
+      "vulnerableRange": "1.0.0 - 1.19.0",
+      "via": [
+        "https://github.com/advisories/GHSA-4hjh-wcwx-xvwj",
+        "https://github.com/advisories/GHSA-3p68-rc4w-qgx5",
+        "https://github.com/advisories/GHSA-w9j2-pvgh-6h63",
+        "https://github.com/advisories/GHSA-pmwg-cvhr-8vh7",
+        "https://github.com/advisories/GHSA-3w6x-2g7m-8v23",
+        "https://github.com/advisories/GHSA-xhjh-pmcv-23jw",
+        "https://github.com/advisories/GHSA-445q-vr5w-6q77",
+        "https://github.com/advisories/GHSA-m7pr-hjqh-92cm",
+        "https://github.com/advisories/GHSA-5c9x-8gcm-mpgx",
+        "https://github.com/advisories/GHSA-vf2m-468p-8v99",
+        "https://github.com/advisories/GHSA-pf86-5x62-jrwf",
+        "https://github.com/advisories/GHSA-6chq-wfr3-2hj9",
+        "https://github.com/advisories/GHSA-xx6v-rp6x-q39c",
+        "https://github.com/advisories/GHSA-43fc-jf86-j433",
+        "https://github.com/advisories/GHSA-q8qp-cvcw-x6jj",
+        "https://github.com/advisories/GHSA-fvcv-3m26-pcqx",
+        "https://github.com/advisories/GHSA-62hf-57xw-28j9",
+        "https://github.com/advisories/GHSA-hfxv-24rg-xrqf",
+        "https://github.com/advisories/GHSA-777c-7fjr-54vf",
+        "https://github.com/advisories/GHSA-p92q-9vqr-4j8v",
+        "https://github.com/advisories/GHSA-j5f8-grm9-p9fc",
+        "https://github.com/advisories/GHSA-3g43-6gmg-66jw",
+        "https://github.com/advisories/GHSA-35jp-ww65-95wh",
+        "https://github.com/advisories/GHSA-898c-q2cr-xwhg",
+        "https://github.com/advisories/GHSA-mmx7-hfxf-jppx",
+        "https://github.com/advisories/GHSA-pmv8-rq9r-6j72",
+        "https://github.com/advisories/GHSA-7q8q-rj6j-mhjq",
+        "https://github.com/advisories/GHSA-jqh4-m9w3-8hp9",
+        "https://github.com/advisories/GHSA-42h9-826w-cgv3",
+        "https://github.com/advisories/GHSA-vh66-26gq-q6x8",
+        "https://github.com/advisories/GHSA-9fr6-4gfg-395g",
+        "https://github.com/advisories/GHSA-j8rh-479h-cp32"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.8.4",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "brace-expansion",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=1.1.20 || 2.0.0 - 2.1.6",
+      "via": [
+        "https://github.com/advisories/GHSA-v6h2-p8h4-qcjw",
+        "https://github.com/advisories/GHSA-v6h2-p8h4-qcjw",
+        "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+        "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+        "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+        "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+        "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+        "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+        "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+        "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+        "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+        "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+        "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+        "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+        "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+        "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@eslint/eslintrc/node_modules/brace-expansion",
+          "version": "1.1.11",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/@humanwhocodes/config-array/node_modules/brace-expansion",
+          "version": "1.1.11",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "2.0.1",
+          "devOnly": false,
+          "optional": false
+        },
+        {
+          "path": "node_modules/eslint-plugin-import/node_modules/brace-expansion",
+          "version": "1.1.11",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/eslint-plugin-jsx-a11y/node_modules/brace-expansion",
+          "version": "1.1.11",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/eslint-plugin-react/node_modules/brace-expansion",
+          "version": "1.1.11",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/eslint/node_modules/brace-expansion",
+          "version": "1.1.11",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/glob/node_modules/brace-expansion",
+          "version": "1.1.11",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "braces",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "*",
+      "via": [
+        "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/braces",
+          "version": "3.0.3",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "browserslist",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=4.28.6",
+      "via": [
+        "https://github.com/advisories/GHSA-c83g-rgw3-j3cx",
+        "https://github.com/advisories/GHSA-73wf-gq98-2v4g"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/browserslist",
+          "version": "4.24.4",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "chokidar",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "2.0.0 - 3.6.0",
+      "via": [
+        "braces"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/chokidar",
+          "version": "3.6.0",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "diff",
+      "severity": "low",
+      "isDirect": false,
+      "vulnerableRange": "5.0.0 - 5.2.1",
+      "via": [
+        "https://github.com/advisories/GHSA-73rr-hh4g-fpgx"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/diff",
+          "version": "5.2.0",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "dompurify",
+      "severity": "moderate",
+      "isDirect": true,
+      "vulnerableRange": "<=3.4.15",
+      "via": [
+        "https://github.com/advisories/GHSA-v8jm-5vwx-cfxm",
+        "https://github.com/advisories/GHSA-v2wj-7wpq-c8vv",
+        "https://github.com/advisories/GHSA-h7mw-gpvr-xq4m",
+        "https://github.com/advisories/GHSA-crv5-9vww-q3g8",
+        "https://github.com/advisories/GHSA-v9jr-rg53-9pgp",
+        "https://github.com/advisories/GHSA-hpcv-96wg-7vj8",
+        "https://github.com/advisories/GHSA-r47g-fvhr-h676",
+        "https://github.com/advisories/GHSA-rp9w-3fw7-7cwq",
+        "https://github.com/advisories/GHSA-cmwh-pvxp-8882",
+        "https://github.com/advisories/GHSA-vxr8-fq34-vvx9",
+        "https://github.com/advisories/GHSA-gvmj-g25r-r7wr",
+        "https://github.com/advisories/GHSA-x4vx-rjvf-j5p4",
+        "https://github.com/advisories/GHSA-76mc-f452-cxcm",
+        "https://github.com/advisories/GHSA-39q2-94rc-95cp",
+        "https://github.com/advisories/GHSA-cjmm-f4jc-qw8r",
+        "https://github.com/advisories/GHSA-cj63-jhhr-wcxv",
+        "https://github.com/advisories/GHSA-h8r8-wccr-v5f2",
+        "https://github.com/advisories/GHSA-55q2-fjhq-7xh7",
+        "https://github.com/advisories/GHSA-c2j3-45gr-mqc4",
+        "https://github.com/advisories/GHSA-6688-9rhm-gjv2"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/dompurify",
+          "version": "3.2.4",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "eslint-config-next",
+      "severity": "high",
+      "isDirect": true,
+      "vulnerableRange": ">=14.3.0-canary.0",
+      "via": [
+        "@next/eslint-plugin-next"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/eslint-config-next",
+          "version": "15.0.4",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "eslint-import-resolver-typescript",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "3.6.0 - 3.7.0",
+      "via": [
+        "fast-glob"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/eslint-import-resolver-typescript",
+          "version": "3.7.0",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "fast-glob",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "*",
+      "via": [
+        "micromatch"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@next/eslint-plugin-next/node_modules/fast-glob",
+          "version": "3.3.1",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/fast-glob",
+          "version": "3.3.2",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "flatted",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=3.4.1",
+      "via": [
+        "https://github.com/advisories/GHSA-25h7-pfq9-p65f",
+        "https://github.com/advisories/GHSA-rf6f-7fwh-wjgh"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/flatted",
+          "version": "3.3.2",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "follow-redirects",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=1.15.11",
+      "via": [
+        "https://github.com/advisories/GHSA-r4q5-vmmm-2653"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/follow-redirects",
+          "version": "1.15.9",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "form-data",
+      "severity": "critical",
+      "isDirect": false,
+      "vulnerableRange": "4.0.0 - 4.0.5",
+      "via": [
+        "https://github.com/advisories/GHSA-fjxv-7rqg-78g4",
+        "https://github.com/advisories/GHSA-hmw2-7cc7-3qxx"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/form-data",
+          "version": "4.0.1",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "glob",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "10.2.0 - 10.4.5",
+      "via": [
+        "https://github.com/advisories/GHSA-5j98-mcp5-4vw2"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/sucrase/node_modules/glob",
+          "version": "10.4.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "js-cookie",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.5",
+      "via": [
+        "https://github.com/advisories/GHSA-qjx8-664m-686j"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/js-cookie",
+          "version": "3.0.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "js-yaml",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "4.0.0 - 4.3.1",
+      "via": [
+        "https://github.com/advisories/GHSA-mh29-5h37-fv8m",
+        "https://github.com/advisories/GHSA-h67p-54hq-rp68",
+        "https://github.com/advisories/GHSA-52cp-r559-cp3m",
+        "https://github.com/advisories/GHSA-5p4m-2wfm-xmqj",
+        "https://github.com/advisories/GHSA-2883-xcg3-v3hh"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/js-yaml",
+          "version": "4.1.0",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "jsondiffpatch",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=0.7.5",
+      "via": [
+        "https://github.com/advisories/GHSA-33vc-wfww-vjfv",
+        "https://github.com/advisories/GHSA-j4fx-xxwh-2485"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/jsondiffpatch",
+          "version": "0.6.0",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "linkify-it",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=5.0.1",
+      "via": [
+        "https://github.com/advisories/GHSA-22p9-wv53-3rq4",
+        "https://github.com/advisories/GHSA-v245-v573-v5vm"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/linkify-it",
+          "version": "5.0.0",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "markdown-it",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=14.3.2",
+      "via": [
+        "https://github.com/advisories/GHSA-38c4-r59v-3vqw",
+        "https://github.com/advisories/GHSA-6v5v-wf23-fmfq",
+        "https://github.com/advisories/GHSA-253c-mchw-3w2r",
+        "https://github.com/advisories/GHSA-r7fv-28h4-cvq7",
+        "https://github.com/advisories/GHSA-vfgh-jcmw-g37q",
+        "https://github.com/advisories/GHSA-gfr2-rv44-r23c"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/markdown-it",
+          "version": "14.1.0",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "micromatch",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": ">=0.2.0",
+      "via": [
+        "braces"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/micromatch",
+          "version": "4.0.8",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "minimatch",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=3.1.3 || 7.0.0 - 7.4.7 || 9.0.0 - 9.0.6",
+      "via": [
+        "https://github.com/advisories/GHSA-3ppc-4f35-3m26",
+        "https://github.com/advisories/GHSA-3ppc-4f35-3m26",
+        "https://github.com/advisories/GHSA-3ppc-4f35-3m26",
+        "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+        "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+        "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+        "https://github.com/advisories/GHSA-23c5-xmqv-rm74",
+        "https://github.com/advisories/GHSA-23c5-xmqv-rm74",
+        "https://github.com/advisories/GHSA-23c5-xmqv-rm74"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@eslint/eslintrc/node_modules/minimatch",
+          "version": "3.1.2",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/@humanwhocodes/config-array/node_modules/minimatch",
+          "version": "3.1.2",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/@ts-morph/common/node_modules/minimatch",
+          "version": "7.4.6",
+          "devOnly": false,
+          "optional": false
+        },
+        {
+          "path": "node_modules/eslint-plugin-import/node_modules/minimatch",
+          "version": "3.1.2",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/eslint-plugin-jsx-a11y/node_modules/minimatch",
+          "version": "3.1.2",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/eslint-plugin-react/node_modules/minimatch",
+          "version": "3.1.2",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/eslint/node_modules/minimatch",
+          "version": "3.1.2",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/glob/node_modules/minimatch",
+          "version": "3.1.2",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/minimatch",
+          "version": "9.0.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "next",
+      "severity": "critical",
+      "isDirect": true,
+      "vulnerableRange": "9.3.4-canary.0 - 16.3.0-preview.10",
+      "via": [
+        "https://github.com/advisories/GHSA-g5qg-72qw-gw5v",
+        "https://github.com/advisories/GHSA-xv57-4mr9-wg8v",
+        "https://github.com/advisories/GHSA-4342-x723-ch2f",
+        "https://github.com/advisories/GHSA-223j-4rm8-mrmf",
+        "https://github.com/advisories/GHSA-9qr9-h5gf-34mp",
+        "https://github.com/advisories/GHSA-w37m-7fhw-fmv9",
+        "https://github.com/advisories/GHSA-mwv6-3258-q52c",
+        "https://github.com/advisories/GHSA-9g9p-9gw9-jx7f",
+        "https://github.com/advisories/GHSA-h25m-26qc-wcjf",
+        "https://github.com/advisories/GHSA-ggv3-7p47-pfv8",
+        "https://github.com/advisories/GHSA-3x4c-7xq6-9pq8",
+        "https://github.com/advisories/GHSA-q4gf-8mx6-v5v3",
+        "https://github.com/advisories/GHSA-8h8q-6873-q5fj",
+        "https://github.com/advisories/GHSA-26hh-7cqf-hhc6",
+        "https://github.com/advisories/GHSA-3g8h-86w9-wvmq",
+        "https://github.com/advisories/GHSA-ffhc-5mcf-pf4q",
+        "https://github.com/advisories/GHSA-vfv6-92ff-j949",
+        "https://github.com/advisories/GHSA-gx5p-jg67-6x7h",
+        "https://github.com/advisories/GHSA-mg66-mrh9-m8jx",
+        "https://github.com/advisories/GHSA-h64f-5h5j-jqjh",
+        "https://github.com/advisories/GHSA-c4j6-fc7j-m34r",
+        "https://github.com/advisories/GHSA-wfc6-r584-vfw7",
+        "https://github.com/advisories/GHSA-267c-6grr-h53f",
+        "https://github.com/advisories/GHSA-36qx-fr4f-26g5",
+        "https://github.com/advisories/GHSA-m99w-x7hq-7vfj",
+        "https://github.com/advisories/GHSA-89xv-2m56-2m9x",
+        "https://github.com/advisories/GHSA-68g3-v927-f742",
+        "https://github.com/advisories/GHSA-4633-3j49-mh5q",
+        "https://github.com/advisories/GHSA-4c39-4ccg-62r3",
+        "https://github.com/advisories/GHSA-p9j2-gv94-2wf4",
+        "https://github.com/advisories/GHSA-955p-x3mx-jcvp",
+        "https://github.com/advisories/GHSA-p293-qw3h-jr36",
+        "https://github.com/advisories/GHSA-2xp9-vwfh-vxw4",
+        "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+        "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+        "postcss",
+        "sharp"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/next",
+          "version": "15.2.3",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "picomatch",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=2.3.1",
+      "via": [
+        "https://github.com/advisories/GHSA-3v7f-55p6-f55p",
+        "https://github.com/advisories/GHSA-c2c7-rcm5-vvqj"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/picomatch",
+          "version": "2.3.1",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "postcss",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=8.5.22",
+      "via": [
+        "https://github.com/advisories/GHSA-qx2v-qp2m-jg93",
+        "https://github.com/advisories/GHSA-6g55-p6wh-862q",
+        "https://github.com/advisories/GHSA-fxqj-rqcc-2cmp",
+        "https://github.com/advisories/GHSA-r28c-9q8g-f849"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/next/node_modules/postcss",
+          "version": "8.4.31",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "postcss-selector-parser",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=7.1.5",
+      "via": [
+        "https://github.com/advisories/GHSA-w9m9-85wc-3x92",
+        "https://github.com/advisories/GHSA-rj75-hqrm-r3gf"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tailwindcss/typography/node_modules/postcss-selector-parser",
+          "version": "6.0.10",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/postcss-selector-parser",
+          "version": "6.1.2",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "prosemirror-view",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<1.42.3",
+      "via": [
+        "https://github.com/advisories/GHSA-c8x8-7fp4-3x9w"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/prosemirror-view",
+          "version": "1.37.2",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "shadcn",
+      "severity": "high",
+      "isDirect": true,
+      "vulnerableRange": "<=0.0.0-rc-20261007105214 || >=2.0.0",
+      "via": [
+        "fast-glob",
+        "ts-morph"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/shadcn",
+          "version": "2.3.0",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "sharp",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=0.35.5-rc.1",
+      "via": [
+        "https://github.com/advisories/GHSA-f88m-g3jw-g9cj",
+        "https://github.com/advisories/GHSA-rgj7-g3m4-5g8c",
+        "https://github.com/advisories/GHSA-wq5f-xc86-pv6w"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/sharp",
+          "version": "0.33.5",
+          "devOnly": false,
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "source-map-js",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "1.0.0 - 1.2.1",
+      "via": [
+        "https://github.com/advisories/GHSA-68fv-2mgg-jv7q"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/source-map-js",
+          "version": "1.2.1",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "tailwindcss",
+      "severity": "high",
+      "isDirect": true,
+      "vulnerableRange": "<=0.0.0-oxide-insiders.ff2c25f || 2.1.0-canary.1 - 3.4.19",
+      "via": [
+        "chokidar",
+        "fast-glob",
+        "micromatch"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/tailwindcss",
+          "version": "3.4.16",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "tinypool",
+      "severity": "critical",
+      "isDirect": false,
+      "vulnerableRange": "<=2.1.1",
+      "via": [
+        "https://github.com/advisories/GHSA-5gmw-xhrv-c9v3",
+        "https://github.com/advisories/GHSA-85c8-ppgw-ccpr"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/tinypool",
+          "version": "1.1.1",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "ts-morph",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "6.0.1 - 23.0.0 || 25.0.0 - 26.0.0",
+      "via": [
+        "@ts-morph/common"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/ts-morph",
+          "version": "18.0.0",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "vite",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "7.0.0 - 7.3.6",
+      "via": [
+        "https://github.com/advisories/GHSA-698v-4r3x-3vcv",
+        "https://github.com/advisories/GHSA-r825-w8mm-5pxw",
+        "https://github.com/advisories/GHSA-587h-7wmj-h5pm",
+        "https://github.com/advisories/GHSA-9jrq-w75r-8gcw",
+        "https://github.com/advisories/GHSA-rq7h-c2jc-7f22"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/vite-node/node_modules/vite",
+          "version": "7.3.6",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/vitest/node_modules/vite",
+          "version": "7.3.6",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "vitest",
+      "severity": "critical",
+      "isDirect": true,
+      "vulnerableRange": "<=4.1.10",
+      "via": [
+        "@vitest/mocker",
+        "https://github.com/advisories/GHSA-5xrq-8626-4rwp",
+        "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+        "tinypool"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/vitest",
+          "version": "3.2.4",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "yaml",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "1.0.0 - 1.10.2 || 2.0.0 - 2.8.2",
+      "via": [
+        "https://github.com/advisories/GHSA-48c2-rrv3-qjmp",
+        "https://github.com/advisories/GHSA-48c2-rrv3-qjmp"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/babel-plugin-macros/node_modules/yaml",
+          "version": "1.10.2",
+          "devOnly": false,
+          "optional": false
+        },
+        {
+          "path": "node_modules/yaml",
+          "version": "2.6.1",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "afterFindings": [
+    {
+      "name": "@ai-sdk/google",
+      "severity": "low",
+      "isDirect": true,
+      "vulnerableRange": "<=2.0.76",
+      "via": [
+        "@ai-sdk/provider-utils"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@ai-sdk/google",
+          "version": "1.1.16",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@ai-sdk/provider-utils",
+      "severity": "low",
+      "isDirect": false,
+      "vulnerableRange": "<3.0.28",
+      "via": [
+        "https://github.com/advisories/GHSA-866g-f22w-33x8"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@ai-sdk/provider-utils",
+          "version": "2.1.9",
+          "devOnly": false,
+          "optional": false
+        },
+        {
+          "path": "node_modules/@ai-sdk/react/node_modules/@ai-sdk/provider-utils",
+          "version": "2.1.10",
+          "devOnly": false,
+          "optional": false
+        },
+        {
+          "path": "node_modules/@ai-sdk/ui-utils/node_modules/@ai-sdk/provider-utils",
+          "version": "2.1.10",
+          "devOnly": false,
+          "optional": false
+        },
+        {
+          "path": "node_modules/ai/node_modules/@ai-sdk/provider-utils",
+          "version": "2.1.10",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@ai-sdk/react",
+      "severity": "low",
+      "isDirect": false,
+      "vulnerableRange": "<=2.0.208",
+      "via": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/ui-utils"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@ai-sdk/react",
+          "version": "1.1.20",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@ai-sdk/ui-utils",
+      "severity": "low",
+      "isDirect": false,
+      "vulnerableRange": "*",
+      "via": [
+        "@ai-sdk/provider-utils"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@ai-sdk/ui-utils",
+          "version": "1.1.16",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@next/eslint-plugin-next",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": ">=14.3.0-canary.0",
+      "via": [
+        "fast-glob"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@next/eslint-plugin-next",
+          "version": "15.5.28",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tailwindcss/typography",
+      "severity": "moderate",
+      "isDirect": true,
+      "vulnerableRange": "<=0.0.0-insiders.fda8ce5 || >=0.5.5",
+      "via": [
+        "postcss-selector-parser"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tailwindcss/typography",
+          "version": "0.5.16",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/core",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.30.3",
+      "via": [
+        "https://github.com/advisories/GHSA-cp6q-959q-f8rh"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/core",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-blockquote",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-blockquote",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-bold",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-bold",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-bubble-menu",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-bubble-menu",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-bullet-list",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=2.27.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-bullet-list",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-code",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-code",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-code-block",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-code-block",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-document",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-document",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-dropcursor",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=2.27.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-dropcursor",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-floating-menu",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-floating-menu",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-gapcursor",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=2.27.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-gapcursor",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-hard-break",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-hard-break",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-heading",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-heading",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-history",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=2.27.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-history",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-horizontal-rule",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-horizontal-rule",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-italic",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-italic",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-list-item",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=2.27.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-list-item",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-ordered-list",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=2.27.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-ordered-list",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-paragraph",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-paragraph",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-strike",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-strike",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-text",
+      "severity": "moderate",
+      "isDirect": true,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-text",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/extension-text-style",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/extension-text-style",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/react",
+      "severity": "moderate",
+      "isDirect": true,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.22.4 - 3.30.3",
+      "via": [
+        "@tiptap/core",
+        "@tiptap/extension-bubble-menu",
+        "@tiptap/extension-floating-menu"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/react",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@tiptap/starter-kit",
+      "severity": "moderate",
+      "isDirect": true,
+      "vulnerableRange": "<=3.0.0-next.8 || 3.30.0 - 3.30.3",
+      "via": [
+        "@tiptap/core",
+        "@tiptap/extension-blockquote",
+        "@tiptap/extension-bold",
+        "@tiptap/extension-bullet-list",
+        "@tiptap/extension-code",
+        "@tiptap/extension-code-block",
+        "@tiptap/extension-document",
+        "@tiptap/extension-dropcursor",
+        "@tiptap/extension-gapcursor",
+        "@tiptap/extension-hard-break",
+        "@tiptap/extension-heading",
+        "@tiptap/extension-history",
+        "@tiptap/extension-horizontal-rule",
+        "@tiptap/extension-italic",
+        "@tiptap/extension-list-item",
+        "@tiptap/extension-ordered-list",
+        "@tiptap/extension-paragraph",
+        "@tiptap/extension-strike",
+        "@tiptap/extension-text",
+        "@tiptap/extension-text-style"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tiptap/starter-kit",
+          "version": "2.11.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@typescript-eslint/eslint-plugin",
+      "severity": "high",
+      "isDirect": true,
+      "vulnerableRange": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "via": [
+        "@typescript-eslint/type-utils",
+        "@typescript-eslint/utils"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@typescript-eslint/eslint-plugin",
+          "version": "8.17.0",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@typescript-eslint/parser",
+      "severity": "high",
+      "isDirect": true,
+      "vulnerableRange": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "via": [
+        "@typescript-eslint/typescript-estree"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@typescript-eslint/parser",
+          "version": "8.17.0",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@typescript-eslint/type-utils",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "via": [
+        "@typescript-eslint/typescript-estree",
+        "@typescript-eslint/utils"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@typescript-eslint/type-utils",
+          "version": "8.17.0",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@typescript-eslint/typescript-estree",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "via": [
+        "fast-glob"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@typescript-eslint/typescript-estree",
+          "version": "8.17.0",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@typescript-eslint/utils",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "via": [
+        "@typescript-eslint/typescript-estree"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@typescript-eslint/utils",
+          "version": "8.17.0",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "@vitest/mocker",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<=4.1.11",
+      "via": [
+        "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+        "https://github.com/advisories/GHSA-qxg6-89mg-rqv8"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/vitest/node_modules/@vitest/mocker",
+          "version": "3.2.7",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "ai",
+      "severity": "moderate",
+      "isDirect": true,
+      "vulnerableRange": "<=5.0.206 || 7.0.0-beta.0 - 7.0.0-beta.1-gr2m-test",
+      "via": [
+        "@ai-sdk/provider-utils",
+        "@ai-sdk/react",
+        "@ai-sdk/ui-utils",
+        "https://github.com/advisories/GHSA-rwvc-j5jr-mgvh",
+        "jsondiffpatch"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/ai",
+          "version": "4.1.50",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "braces",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "*",
+      "via": [
+        "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/braces",
+          "version": "3.0.3",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "chokidar",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "2.0.0 - 3.6.0",
+      "via": [
+        "braces"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/chokidar",
+          "version": "3.6.0",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "eslint-config-next",
+      "severity": "high",
+      "isDirect": true,
+      "vulnerableRange": ">=14.3.0-canary.0",
+      "via": [
+        "@next/eslint-plugin-next"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/eslint-config-next",
+          "version": "15.5.28",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "eslint-import-resolver-typescript",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "3.6.0 - 3.7.0",
+      "via": [
+        "fast-glob"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/eslint-import-resolver-typescript",
+          "version": "3.7.0",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "fast-glob",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "*",
+      "via": [
+        "micromatch"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@next/eslint-plugin-next/node_modules/fast-glob",
+          "version": "3.3.1",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/fast-glob",
+          "version": "3.3.2",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "jsondiffpatch",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=0.7.5",
+      "via": [
+        "https://github.com/advisories/GHSA-33vc-wfww-vjfv",
+        "https://github.com/advisories/GHSA-j4fx-xxwh-2485"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/jsondiffpatch",
+          "version": "0.6.0",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "micromatch",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": ">=0.2.0",
+      "via": [
+        "braces"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/micromatch",
+          "version": "4.0.8",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "next",
+      "severity": "moderate",
+      "isDirect": true,
+      "vulnerableRange": "9.3.4-canary.0 - 16.3.0-preview.10",
+      "via": [
+        "postcss"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/next",
+          "version": "15.5.28",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "postcss",
+      "severity": "high",
+      "isDirect": false,
+      "vulnerableRange": "<=8.5.22",
+      "via": [
+        "https://github.com/advisories/GHSA-qx2v-qp2m-jg93",
+        "https://github.com/advisories/GHSA-6g55-p6wh-862q",
+        "https://github.com/advisories/GHSA-fxqj-rqcc-2cmp",
+        "https://github.com/advisories/GHSA-r28c-9q8g-f849"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/next/node_modules/postcss",
+          "version": "8.4.31",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "postcss-nested",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "2.0.3 - 6.2.0",
+      "via": [
+        "postcss-selector-parser"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/postcss-nested",
+          "version": "6.2.0",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "postcss-selector-parser",
+      "severity": "moderate",
+      "isDirect": false,
+      "vulnerableRange": "<7.1.6",
+      "via": [
+        "https://github.com/advisories/GHSA-rj75-hqrm-r3gf"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/@tailwindcss/typography/node_modules/postcss-selector-parser",
+          "version": "6.0.10",
+          "devOnly": true,
+          "optional": false
+        },
+        {
+          "path": "node_modules/postcss-selector-parser",
+          "version": "6.1.5",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "tailwindcss",
+      "severity": "high",
+      "isDirect": true,
+      "vulnerableRange": "<=0.0.0-oxide-insiders.ff2c25f || 0.5.0 - 3.4.19",
+      "via": [
+        "chokidar",
+        "fast-glob",
+        "micromatch",
+        "postcss-nested",
+        "postcss-selector-parser"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/tailwindcss",
+          "version": "3.4.16",
+          "devOnly": false,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "tinypool",
+      "severity": "critical",
+      "isDirect": false,
+      "vulnerableRange": "<=2.1.1",
+      "via": [
+        "https://github.com/advisories/GHSA-5gmw-xhrv-c9v3",
+        "https://github.com/advisories/GHSA-85c8-ppgw-ccpr"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/tinypool",
+          "version": "1.1.1",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    },
+    {
+      "name": "vitest",
+      "severity": "critical",
+      "isDirect": true,
+      "vulnerableRange": "0.0.95 - 4.1.10",
+      "via": [
+        "@vitest/mocker",
+        "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+        "tinypool"
+      ],
+      "installed": [
+        {
+          "path": "node_modules/vitest",
+          "version": "3.2.7",
+          "devOnly": true,
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "versionChanges": [
+    {
+      "path": "node_modules/@clerk/backend",
+      "before": "1.20.2",
+      "after": "2.33.8"
+    },
+    {
+      "path": "node_modules/@clerk/clerk-react",
+      "before": "5.19.2",
+      "after": "5.61.11"
+    },
+    {
+      "path": "node_modules/@clerk/nextjs",
+      "before": "6.8.2",
+      "after": "6.39.8"
+    },
+    {
+      "path": "node_modules/@clerk/shared",
+      "before": "2.19.3",
+      "after": "3.48.0"
+    },
+    {
+      "path": "node_modules/@clerk/types",
+      "before": "4.39.1",
+      "after": "4.101.28"
+    },
+    {
+      "path": "node_modules/@emnapi/runtime",
+      "before": "1.3.1",
+      "after": "1.11.3"
+    },
+    {
+      "path": "node_modules/@eslint/eslintrc/node_modules/brace-expansion",
+      "before": "1.1.11",
+      "after": "1.1.21"
+    },
+    {
+      "path": "node_modules/@eslint/eslintrc/node_modules/minimatch",
+      "before": "3.1.2",
+      "after": "3.1.5"
+    },
+    {
+      "path": "node_modules/@humanwhocodes/config-array/node_modules/brace-expansion",
+      "before": "1.1.11",
+      "after": "1.1.21"
+    },
+    {
+      "path": "node_modules/@humanwhocodes/config-array/node_modules/minimatch",
+      "before": "3.1.2",
+      "after": "3.1.5"
+    },
+    {
+      "path": "node_modules/@img/sharp-darwin-arm64",
+      "before": "0.33.5",
+      "after": "0.35.5"
+    },
+    {
+      "path": "node_modules/@img/sharp-darwin-x64",
+      "before": "0.33.5",
+      "after": "0.35.5"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-darwin-arm64",
+      "before": "1.0.4",
+      "after": "1.3.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-darwin-x64",
+      "before": "1.0.4",
+      "after": "1.3.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linux-arm",
+      "before": "1.0.5",
+      "after": "1.3.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linux-arm64",
+      "before": "1.0.4",
+      "after": "1.3.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linux-s390x",
+      "before": "1.0.4",
+      "after": "1.3.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linux-x64",
+      "before": "1.0.4",
+      "after": "1.3.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linuxmusl-arm64",
+      "before": "1.0.4",
+      "after": "1.3.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linuxmusl-x64",
+      "before": "1.0.4",
+      "after": "1.3.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-linux-arm",
+      "before": "0.33.5",
+      "after": "0.35.5"
+    },
+    {
+      "path": "node_modules/@img/sharp-linux-arm64",
+      "before": "0.33.5",
+      "after": "0.35.5"
+    },
+    {
+      "path": "node_modules/@img/sharp-linux-s390x",
+      "before": "0.33.5",
+      "after": "0.35.5"
+    },
+    {
+      "path": "node_modules/@img/sharp-linux-x64",
+      "before": "0.33.5",
+      "after": "0.35.5"
+    },
+    {
+      "path": "node_modules/@img/sharp-linuxmusl-arm64",
+      "before": "0.33.5",
+      "after": "0.35.5"
+    },
+    {
+      "path": "node_modules/@img/sharp-linuxmusl-x64",
+      "before": "0.33.5",
+      "after": "0.35.5"
+    },
+    {
+      "path": "node_modules/@img/sharp-wasm32",
+      "before": "0.33.5",
+      "after": "0.35.5"
+    },
+    {
+      "path": "node_modules/@img/sharp-win32-ia32",
+      "before": "0.33.5",
+      "after": "0.35.5"
+    },
+    {
+      "path": "node_modules/@img/sharp-win32-x64",
+      "before": "0.33.5",
+      "after": "0.35.5"
+    },
+    {
+      "path": "node_modules/@next/env",
+      "before": "15.2.3",
+      "after": "15.5.28"
+    },
+    {
+      "path": "node_modules/@next/eslint-plugin-next",
+      "before": "15.0.4",
+      "after": "15.5.28"
+    },
+    {
+      "path": "node_modules/@next/swc-darwin-arm64",
+      "before": "15.2.3",
+      "after": "15.5.28"
+    },
+    {
+      "path": "node_modules/@next/swc-darwin-x64",
+      "before": "15.2.3",
+      "after": "15.5.28"
+    },
+    {
+      "path": "node_modules/@next/swc-linux-arm64-gnu",
+      "before": "15.2.3",
+      "after": "15.5.28"
+    },
+    {
+      "path": "node_modules/@next/swc-linux-arm64-musl",
+      "before": "15.2.3",
+      "after": "15.5.28"
+    },
+    {
+      "path": "node_modules/@next/swc-linux-x64-gnu",
+      "before": "15.2.3",
+      "after": "15.5.28"
+    },
+    {
+      "path": "node_modules/@next/swc-linux-x64-musl",
+      "before": "15.2.3",
+      "after": "15.5.28"
+    },
+    {
+      "path": "node_modules/@next/swc-win32-arm64-msvc",
+      "before": "15.2.3",
+      "after": "15.5.28"
+    },
+    {
+      "path": "node_modules/@next/swc-win32-x64-msvc",
+      "before": "15.2.3",
+      "after": "15.5.28"
+    },
+    {
+      "path": "node_modules/@types/node",
+      "before": "20.17.9",
+      "after": "20.19.43"
+    },
+    {
+      "path": "node_modules/@vitest/expect",
+      "before": "3.2.4",
+      "after": "3.2.7"
+    },
+    {
+      "path": "node_modules/@vitest/runner",
+      "before": "3.2.4",
+      "after": "3.2.7"
+    },
+    {
+      "path": "node_modules/@vitest/snapshot",
+      "before": "3.2.4",
+      "after": "3.2.7"
+    },
+    {
+      "path": "node_modules/@vitest/spy",
+      "before": "3.2.4",
+      "after": "3.2.7"
+    },
+    {
+      "path": "node_modules/@vitest/utils",
+      "before": "3.2.4",
+      "after": "3.2.7"
+    },
+    {
+      "path": "node_modules/agent-base",
+      "before": "7.1.3",
+      "after": "6.0.2"
+    },
+    {
+      "path": "node_modules/ajv",
+      "before": "6.12.6",
+      "after": "6.15.0"
+    },
+    {
+      "path": "node_modules/axios",
+      "before": "1.8.4",
+      "after": "1.20.0"
+    },
+    {
+      "path": "node_modules/babel-plugin-macros/node_modules/yaml",
+      "before": "1.10.2",
+      "after": "1.10.3"
+    },
+    {
+      "path": "node_modules/brace-expansion",
+      "before": "2.0.1",
+      "after": "2.1.7"
+    },
+    {
+      "path": "node_modules/call-bind-apply-helpers",
+      "before": "1.0.1",
+      "after": "1.0.2"
+    },
+    {
+      "path": "node_modules/detect-libc",
+      "before": "2.0.3",
+      "after": "2.1.2"
+    },
+    {
+      "path": "node_modules/dompurify",
+      "before": "3.2.4",
+      "after": "3.4.17"
+    },
+    {
+      "path": "node_modules/dunder-proto",
+      "before": "1.0.0",
+      "after": "1.0.1"
+    },
+    {
+      "path": "node_modules/es-object-atoms",
+      "before": "1.0.0",
+      "after": "1.1.2"
+    },
+    {
+      "path": "node_modules/es-set-tostringtag",
+      "before": "2.0.3",
+      "after": "2.1.0"
+    },
+    {
+      "path": "node_modules/eslint-config-next",
+      "before": "15.0.4",
+      "after": "15.5.28"
+    },
+    {
+      "path": "node_modules/eslint-plugin-import/node_modules/brace-expansion",
+      "before": "1.1.11",
+      "after": "1.1.21"
+    },
+    {
+      "path": "node_modules/eslint-plugin-import/node_modules/minimatch",
+      "before": "3.1.2",
+      "after": "3.1.5"
+    },
+    {
+      "path": "node_modules/eslint-plugin-jsx-a11y/node_modules/brace-expansion",
+      "before": "1.1.11",
+      "after": "1.1.21"
+    },
+    {
+      "path": "node_modules/eslint-plugin-jsx-a11y/node_modules/minimatch",
+      "before": "3.1.2",
+      "after": "3.1.5"
+    },
+    {
+      "path": "node_modules/eslint-plugin-react/node_modules/brace-expansion",
+      "before": "1.1.11",
+      "after": "1.1.21"
+    },
+    {
+      "path": "node_modules/eslint-plugin-react/node_modules/minimatch",
+      "before": "3.1.2",
+      "after": "3.1.5"
+    },
+    {
+      "path": "node_modules/eslint/node_modules/brace-expansion",
+      "before": "1.1.11",
+      "after": "1.1.21"
+    },
+    {
+      "path": "node_modules/eslint/node_modules/minimatch",
+      "before": "3.1.2",
+      "after": "3.1.5"
+    },
+    {
+      "path": "node_modules/flatted",
+      "before": "3.3.2",
+      "after": "3.4.4"
+    },
+    {
+      "path": "node_modules/follow-redirects",
+      "before": "1.15.9",
+      "after": "1.16.1"
+    },
+    {
+      "path": "node_modules/form-data",
+      "before": "4.0.1",
+      "after": "4.0.6"
+    },
+    {
+      "path": "node_modules/fuse.js",
+      "before": "6.6.2",
+      "after": "7.5.0"
+    },
+    {
+      "path": "node_modules/get-intrinsic",
+      "before": "1.2.5",
+      "after": "1.3.0"
+    },
+    {
+      "path": "node_modules/glob/node_modules/brace-expansion",
+      "before": "1.1.11",
+      "after": "1.1.21"
+    },
+    {
+      "path": "node_modules/glob/node_modules/minimatch",
+      "before": "3.1.2",
+      "after": "3.1.5"
+    },
+    {
+      "path": "node_modules/hasown",
+      "before": "2.0.2",
+      "after": "2.0.4"
+    },
+    {
+      "path": "node_modules/https-proxy-agent",
+      "before": "6.2.1",
+      "after": "5.0.1"
+    },
+    {
+      "path": "node_modules/js-cookie",
+      "before": "3.0.5",
+      "after": "3.0.7"
+    },
+    {
+      "path": "node_modules/js-yaml",
+      "before": "4.1.0",
+      "after": "4.3.2"
+    },
+    {
+      "path": "node_modules/kbar",
+      "before": "0.1.0-beta.45",
+      "after": "1.0.0"
+    },
+    {
+      "path": "node_modules/linkify-it",
+      "before": "5.0.0",
+      "after": "5.0.2"
+    },
+    {
+      "path": "node_modules/markdown-it",
+      "before": "14.1.0",
+      "after": "14.3.3"
+    },
+    {
+      "path": "node_modules/minimatch",
+      "before": "9.0.5",
+      "after": "9.0.9"
+    },
+    {
+      "path": "node_modules/next",
+      "before": "15.2.3",
+      "after": "15.5.28"
+    },
+    {
+      "path": "node_modules/picomatch",
+      "before": "2.3.1",
+      "after": "2.3.2"
+    },
+    {
+      "path": "node_modules/postcss-selector-parser",
+      "before": "6.1.2",
+      "after": "6.1.5"
+    },
+    {
+      "path": "node_modules/prosemirror-model",
+      "before": "1.24.1",
+      "after": "1.25.12"
+    },
+    {
+      "path": "node_modules/prosemirror-view",
+      "before": "1.37.2",
+      "after": "1.42.7"
+    },
+    {
+      "path": "node_modules/proxy-from-env",
+      "before": "1.1.0",
+      "after": "2.1.0"
+    },
+    {
+      "path": "node_modules/semver",
+      "before": "7.6.3",
+      "after": "7.8.5"
+    },
+    {
+      "path": "node_modules/sharp",
+      "before": "0.33.5",
+      "after": "0.35.5"
+    },
+    {
+      "path": "node_modules/source-map-js",
+      "before": "1.2.1",
+      "after": "1.2.2"
+    },
+    {
+      "path": "node_modules/sucrase/node_modules/glob",
+      "before": "10.4.5",
+      "after": "10.5.0"
+    },
+    {
+      "path": "node_modules/swr",
+      "before": "2.2.5",
+      "after": "2.3.4"
+    },
+    {
+      "path": "node_modules/undici-types",
+      "before": "6.19.8",
+      "after": "6.21.0"
+    },
+    {
+      "path": "node_modules/vite-node/node_modules/vite",
+      "before": "7.3.6",
+      "after": "7.3.7"
+    },
+    {
+      "path": "node_modules/vitest",
+      "before": "3.2.4",
+      "after": "3.2.7"
+    },
+    {
+      "path": "node_modules/vitest/node_modules/@vitest/mocker",
+      "before": "3.2.4",
+      "after": "3.2.7"
+    },
+    {
+      "path": "node_modules/vitest/node_modules/vite",
+      "before": "7.3.6",
+      "after": "7.3.7"
+    },
+    {
+      "path": "node_modules/yaml",
+      "before": "2.6.1",
+      "after": "2.9.1"
+    }
+  ],
+  "removedNodes": [
+    "node_modules/@ampproject/remapping",
+    "node_modules/@antfu/ni",
+    "node_modules/@babel/compat-data",
+    "node_modules/@babel/core",
+    "node_modules/@babel/core/node_modules/json5",
+    "node_modules/@babel/core/node_modules/semver",
+    "node_modules/@babel/helper-annotate-as-pure",
+    "node_modules/@babel/helper-compilation-targets",
+    "node_modules/@babel/helper-compilation-targets/node_modules/lru-cache",
+    "node_modules/@babel/helper-compilation-targets/node_modules/semver",
+    "node_modules/@babel/helper-create-class-features-plugin",
+    "node_modules/@babel/helper-create-class-features-plugin/node_modules/semver",
+    "node_modules/@babel/helper-member-expression-to-functions",
+    "node_modules/@babel/helper-module-transforms",
+    "node_modules/@babel/helper-optimise-call-expression",
+    "node_modules/@babel/helper-plugin-utils",
+    "node_modules/@babel/helper-replace-supers",
+    "node_modules/@babel/helper-skip-transparent-expression-wrappers",
+    "node_modules/@babel/helper-validator-option",
+    "node_modules/@babel/helpers",
+    "node_modules/@babel/plugin-syntax-typescript",
+    "node_modules/@babel/plugin-transform-typescript",
+    "node_modules/@clerk/backend/node_modules/tslib",
+    "node_modules/@clerk/clerk-react/node_modules/tslib",
+    "node_modules/@clerk/nextjs/node_modules/tslib",
+    "node_modules/@clerk/types/node_modules/csstype",
+    "node_modules/@reach/observe-rect",
+    "node_modules/@swc/counter",
+    "node_modules/@ts-morph/common",
+    "node_modules/@ts-morph/common/node_modules/minimatch",
+    "node_modules/@vitest/snapshot/node_modules/@vitest/pretty-format",
+    "node_modules/@vitest/utils/node_modules/@vitest/pretty-format",
+    "node_modules/ast-types",
+    "node_modules/base64-js",
+    "node_modules/bl",
+    "node_modules/browserslist",
+    "node_modules/buffer",
+    "node_modules/busboy",
+    "node_modules/cli-cursor",
+    "node_modules/cli-spinners",
+    "node_modules/clone",
+    "node_modules/code-block-writer",
+    "node_modules/color",
+    "node_modules/color-string",
+    "node_modules/convert-source-map",
+    "node_modules/cookie",
+    "node_modules/cosmiconfig",
+    "node_modules/crypto-js",
+    "node_modules/data-uri-to-buffer",
+    "node_modules/deepmerge",
+    "node_modules/defaults",
+    "node_modules/diff",
+    "node_modules/dot-case",
+    "node_modules/electron-to-chromium",
+    "node_modules/escalade",
+    "node_modules/esprima",
+    "node_modules/execa",
+    "node_modules/execa/node_modules/signal-exit",
+    "node_modules/fetch-blob",
+    "node_modules/formdata-polyfill",
+    "node_modules/fs-extra",
+    "node_modules/gensync",
+    "node_modules/get-own-enumerable-keys",
+    "node_modules/get-stream",
+    "node_modules/human-signals",
+    "node_modules/ieee754",
+    "node_modules/is-arrayish",
+    "node_modules/is-interactive",
+    "node_modules/is-obj",
+    "node_modules/is-regexp",
+    "node_modules/is-stream",
+    "node_modules/is-unicode-supported",
+    "node_modules/jsonfile",
+    "node_modules/kbar/node_modules/react-virtual",
+    "node_modules/kleur",
+    "node_modules/log-symbols",
+    "node_modules/log-symbols/node_modules/chalk",
+    "node_modules/lower-case",
+    "node_modules/map-obj",
+    "node_modules/merge-stream",
+    "node_modules/mimic-fn",
+    "node_modules/mkdirp",
+    "node_modules/no-case",
+    "node_modules/node-domexception",
+    "node_modules/node-fetch",
+    "node_modules/node-releases",
+    "node_modules/npm-run-path",
+    "node_modules/npm-run-path/node_modules/path-key",
+    "node_modules/onetime",
+    "node_modules/ora",
+    "node_modules/ora/node_modules/ansi-regex",
+    "node_modules/ora/node_modules/chalk",
+    "node_modules/ora/node_modules/strip-ansi",
+    "node_modules/path-browserify",
+    "node_modules/prompts",
+    "node_modules/prompts/node_modules/kleur",
+    "node_modules/readable-stream",
+    "node_modules/recast",
+    "node_modules/restore-cursor",
+    "node_modules/restore-cursor/node_modules/mimic-fn",
+    "node_modules/restore-cursor/node_modules/onetime",
+    "node_modules/restore-cursor/node_modules/signal-exit",
+    "node_modules/safe-buffer",
+    "node_modules/shadcn",
+    "node_modules/shadcn/node_modules/commander",
+    "node_modules/shadcn/node_modules/json5",
+    "node_modules/shadcn/node_modules/tsconfig-paths",
+    "node_modules/simple-swizzle",
+    "node_modules/sisteransi",
+    "node_modules/snake-case",
+    "node_modules/snakecase-keys",
+    "node_modules/snakecase-keys/node_modules/type-fest",
+    "node_modules/source-map",
+    "node_modules/stdin-discarder",
+    "node_modules/streamsearch",
+    "node_modules/string_decoder",
+    "node_modules/stringify-object",
+    "node_modules/strip-final-newline",
+    "node_modules/ts-morph",
+    "node_modules/universalify",
+    "node_modules/update-browserslist-db",
+    "node_modules/wcwidth",
+    "node_modules/web-streams-polyfill",
+    "node_modules/yallist"
+  ],
+  "addedNodes": [
+    "node_modules/@img/colour",
+    "node_modules/@img/sharp-freebsd-wasm32",
+    "node_modules/@img/sharp-libvips-linux-ppc64",
+    "node_modules/@img/sharp-libvips-linux-riscv64",
+    "node_modules/@img/sharp-linux-ppc64",
+    "node_modules/@img/sharp-linux-riscv64",
+    "node_modules/@img/sharp-webcontainers-wasm32",
+    "node_modules/@img/sharp-win32-arm64",
+    "node_modules/@tanstack/react-virtual",
+    "node_modules/@tanstack/virtual-core",
+    "node_modules/get-proto",
+    "node_modules/kbar/node_modules/@radix-ui/react-compose-refs",
+    "node_modules/kbar/node_modules/@radix-ui/react-portal",
+    "node_modules/kbar/node_modules/@radix-ui/react-primitive",
+    "node_modules/kbar/node_modules/@radix-ui/react-slot",
+    "node_modules/kbar/node_modules/@radix-ui/react-use-layout-effect",
+    "node_modules/math-intrinsics"
+  ],
+  "advisoryReferences": [
+    {
+      "id": "GHSA-33vc-wfww-vjfv",
+      "url": "https://github.com/advisories/GHSA-33vc-wfww-vjfv",
+      "summary": "jsondiffpatch is vulnerable to Cross-site Scripting (XSS) via HtmlFormatter::nodeBegin",
+      "severity": "medium",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "jsondiffpatch"
+          },
+          "vulnerable_version_range": "< 0.7.2",
+          "first_patched_version": "0.7.2",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-5gmw-xhrv-c9v3",
+      "url": "https://github.com/advisories/GHSA-5gmw-xhrv-c9v3",
+      "summary": "Tinypool: Prototype Pollution gadget in worker options leads to Remote Code Execution",
+      "severity": "critical",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "tinypool"
+          },
+          "vulnerable_version_range": "<= 2.1.0",
+          "first_patched_version": "2.1.1",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-6g55-p6wh-862q",
+      "url": "https://github.com/advisories/GHSA-6g55-p6wh-862q",
+      "summary": "PostCSS: Arbitrary file read and information disclosure via attacker-controlled sourceMappingURL in CSS comments",
+      "severity": "high",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "postcss"
+          },
+          "vulnerable_version_range": "<= 8.5.11",
+          "first_patched_version": "8.5.12",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-82fw-gwwq-j7x9",
+      "url": "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+      "summary": "Vitest: Path Traversal / Arbitrary File Read via @vitest/mocker Redirect Mock",
+      "severity": "medium",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "@vitest/mocker"
+          },
+          "vulnerable_version_range": ">= 2.1.0, < 4.1.11",
+          "first_patched_version": "4.1.11",
+          "vulnerable_functions": []
+        },
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "vitest"
+          },
+          "vulnerable_version_range": ">= 2.1.0, < 4.1.11",
+          "first_patched_version": "4.1.11",
+          "vulnerable_functions": []
+        },
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "vitest"
+          },
+          "vulnerable_version_range": ">= 5.0.0-beta.1, < 5.0.0-rc.2",
+          "first_patched_version": "5.0.0-rc.2",
+          "vulnerable_functions": []
+        },
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "@vitest/mocker"
+          },
+          "vulnerable_version_range": ">= 5.0.0-beta.1, < 5.0.0-rc.2",
+          "first_patched_version": "5.0.0-rc.2",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-85c8-ppgw-ccpr",
+      "url": "https://github.com/advisories/GHSA-85c8-ppgw-ccpr",
+      "summary": "Tinypool: Prototype Pollution Gadget to RCE in run() options",
+      "severity": "critical",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "tinypool"
+          },
+          "vulnerable_version_range": "< 2.1.2",
+          "first_patched_version": "2.1.2",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-866g-f22w-33x8",
+      "url": "https://github.com/advisories/GHSA-866g-f22w-33x8",
+      "summary": "@ai-sdk/provider-utils has an Uncontrolled Resource Consumption issue",
+      "severity": "low",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "@ai-sdk/provider-utils"
+          },
+          "vulnerable_version_range": "< 3.0.28",
+          "first_patched_version": "3.0.28",
+          "vulnerable_functions": []
+        },
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "@ai-sdk/provider-utils"
+          },
+          "vulnerable_version_range": ">= 4.0.0-beta.10, < 4.0.33",
+          "first_patched_version": "4.0.33",
+          "vulnerable_functions": []
+        },
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "@ai-sdk/provider-utils"
+          },
+          "vulnerable_version_range": ">= 5.0.0-beta.0, < 5.0.1",
+          "first_patched_version": "5.0.1",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-cp6q-959q-f8rh",
+      "url": "https://github.com/advisories/GHSA-cp6q-959q-f8rh",
+      "summary": "Tiptap: mergeAttributes() turns an own __proto__ key into inherited executable DOM attributes",
+      "severity": "medium",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "@tiptap/core"
+          },
+          "vulnerable_version_range": ">= 2.0.0-alpha.0, < 3.30.4",
+          "first_patched_version": "3.30.4",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-fxqj-rqcc-2cmp",
+      "url": "https://github.com/advisories/GHSA-fxqj-rqcc-2cmp",
+      "summary": "PostCSS: incomplete fix of GHSA-6g55-p6wh-862q — attacker-controlled sourceMappingURL reads arbitrary .map files when `from` is unset",
+      "severity": "medium",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "postcss"
+          },
+          "vulnerable_version_range": "<= 8.5.22",
+          "first_patched_version": "8.5.23",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-j4fx-xxwh-2485",
+      "url": "https://github.com/advisories/GHSA-j4fx-xxwh-2485",
+      "summary": " jsondiffpatch patch APIs are vulnerable to prototype pollution",
+      "severity": "high",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "jsondiffpatch"
+          },
+          "vulnerable_version_range": "< 0.7.6",
+          "first_patched_version": "0.7.6",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-qx2v-qp2m-jg93",
+      "url": "https://github.com/advisories/GHSA-qx2v-qp2m-jg93",
+      "summary": "PostCSS has XSS via Unescaped </style> in its CSS Stringify Output",
+      "severity": "medium",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "postcss"
+          },
+          "vulnerable_version_range": "< 8.5.10",
+          "first_patched_version": "8.5.10",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-qxg6-89mg-rqv8",
+      "url": "https://github.com/advisories/GHSA-qxg6-89mg-rqv8",
+      "summary": "Vitest: Code injection via unauthenticated manual mock registration",
+      "severity": "medium",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "@vitest/mocker"
+          },
+          "vulnerable_version_range": ">= 2.1.0-beta.7, < 4.1.12",
+          "first_patched_version": "4.1.12",
+          "vulnerable_functions": []
+        },
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "@vitest/mocker"
+          },
+          "vulnerable_version_range": ">= 5.0.0-beta.1, < 5.0.3",
+          "first_patched_version": "5.0.3",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-r28c-9q8g-f849",
+      "url": "https://github.com/advisories/GHSA-r28c-9q8g-f849",
+      "summary": "PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure",
+      "severity": "high",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "postcss"
+          },
+          "vulnerable_version_range": "<= 8.5.17",
+          "first_patched_version": "8.5.18",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-rj75-hqrm-r3gf",
+      "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+      "summary": "PostCSS: Quadratic complexity in flat selector parsing allows CPU exhaustion",
+      "severity": "medium",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "postcss-selector-parser"
+          },
+          "vulnerable_version_range": "< 7.1.6",
+          "first_patched_version": "7.1.6",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-rwvc-j5jr-mgvh",
+      "url": "https://github.com/advisories/GHSA-rwvc-j5jr-mgvh",
+      "summary": "Vercel’s AI SDK's filetype whitelists can be bypassed when uploading files",
+      "severity": "low",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "ai"
+          },
+          "vulnerable_version_range": "< 5.0.52",
+          "first_patched_version": "5.0.52",
+          "vulnerable_functions": []
+        },
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "ai"
+          },
+          "vulnerable_version_range": ">= 5.1.0-beta.0, < 5.1.0-beta.9",
+          "first_patched_version": "5.1.0-beta.9",
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-vfj7-8cjw-p6xm",
+      "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+      "summary": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+      "severity": "high",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "braces"
+          },
+          "vulnerable_version_range": "<= 3.0.3",
+          "first_patched_version": null,
+          "vulnerable_functions": []
+        }
+      ]
+    },
+    {
+      "id": "GHSA-w9m9-85wc-3x92",
+      "url": "https://github.com/advisories/GHSA-w9m9-85wc-3x92",
+      "summary": "postcss-selector-parser allows denial of service through uncontrolled AST recursion",
+      "severity": "low",
+      "affected": [
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "postcss-selector-parser"
+          },
+          "vulnerable_version_range": ">= 6.1.0, < 6.1.3",
+          "first_patched_version": "6.1.3",
+          "vulnerable_functions": []
+        },
+        {
+          "package": {
+            "ecosystem": "npm",
+            "name": "postcss-selector-parser"
+          },
+          "vulnerable_version_range": ">= 7.1.0, < 7.1.3",
+          "first_patched_version": "7.1.3",
+          "vulnerable_functions": []
+        }
+      ]
+    }
+  ]
+}
