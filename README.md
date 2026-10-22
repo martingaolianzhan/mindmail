@@ -250,13 +250,18 @@ Password: required
 Example:
 
 ```bash
-export TEST_DATABASE_URL="postgresql://mindmail_test:<password>@localhost:55432/mindmail_test"
+export TEST_DATABASE_URL="postgresql://mindmail_test:<password>@127.0.0.1:55432/mindmail_test"
+node test/setup/init-local-db.js
 npm run test:integration
 ```
 
-The database must already exist and contain the schema expected by the current test suite.
+The disposable database must already exist. The initializer validates `TEST_DATABASE_URL` **before** invoking `prisma migrate deploy`, with `DATABASE_URL` overridden by that validated target. It applies tracked migrations only; failures stop provisioning with no `db push` fallback. Keep the same `TEST_DATABASE_URL` for the integration suite, which verifies database identity and the applied baseline checksum. `npm run test:integration` does **not** run the initializer automatically.
 
-The public repository does **not yet provide a complete automated provisioning/runbook for this test database**. Completing reproducible environment setup and configuration documentation remains tracked stabilisation work.
+`prisma/migrations/20261022000000_baseline/migration.sql` captures the existing pre-SYNC-004 schema, generated from `schema.prisma` using `prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script`. New, empty databases execute the baseline; adopting it onto an already-populated database requires a **separately reviewed** procedure, not executing its CREATE statements. The initializer is non-destructive and does not reset existing databases. Destructive clean-replay verification requires explicit authorisation and re-verification of `127.0.0.1:55432/mindmail_test` and its local disposable container before reset.
+
+Future schema changes require reviewed additive migrations. The guarded initializer above is the supported disposable-test deployment path. The general `db:migrate` script also deploys migrations but does not validate its target; `db:generate` currently means `migrate dev` (potentially uses a shadow DB/resets), not client generation. Neither is permission to access a database. The retained `db:push` script is not the DB-001 schema-evolution or test-provisioning path.
+
+The public repository does **not yet provide complete automated container provisioning**. Completing that environment runbook remains tracked stabilisation work.
 
 The guard itself can be inspected in:
 
