@@ -136,6 +136,31 @@ The current redevelopment cycle prioritises correctness and maintainability over
 
 ---
 
+## OAuth least privilege
+
+MindMail requests **`Mail.Read Mail.Send`** from Aurinko for both Google and Office365, preserving the existing space-separated URL encoding. It reads/synchronizes complete email content and sends/replies directly; it does not modify provider mailbox state or create/update/delete provider drafts. Local `done`/folder flags and an in-memory compose editor do not require `Mail.ReadWrite` or `Mail.Drafts`. `Mail.All` is not listed in the current scope table and is unnecessary; no alias/legacy meaning is assumed.
+
+Aurinko's [Authentication Scopes table](https://docs.aurinko.io/authentication/authentication-scopes) and [Account OAuth Flow URL example](https://docs.aurinko.io/authentication/oauth-flow/account-oauth-flow) use `Mail.Read`. Its example prose and [Google mapping page](https://docs.aurinko.io/authentication/google-oauth-setup) inconsistently say `Mail.ReadOnly`. We retain the existing `Mail.Read` identifier, not a speculative rename.
+
+### Owner configuration and later live verification
+
+**Google Data Access — manual follow-up, not observed or changed here:**
+
+1. Select the Google project owning the existing OAuth client configured in Aurinko.
+2. **Google Auth Platform → Data Access → Add or remove scopes → Gmail API**.
+3. Add only these Gmail permissions, remove broader Gmail entries, and save:
+   - `https://www.googleapis.com/auth/gmail.readonly` — complete mail reads; **restricted**.
+   - `https://www.googleapis.com/auth/gmail.send` — send only; **sensitive**.
+4. Confirm the saved Gmail scope list excludes `gmail.modify`, `gmail.compose` and `https://mail.google.com/`; record the displayed verification status/requirements. No portal verification state has been confirmed in this repository change.
+
+**Aurinko boundary:** the documented scope selector is MindMail's `/v1/auth/authorize?scopes=...` request. Aurinko's setup guide describes storing the Google client ID/secret and redirect integration, not a separate scope list to edit. No Aurinko portal session was performed, so actual portal configuration is unverified; no portal scope change is prescribed. Keep the existing Google client ID, secret and redirects—none were rotated or changed. Microsoft/Azure configuration is unchanged.
+
+**Live OAuth — not performed:** existing grants do not prove reduced permissions. Only after code/config alignment and separate authorisation, use a fresh/re-authorized **disposable** account: inspect Google consent/granted scopes → connect through Aurinko → initial sync → incremental sync → read a message body and attachment → send/reply with a test message. Confirm no provider modify/draft capability is required. Do not clear production/user data or use personal/historical mailbox credentials for this check; do not assume reauthorization alone removes older grants.
+
+[Google's Gmail scope documentation](https://developers.google.com/workspace/gmail/api/auth/scopes) classifies the scopes above. OAuth verification and applicable restricted-scope/security-assessment requirements remain separate public-release work; no verification request or assessment was submitted here. Do not leave Data Access empty or request insufficient permissions to evade verification. Automated URL/state tests verify code only, not Aurinko's live translation, portal settings or granted scopes.
+
+---
+
 ## Architecture
 
 ```text

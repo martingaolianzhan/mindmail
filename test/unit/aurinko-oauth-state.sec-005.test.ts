@@ -59,6 +59,29 @@ describe("SEC-005 Aurinko OAuth initiation correlation", () => {
     expect(verifyAurinkoOAuthCorrelation(secondValue, firstUrl.searchParams.get("state"), "alice")).toBe(false);
   });
 
+  it.each(["Google", "Office365"] as const)("requests exactly read + send for %s without changing the OAuth contract", async (serviceType) => {
+    clerkAuthMock.mockResolvedValue({ userId: "alice" });
+
+    // Execute production URL generation, including real signed correlation.
+    const url = new URL(await getAurinkoAuthURL(serviceType));
+    expect(url.origin).toBe("https://api.aurinko.io");
+    expect(url.pathname).toBe("/v1/auth/authorize");
+    expect(url.searchParams.getAll("scopes")).toHaveLength(1);
+    const scopes = (url.searchParams.get("scopes") ?? "").split(" ").sort();
+    expect(scopes).toEqual(["Mail.Read", "Mail.Send"]);
+    for (const unnecessary of ["Mail.ReadWrite", "Mail.Drafts", "Mail.All"]) {
+      expect(scopes).not.toContain(unnecessary);
+    }
+    expect(url.searchParams.get("clientId")).toBe("synthetic-client");
+    expect(url.searchParams.get("serviceType")).toBe(serviceType);
+    expect(url.searchParams.get("responseType")).toBe("code");
+    expect(url.searchParams.get("returnUrl")).toBe("http://mindmail.test/api/aurinko/callback");
+    const state = url.searchParams.get("state");
+    expect(state).toMatch(/^[A-Za-z0-9_-]{40,}$/);
+    const cookie = cookieSetMock.mock.calls[0]?.[1] as string;
+    expect(verifyAurinkoOAuthCorrelation(cookie, state, "alice")).toBe(true);
+  });
+
   it("fails closed without a signing secret and creates no correlation cookie", async () => {
     delete process.env.AURINKO_OAUTH_STATE_SECRET;
     clerkAuthMock.mockResolvedValue({ userId: "alice" });
