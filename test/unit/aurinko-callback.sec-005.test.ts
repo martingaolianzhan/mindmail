@@ -150,6 +150,22 @@ describe("SEC-005 callback state validation", () => {
     expect(initialSyncMock).not.toHaveBeenCalled();
   });
 
+  it("atomically invalidates the checkpoint in same-owner create-race recovery before starting initial sync", async () => {
+    const correlation = createAurinkoOAuthCorrelation("alice");
+    accountFindUniqueMock.mockResolvedValueOnce(null).mockResolvedValueOnce({ id: "41", userId: "alice", latestDeltaToken: "D1" });
+    accountCreateMock.mockRejectedValueOnce(Object.assign(new Error("synthetic unique race"), { code: "P2002" }));
+
+    const response = await GET(request(correlation.state, correlation.value));
+    expect(response.status).toBe(307);
+    expect(accountUpdateManyMock).toHaveBeenCalledExactlyOnceWith({
+      where: { id: "41", userId: "alice" },
+      data: { accessToken: "synthetic-new-token", syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null },
+    });
+    expect(accountUpdateManyMock.mock.invocationCallOrder[0]).toBeLessThan(initialSyncMock.mock.invocationCallOrder[0]!);
+    expect(initialSyncMock).toHaveBeenCalledWith({ accountId: "41", userId: "alice" });
+    expectConsumedCorrelation(response);
+  });
+
   it("preserves the identity chain, scopes the final update, clears the cookie, and rejects browser-style reuse", async () => {
     const correlation = createAurinkoOAuthCorrelation("alice");
     const response = await GET(request(correlation.state, correlation.value));
@@ -157,7 +173,7 @@ describe("SEC-005 callback state validation", () => {
     expect(response.status).toBe(307);
     expect(accountUpdateManyMock).toHaveBeenCalledWith({
       where: { id: "41", userId: "alice" },
-      data: { accessToken: "synthetic-new-token", syncGeneration: { increment: 1 }, activeSyncRunId: null },
+      data: { accessToken: "synthetic-new-token", syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null },
     });
     expect(initialSyncMock).toHaveBeenCalledWith({ accountId: "41", userId: "alice" });
     expectConsumedCorrelation(response);

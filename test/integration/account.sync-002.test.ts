@@ -109,12 +109,27 @@ describe("SYNC-002 real PostgreSQL checkpoint ordering", () => {
     expect(errorSpy).toHaveBeenCalledWith("Incremental sync failed.");
   });
 
+  it("rejects a missing terminal delta without persisting or falling back to an intermediate/prior checkpoint", async () => {
+    const account = await createAccount("missing-terminal");
+    configureProvider([page([email("A")], "P2"), { records: [] }]);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    await expect(new Account(account.accessToken).syncEmails()).rejects.toThrow("Sync terminal checkpoint is missing or invalid.");
+    expect(syncEmailsToDatabaseMock).not.toHaveBeenCalled();
+    expect(await db.account.findUniqueOrThrow({ where: { id: account.id } })).toMatchObject({ latestDeltaToken: "D1", activeSyncRunId: null });
+    expect(errorSpy).toHaveBeenCalledWith("Incremental sync failed.");
+  });
+
   it("aggregates a successful multi-page round and advances PostgreSQL from D1 to D2 after persistence resolves", async () => {
     const account = await createAccount("multi-page");
     const first = email("A");
     const second = email("B");
     const third = email("C");
-    const requests = configureProvider([page([first], "P2"), page([second], "P3"), page([third])]);
+    const requests = configureProvider([
+      { ...page([first], "P2"), nextDeltaToken: "IGNORE-intermediate" },
+      { records: [second], nextPageToken: "P3" },
+      page([third]),
+    ]);
     syncEmailsToDatabaseMock.mockResolvedValue(undefined);
 
     await expect(new Account(account.accessToken).syncEmails()).resolves.toMatchObject({

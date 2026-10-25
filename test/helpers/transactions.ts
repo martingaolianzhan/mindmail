@@ -8,7 +8,8 @@ const realUpdateMany = db.account.updateMany.bind(db.account);
 export function interceptCheckpoints(handler: typeof db.account.updateMany = realUpdateMany) {
   const observer = vi.fn(handler);
   vi.spyOn(db.account, "updateMany").mockImplementation(((args) => {
-    return "latestDeltaToken" in args.data ? observer(args) : realUpdateMany(args);
+    // Observe checkpoint completion, not relink's new null invalidation write.
+    return typeof args.data.latestDeltaToken === "string" ? observer(args) : realUpdateMany(args);
   }) as typeof db.account.updateMany);
   return observer;
 }

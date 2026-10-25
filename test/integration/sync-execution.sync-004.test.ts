@@ -133,12 +133,12 @@ describe("SYNC-004 real PostgreSQL execution ownership and hard fencing", () => 
     await started.promise;
     expect((await reread(a)).activeSyncRunId).not.toBeNull();
     const current = await relink(a, `${a.accessToken}-T2`);
-    expect(current).toMatchObject({ syncGeneration: 1, activeSyncRunId: null, latestDeltaToken: "D0" });
+    expect(current).toMatchObject({ syncGeneration: 1, activeSyncRunId: null, latestDeltaToken: null });
     const r2 = await claimSyncExecution(current);
     provider.resolve({ data: page([message(a, "OLD-G1")], "STALE-D2") });
     const outcome = await result;
     expect(outcome).toEqual({ error: expect.any(Error) });
-    expect(await reread(a)).toMatchObject({ syncGeneration: 1, activeSyncRunId: r2.runId, latestDeltaToken: "D0" });
+    expect(await reread(a)).toMatchObject({ syncGeneration: 1, activeSyncRunId: r2.runId, latestDeltaToken: null });
     expect(await db.thread.count({ where: { accountId: a.id } })).toBe(0);
     await releaseSyncExecution(r2);
   });
@@ -152,7 +152,7 @@ describe("SYNC-004 real PostgreSQL execution ownership and hard fencing", () => 
     await expect(syncEmailsToDatabase([message(a, "OLD-G1")], old)).rejects.toThrow("Failed to sync emails to database.");
     await expect(completeSyncExecution(old, "STALE")).rejects.toBeInstanceOf(StaleSyncExecutionError);
     await releaseSyncExecution(old);
-    expect(await reread(a)).toMatchObject({ syncGeneration: 2, activeSyncRunId: current.runId, latestDeltaToken: "D0" });
+    expect(await reread(a)).toMatchObject({ syncGeneration: 2, activeSyncRunId: current.runId, latestDeltaToken: null });
     expect(await db.thread.count({ where: { accountId: a.id } })).toBe(0);
   });
 
@@ -203,7 +203,7 @@ describe("SYNC-004 real PostgreSQL execution ownership and hard fencing", () => 
       return realUpdateMany(args);
     }) as typeof realUpdateMany);
     await expect(new Account(a.accessToken).syncEmails()).rejects.toBeInstanceOf(StaleSyncExecutionError);
-    expect(await reread(a)).toMatchObject({ syncGeneration: 1, activeSyncRunId: newOwner, latestDeltaToken: "D0" });
+    expect(await reread(a)).toMatchObject({ syncGeneration: 1, activeSyncRunId: newOwner, latestDeltaToken: null });
   });
 
   it("Case A: old protected persistence owns the row; PostgreSQL blocks relink until that commit", async () => {

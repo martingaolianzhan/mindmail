@@ -4,6 +4,18 @@ import type { SyncResponse, SyncUpdatedEmailsReponse, EmailMessage, EmailAddress
 import { syncEmailsToDatabase } from "./sync-to-db";
 import { claimSyncExecution, completeSyncExecution, releaseSyncExecution, type SyncExecution } from "./sync-execution";
 
+export class ReinitializationRequiredError extends Error {
+    constructor() { super("Initial sync required before incremental sync."); }
+}
+
+function terminalDeltaToken(response: SyncUpdatedEmailsReponse): string {
+    const token = response.nextDeltaToken;
+    if (typeof token !== "string" || token.trim().length === 0) {
+        throw new Error("Sync terminal checkpoint is missing or invalid.");
+    }
+    return token;
+}
+
 export class Account {
     // the token represents the email account
     private token: string;
@@ -70,15 +82,12 @@ export class Account {
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 syncResponse = await this.startSync();
             }
-            // get delta token
-            let deltaToken = syncResponse.syncUpdatedToken;
-
-            // get updated emails content (maybe more than one page)
-            let updatedResponse = await this.getUpdatedEmails({ deltaToken });
-            // get nextDeltaToken, always track the latest one
-            if (updatedResponse.nextPageToken) {
-                deltaToken = updatedResponse.nextDeltaToken;
+            const startToken = syncResponse.syncUpdatedToken;
+            if (typeof startToken !== "string" || startToken.trim().length === 0) {
+                throw new Error("Initial sync start token is missing or invalid.");
             }
+            // The start token is only for the first fetch, never a durable checkpoint.
+            let updatedResponse = await this.getUpdatedEmails({ deltaToken: startToken });
             // store returned email contents
             let allEmails: EmailMessage[] = updatedResponse.records;
             const seenPageTokens = new Set<string>();
@@ -92,14 +101,11 @@ export class Account {
                 seenPageTokens.add(pageToken);
 
                 updatedResponse = await this.getUpdatedEmails({ pageToken });
-                // always keep the latest delta token
-                if (updatedResponse.nextPageToken) {
-                    deltaToken = updatedResponse.nextDeltaToken;
-                }
                 // store returned email contents
                 allEmails = allEmails.concat(updatedResponse.records);
             }
 
+            const deltaToken = terminalDeltaToken(updatedResponse);
             console.log("Initial sync done, got total emails:", allEmails.length, "waiting to upsert to database...");
 
             // return latest delta token with all emails in the first sync (initial sync)
@@ -179,28 +185,25 @@ export class Account {
         if (!account) { 
             throw new Error("Account not found");
         }
-        if (!account.latestDeltaToken) { 
-            throw new Error("Account not ready for sync");
+        // Null means this generation has no trusted incremental checkpoint.
+        if (!account.latestDeltaToken) {
+            throw new ReinitializationRequiredError();
         }
         execution = await claimSyncExecution(account);
         // request for updated emails by latest delta token
         let response = await this.getUpdatedEmails({ deltaToken: account.latestDeltaToken });
-        let storedDeltaToken = account.latestDeltaToken;
         // get all updated emails
         let allEmails: EmailMessage[] = response.records;
-        // hold temporary latest delta token
-        if (response.nextDeltaToken) { 
-            storedDeltaToken = response.nextDeltaToken;
-        }
+        const seenPageTokens = new Set<string>();
         // update emails until no page (up to date)
         while (response.nextPageToken) { 
-            response = await this.getUpdatedEmails({ pageToken: response.nextPageToken });
-            // continously update delta token until the latest one
-            if (response.nextDeltaToken) { 
-                storedDeltaToken = response.nextDeltaToken;
-            }
+            const pageToken = response.nextPageToken;
+            if (seenPageTokens.has(pageToken)) throw new Error("Repeated incremental sync page token");
+            seenPageTokens.add(pageToken);
+            response = await this.getUpdatedEmails({ pageToken });
             allEmails = allEmails.concat(response.records);
         }
+        const storedDeltaToken = terminalDeltaToken(response);
         // sync all updated emails to database before advancing the checkpoint
         await syncEmailsToDatabase(allEmails, execution);
 

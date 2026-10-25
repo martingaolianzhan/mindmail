@@ -52,9 +52,11 @@ async function completeValidatedOAuthCallback(req: NextRequest, userId: string):
     // after the read above cannot turn into an ownership-blind token update.
     // One UPDATE orders credential + generation + invalidation atomically against
     // protected mail transactions locking this same Account row, even for T1 → T1.
+    // Cross-credential checkpoint continuity is unverified: null requires fresh
+    // initial sync, safely even if background work never starts.
     const updated = await db.account.updateMany({
       where: { id: accountId, userId },
-      data: { accessToken: token.accessToken, syncGeneration: { increment: 1 }, activeSyncRunId: null },
+      data: { accessToken: token.accessToken, syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null },
     });
     if (updated.count !== 1) return failure("Unable to link this account", 403);
   } else {
@@ -80,7 +82,7 @@ async function completeValidatedOAuthCallback(req: NextRequest, userId: string):
       }
       const updated = await db.account.updateMany({
         where: { id: accountId, userId },
-        data: { accessToken: token.accessToken, syncGeneration: { increment: 1 }, activeSyncRunId: null },
+        data: { accessToken: token.accessToken, syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null },
       });
       if (updated.count !== 1) return failure("Unable to link this account", 403);
     }

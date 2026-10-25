@@ -80,7 +80,7 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
     expect(await token(id)).toBe(previous);
   });
 
-  it("does not commit the old T1 checkpoint after the same owner relinks to T2 during persistence", async () => {
+  it("does not commit the old T1 checkpoint after a direct token replacement to T2 during persistence", async () => {
     const id = await createAccount("relink", "D0");
     const originalAccessToken = `${id}-token`;
     const replacementAccessToken = `${id}-replacement-token`;
@@ -109,7 +109,8 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
       id, userId, accessToken: originalAccessToken, latestDeltaToken: "D0",
     });
 
-    // Model the callback's same-owner credential replacement in real PostgreSQL.
+    // Preserve the original SYNC-003 direct-token snapshot regression separately
+    // from production relink (which also changes generation and clears checkpoint).
     expect(await db.account.updateMany({
       where: { id, userId }, data: { accessToken: replacementAccessToken },
     })).toMatchObject({ count: 1 });

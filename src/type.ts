@@ -12,7 +12,9 @@ export interface SyncResponse {
 // updated email api response data structure
 export interface SyncUpdatedEmailsReponse { 
     nextPageToken?: string,
-    nextDeltaToken: string,
+    // Continuation pages may have only nextPageToken. A terminal delta is
+    // required and runtime-validated before a sync can complete.
+    nextDeltaToken?: string,
     records: EmailMessage[]
 }
 
