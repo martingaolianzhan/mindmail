@@ -64,7 +64,7 @@ beforeEach(() => {
   detailsMock.mockResolvedValue({ email: "alice@example.test", name: "Alice" });
   accountFindUniqueMock.mockResolvedValue({ id: "41", userId: "alice" });
   accountUpdateManyMock.mockResolvedValue({ count: 1 });
-  initialSyncMock.mockResolvedValue("completed");
+  initialSyncMock.mockResolvedValue({ status: "completed" });
 });
 
 afterEach(() => {
@@ -73,6 +73,30 @@ afterEach(() => {
 });
 
 describe("SEC-005 callback state validation", () => {
+  it.each(["retryable-failure", "action-required", "ownership-lost", "safety-limit", "indeterminate-completion"])("SYNC-007 background caller consumes structured %s safely", async (status) => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      initialSyncMock.mockResolvedValue({ status, privateDetail: "SECRET-MUST-NOT-ESCAPE" });
+      const correlation = createAurinkoOAuthCorrelation("alice");
+      const response = await GET(request(correlation.state, correlation.value));
+      await expect(waitUntilMock.mock.calls[0]![0]).resolves.toBeUndefined();
+      expect(response.status).toBe(307);
+      expect(log).toHaveBeenCalledWith("Initial sync ended:", status);
+      expect(JSON.stringify(log.mock.calls)).not.toContain("SECRET-MUST-NOT-ESCAPE");
+    } finally { log.mockRestore(); }
+  });
+
+  it("SYNC-007 background caller catches unexpected rejection without an unhandled promise", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      initialSyncMock.mockRejectedValue(new Error("RAW-SECRET"));
+      const c = createAurinkoOAuthCorrelation("alice");
+      expect((await GET(request(c.state, c.value))).status).toBe(307);
+      await expect(waitUntilMock.mock.calls[0]![0]).resolves.toBeUndefined();
+      expect(log).toHaveBeenCalledWith("Initial sync failed.");
+      expect(JSON.stringify(log.mock.calls)).not.toContain("RAW-SECRET");
+    } finally { log.mockRestore(); }
+  });
   it.each([
     ["missing state", null, (correlation: ReturnType<typeof createAurinkoOAuthCorrelation>) => correlation.value, "alice"],
     ["missing correlation", (correlation: ReturnType<typeof createAurinkoOAuthCorrelation>) => correlation.state, () => undefined, "alice"],

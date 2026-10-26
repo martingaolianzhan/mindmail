@@ -64,7 +64,7 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
-  syncEmailsMock.mockResolvedValue(undefined);
+  syncEmailsMock.mockResolvedValue({ status: "completed" });
   findManySpy.mockImplementation((args) => db.thread.findMany(args));
 });
 

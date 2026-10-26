@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { Account, Prisma } from "@prisma/client";
-import { db } from "~/server/db";
+import { observeDatabase, submitSyncDatabase, SyncDatabaseObservationError, withSyncDatabase } from "./sync-database";
+import { SYNC_LIMITS, type SyncLimits } from "./sync-limits";
 
 export type SyncExecution = {
   accountId: string;
@@ -18,23 +19,42 @@ export class StaleSyncExecutionError extends Error {
   constructor() { super("Sync execution is no longer authoritative."); }
 }
 
-export async function claimSyncExecution(account: Account): Promise<SyncExecution> {
+export async function claimSyncExecution(account: Account, limits: SyncLimits = SYNC_LIMITS): Promise<SyncExecution> {
+  const latestDeltaToken = account.latestDeltaToken;
   const execution = {
     accountId: account.id, userId: account.userId,
     originalAccessToken: account.accessToken,
     generation: account.syncGeneration, runId: randomUUID(),
   };
-  const claimed = await db.account.updateMany({
+  // Retain R1 and the ORIGINAL bounded transaction settlement before observing
+  // it. No inner observer may permanently hide a later definitive commit result.
+  const settlement = submitSyncDatabase((tx) => tx.account.updateMany({
     where: {
       ...executionPredicate(execution), activeSyncRunId: null,
       // A run may have completed between the caller's read and this claim.
       // Never acquire using its now-outdated checkpoint snapshot.
-      latestDeltaToken: account.latestDeltaToken,
+      latestDeltaToken,
     },
     data: { activeSyncRunId: execution.runId },
-  });
-  if (claimed.count !== 1) throw new SyncNotAcquiredError();
-  return execution;
+  }), limits);
+  try {
+    const claimed = await observeDatabase(settlement, limits.dbObservationMs);
+    if (claimed.count === 0) throw new SyncNotAcquiredError();
+    if (claimed.count !== 1) throw new SyncDatabaseObservationError();
+    return execution;
+  } catch (error) {
+    if (error instanceof SyncNotAcquiredError) throw error;
+    // Never revoke blindly: the original claim could commit AFTER an early
+    // cleanup's zero-row UPDATE. Only definitive count=1 authorizes late cleanup.
+    // Installing on the retained original Promise also handles settlement racing
+    // observation expiry (fulfilled Promises retain their definitive result).
+    void settlement.then(async (claimed) => {
+      if (claimed.count === 1 && !await terminateSyncExecution(execution, limits)) {
+        console.error("Late sync claim cleanup not confirmed.");
+      }
+    }, () => undefined).catch(() => console.error("Late sync claim cleanup not confirmed."));
+    throw error;
+  }
 }
 
 function executionPredicate(execution: SyncExecution) {
@@ -61,25 +81,37 @@ export async function lockSyncExecution(tx: Prisma.TransactionClient, execution:
 }
 
 // One atomic boundary: checkpoint, authoritative completion, and own release.
-export async function completeSyncExecution(execution: SyncExecution, latestDeltaToken: string) {
-  const result = await db.account.updateMany({
+export async function completeSyncExecution(execution: SyncExecution, latestDeltaToken: string, limits: SyncLimits = SYNC_LIMITS) {
+  const result = await withSyncDatabase((tx) => tx.account.updateMany({
     where: executionPredicate(execution),
     data: { latestDeltaToken, activeSyncRunId: null },
-  });
+  }), limits);
   if (result.count !== 1) throw new StaleSyncExecutionError();
+}
+
+export async function ownsSyncExecution(execution: SyncExecution, limits: SyncLimits = SYNC_LIMITS) {
+  return withSyncDatabase(async (tx) => (await tx.account.count({ where: executionPredicate(execution) })) === 1, limits);
+}
+
+// A definite count=1 acknowledgement is proof that revocation won against this
+// run's completion. Zero is not completion provenance. Includes original credential.
+export async function terminateSyncExecution(execution: SyncExecution, limits: SyncLimits = SYNC_LIMITS) {
+  return withSyncDatabase(async (tx) => (await tx.account.updateMany({
+    where: executionPredicate(execution), data: { activeSyncRunId: null },
+  })).count === 1, limits);
 }
 
 // Best-effort failure cleanup must never clear a newer generation/run. A hard
 // crash (or failed cleanup) can strand ownership; SYNC-005 owns reclamation.
 export async function releaseSyncExecution(execution: SyncExecution) {
   try {
-    await db.account.updateMany({
+    await withSyncDatabase((tx) => tx.account.updateMany({
       where: {
         id: execution.accountId, userId: execution.userId,
         syncGeneration: execution.generation, activeSyncRunId: execution.runId,
       },
       data: { activeSyncRunId: null },
-    });
+    }));
   } catch {
     console.error("Sync ownership release failed.");
   }

@@ -4,8 +4,9 @@ import { env } from "~/env";
 
 const createPrismaClient = () =>
   new PrismaClient({
-    log:
-      env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    // Prisma's automatic error output may include query inputs/credentials/mail.
+    // Callers log sanitized operation categories instead of raw database errors.
+    log: [],
   });
 
 const globalForPrisma = globalThis as unknown as {

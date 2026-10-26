@@ -91,7 +91,7 @@ async function completeValidatedOAuthCallback(req: NextRequest, userId: string):
   waitUntil(
     performInitialSync({ accountId, userId })
       .then((result) => {
-        if (result !== "completed") console.error("Initial sync did not complete.");
+        if (result.status !== "completed") console.error("Initial sync ended:", result.status);
       })
       .catch(() => console.error("Initial sync failed.")),
   );

@@ -3,13 +3,14 @@ import type { EmailMessage, SyncUpdatedEmailsReponse } from "~/type";
 
 const { axiosMock, dbMock, persist } = vi.hoisted(() => ({
   axiosMock: { get: vi.fn(), post: vi.fn() },
-  dbMock: { account: { findFirst: vi.fn(), findUnique: vi.fn(), updateMany: vi.fn() } },
+  dbMock: { account: { findFirst: vi.fn(), findUnique: vi.fn(), updateMany: vi.fn(), count: vi.fn() } },
   persist: vi.fn(),
 }));
 vi.mock("axios", () => ({ default: axiosMock }));
+vi.mock("~/lib/sync-database", async (original) => ({ ...await original<object>(), ...await import("../mocks/sync-database") }));
 vi.mock("~/server/db", () => ({ db: dbMock }));
 vi.mock("~/lib/sync-to-db", () => ({ syncEmailsToDatabase: persist }));
-import { Account, ReinitializationRequiredError } from "~/lib/account";
+import { Account } from "~/lib/account";
 import { performInitialSync } from "~/lib/initial-sync";
 
 const a = { id: "A1", userId: "U1", accessToken: "synthetic-T1", syncGeneration: 0, activeSyncRunId: null, latestDeltaToken: "D1" };
@@ -37,6 +38,7 @@ beforeEach(() => {
   dbMock.account.findFirst.mockResolvedValue({ ...a, latestDeltaToken: null });
   dbMock.account.findUnique.mockResolvedValue(a);
   dbMock.account.updateMany.mockResolvedValue({ count: 1 });
+  dbMock.account.count.mockResolvedValue(1);
   persist.mockResolvedValue(undefined);
   axiosMock.post.mockResolvedValue({ data: { ready: true, syncUpdatedToken: "S0" } });
   vi.spyOn(console, "error").mockImplementation(() => undefined);
@@ -51,7 +53,7 @@ describe("SYNC-006 terminal checkpoint contract", () => {
   ])("initial $name S0 fails before updated GET, persistence or completion", async ({ data }) => {
     axiosMock.post.mockResolvedValue({ data });
     provider([page([email("must-not-persist")], "must-not-commit")]);
-    await expect(performInitialSync({ accountId: a.id, userId: a.userId })).resolves.toBe("sync-failed");
+    await expect(performInitialSync({ accountId: a.id, userId: a.userId })).resolves.toEqual({ status: "internal-failure", reason: "provider-contract" });
     expect(axiosMock.get).not.toHaveBeenCalled();
     expect(persist).not.toHaveBeenCalled();
     expect(checkpointWrites()).toHaveLength(0);
@@ -64,7 +66,7 @@ describe("SYNC-006 terminal checkpoint contract", () => {
     provider([page([], "must-not-commit")]);
     const run = performInitialSync({ accountId: a.id, userId: a.userId });
     await vi.runAllTimersAsync();
-    await expect(run).resolves.toBe("sync-failed");
+    await expect(run).resolves.toEqual({ status: "internal-failure", reason: "provider-contract" });
     expect(axiosMock.post).toHaveBeenCalledTimes(2);
     expect(axiosMock.get).not.toHaveBeenCalled();
     expect(persist).not.toHaveBeenCalled();
@@ -73,9 +75,9 @@ describe("SYNC-006 terminal checkpoint contract", () => {
 
   it.each(fixtures)("initial $name uses terminal delta, never the start/page/intermediate token", async (f) => {
     provider(f.pages);
-    await expect(performInitialSync({ accountId: a.id, userId: a.userId })).resolves.toBe("completed");
+    await expect(performInitialSync({ accountId: a.id, userId: a.userId })).resolves.toEqual({ status: "completed" });
     expect(requests()).toEqual([{ deltaToken: "S0" }, ...f.requests]);
-    expect(persist).toHaveBeenCalledWith(f.ids.map(email), expect.objectContaining({ accountId: a.id, generation: 0 }));
+    expect(persist).toHaveBeenCalledWith(f.ids.map(email), expect.objectContaining({ accountId: a.id, generation: 0 }), expect.anything());
     const writes = checkpointWrites();
     expect(writes).toHaveLength(1);
     expect(writes[0]?.[0]).toMatchObject({ data: { latestDeltaToken: "D-final", activeSyncRunId: null } });
@@ -97,22 +99,16 @@ describe("SYNC-006 terminal checkpoint contract", () => {
     it.each([undefined, null, "", "   ", 42])(`${mode} rejects invalid terminal delta %s without persistence/checkpoint or fallback`, async (invalid) => {
       // An earlier page's delta must not mask a malformed terminal page.
       provider([page([email("A")], "DO-NOT-REUSE", "P1"), { records: [email("B")], nextDeltaToken: invalid } as SyncUpdatedEmailsReponse]);
-      if (mode === "initial") {
-        await expect(performInitialSync({ accountId: a.id, userId: a.userId })).resolves.toBe("sync-failed");
-      } else {
-        await expect(new Account(a.accessToken).syncEmails()).rejects.toThrow("Sync terminal checkpoint is missing or invalid.");
-      }
+      const run = mode === "initial" ? performInitialSync({ accountId: a.id, userId: a.userId }) : new Account(a.accessToken).syncEmails();
+      await expect(run).resolves.toEqual({ status: "internal-failure", reason: "provider-contract" });
       expect(persist).not.toHaveBeenCalled();
       expect(checkpointWrites()).toHaveLength(0);
     });
 
     it(`${mode} fails a single terminal page without a delta instead of retaining the start/prior token`, async () => {
       provider([{ records: [] }]);
-      if (mode === "initial") {
-        await expect(performInitialSync({ accountId: a.id, userId: a.userId })).resolves.toBe("sync-failed");
-      } else {
-        await expect(new Account(a.accessToken).syncEmails()).rejects.toThrow();
-      }
+      const run = mode === "initial" ? performInitialSync({ accountId: a.id, userId: a.userId }) : new Account(a.accessToken).syncEmails();
+      await expect(run).resolves.toEqual({ status: "internal-failure", reason: "provider-contract" });
       expect(persist).not.toHaveBeenCalled();
       expect(checkpointWrites()).toHaveLength(0);
     });
@@ -120,7 +116,7 @@ describe("SYNC-006 terminal checkpoint contract", () => {
 
   it("signals reinitialization required before claim, persistence or any provider work", async () => {
     dbMock.account.findUnique.mockResolvedValue({ ...a, syncGeneration: 1, latestDeltaToken: null });
-    await expect(new Account(a.accessToken).syncEmails()).rejects.toBeInstanceOf(ReinitializationRequiredError);
+    await expect(new Account(a.accessToken).syncEmails()).resolves.toEqual({ status: "action-required", reason: "reinitialization-required" });
     expect(axiosMock.get).not.toHaveBeenCalled();
     expect(axiosMock.post).not.toHaveBeenCalled();
     expect(dbMock.account.updateMany).not.toHaveBeenCalled();
@@ -132,7 +128,7 @@ describe("SYNC-006 terminal checkpoint contract", () => {
     [page([], undefined, "P1"), page([], undefined, "P2"), page([], undefined, "P1")],
   ])("incremental repeated cursors fail before persistence without requesting a repeated page twice", async (...pages) => {
     provider(pages);
-    await expect(new Account(a.accessToken).syncEmails()).rejects.toThrow("Repeated incremental sync page token");
+    await expect(new Account(a.accessToken).syncEmails()).resolves.toEqual({ status: "internal-failure", reason: "provider-contract" });
     expect(axiosMock.get).toHaveBeenCalledTimes(pages.length);
     expect(persist).not.toHaveBeenCalled();
     expect(checkpointWrites()).toHaveLength(0);

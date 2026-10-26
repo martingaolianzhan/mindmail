@@ -81,7 +81,11 @@ export const accountRouter = createTRPCRouter({
 
         // everytime get threads, update emails
         const acc = new Account(account.accessToken);
-        acc.syncEmails().catch(() => console.error("Background account sync failed."));
+        void acc.syncEmails()
+            .then((result) => {
+                if (result.status !== "completed") console.error("Background sync ended:", result.status);
+            })
+            .catch(() => console.error("Background account sync failed."));
 
         // Always scope a successful thread query to the authenticated user's account.
         const filter: Prisma.ThreadWhereInput = {

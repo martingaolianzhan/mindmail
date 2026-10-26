@@ -13,7 +13,7 @@ vi.mock("~/lib/aurinko", () => ({ exchangeCodeForAccessToken: exchange, getAccou
 // Gate the actual service boundary: delaying waitUntil alone would be too late.
 vi.mock("~/lib/initial-sync", () => ({ performInitialSync: backgroundInitial }));
 vi.mock("@vercel/functions", () => ({ waitUntil: vi.fn() }));
-import { Account, ReinitializationRequiredError } from "~/lib/account";
+import { Account } from "~/lib/account";
 import { db } from "~/server/db";
 import { GET } from "~/app/api/aurinko/callback/route";
 import { createAurinkoOAuthCorrelation, AURINKO_OAUTH_STATE_COOKIE } from "~/lib/aurinko-oauth-state";
@@ -78,7 +78,7 @@ function initialResponse(a: DbAccount, checkpoint = "D2") {
 }
 async function assertBlocked(a: DbAccount) {
   axiosMock.get.mockClear(); axiosMock.post.mockClear();
-  await expect(new Account(a.accessToken).syncEmails()).rejects.toBeInstanceOf(ReinitializationRequiredError);
+  await expect(new Account(a.accessToken).syncEmails()).resolves.toEqual({ status: "action-required", reason: "reinitialization-required" });
   expect(axiosMock.get).not.toHaveBeenCalled();
   expect(axiosMock.post).not.toHaveBeenCalled();
 }
@@ -93,7 +93,7 @@ beforeEach(() => {
   details.mockResolvedValue({ email: "synthetic@example.test", name: "Synthetic" });
   backgroundInitial.mockImplementation((input: InitialSyncModule.InitialSyncInput) => {
     const gate = deferred<boolean>();
-    const result = gate.promise.then((start) => start ? runInitial(input) : "sync-failed" as const);
+    const result = gate.promise.then((start) => start ? runInitial(input) : { status: "cancelled", reason: "cancelled" } as const);
     queued.push({ start: () => { gate.resolve(true); return result; }, cancel: () => gate.resolve(false), result });
     return result;
   });
@@ -126,9 +126,9 @@ describe("SYNC-006 real callback checkpoint invalidation and reinitialization", 
     const completion = interceptCheckpoints();
     for (const checkpoint of [null, "D-existing"]) {
       const a = await fixture(checkpoint);
-      await expect(runInitial({ accountId: a.id, userId })).resolves.toBe("sync-failed");
+      await expect(runInitial({ accountId: a.id, userId })).resolves.toEqual({ status: "internal-failure", reason: "provider-contract" });
       expect(axiosMock.get).not.toHaveBeenCalled();
-      expect(persistence).not.toHaveBeenCalled();
+      expect(persistence.mock.calls.filter(([, options]) => options?.isolationLevel === "ReadCommitted")).toHaveLength(0);
       expect(completion).not.toHaveBeenCalled();
       expect(await reread(a)).toMatchObject({ latestDeltaToken: checkpoint, activeSyncRunId: null });
       expect(await mailState(a)).toEqual({ threads: [], emails: [], addresses: [], attachments: [] });
@@ -182,18 +182,18 @@ describe("SYNC-006 real callback checkpoint invalidation and reinitialization", 
       expect(await db.email.findUniqueOrThrow({ where: { id: message(a).id } })).toMatchObject({ subject: "G2" });
       return realUpdate(args);
     }) as typeof realUpdate);
-    await expect(queued[0]!.start()).resolves.toBe("completed");
+    await expect(queued[0]!.start()).resolves.toEqual({ status: "completed" });
     expect(checkpoint).toHaveBeenCalledOnce();
     expect(await reread(a)).toMatchObject({ accessToken: current.accessToken, syncGeneration: 1, latestDeltaToken: "D2", activeSyncRunId: null });
     expect(axiosMock.get).toHaveBeenCalledWith("https://api.aurinko.io/v1/email/sync/updated", {
-      headers: { Authorization: `Bearer ${current.accessToken}` }, params: { deltaToken: "S0" },
+      headers: { Authorization: `Bearer ${current.accessToken}` }, params: { deltaToken: "S0" }, signal: expect.any(AbortSignal), timeout: 15000, maxContentLength: 20000000,
     });
     expect(await db.email.count({ where: { threadId: message(a).threadId } })).toBe(1);
     checkpoint.mockImplementation(realUpdate);
     axiosMock.get.mockReset().mockResolvedValue({ data: { records: [], nextDeltaToken: "D3" } });
     await expect(new Account(current.accessToken).syncEmails()).resolves.toMatchObject({ latestDeltaToken: "D3" });
     expect(axiosMock.get).toHaveBeenCalledExactlyOnceWith("https://api.aurinko.io/v1/email/sync/updated", {
-      headers: { Authorization: `Bearer ${current.accessToken}` }, params: { deltaToken: "D2" },
+      headers: { Authorization: `Bearer ${current.accessToken}` }, params: { deltaToken: "D2" }, signal: expect.any(AbortSignal), timeout: 15000, maxContentLength: 20000000,
     });
     expect((await reread(a)).latestDeltaToken).toBe("D3");
   });
@@ -209,8 +209,7 @@ describe("SYNC-006 real callback checkpoint invalidation and reinitialization", 
       return realUpdate(args);
     }) as typeof realUpdate);
     const result = queued[0]!.start();
-    if (failure === "persistence") await expect(result).rejects.toThrow("Failed to sync emails to database.");
-    else await expect(result).resolves.toBe("sync-failed");
+    await expect(result).resolves.toMatchObject({ status: failure === "ownership-loss" ? "ownership-lost" : "internal-failure" });
     const state = await reread(a);
     expect(state.latestDeltaToken).toBeNull();
     expect(state.activeSyncRunId).toBeNull();
@@ -221,17 +220,17 @@ describe("SYNC-006 real callback checkpoint invalidation and reinitialization", 
     const a = await fixture();
     let current = await relink(a, `${a.accessToken}-T2`);
     expect(current.latestDeltaToken).toBeNull(); await assertBlocked(current);
-    initialResponse(a, "D2"); await expect(queued[0]!.start()).resolves.toBe("completed");
+    initialResponse(a, "D2"); await expect(queued[0]!.start()).resolves.toEqual({ status: "completed" });
     expect((await reread(a)).latestDeltaToken).toBe("D2");
     current = await relink(a, a.accessToken);
     expect(current).toMatchObject({ accessToken: a.accessToken, syncGeneration: 2, latestDeltaToken: null });
     await assertBlocked(current);
-    initialResponse(a, "D3"); await expect(queued[1]!.start()).resolves.toBe("completed");
+    initialResponse(a, "D3"); await expect(queued[1]!.start()).resolves.toEqual({ status: "completed" });
     expect((await reread(a)).latestDeltaToken).toBe("D3");
     axiosMock.get.mockReset().mockResolvedValue({ data: { records: [], nextDeltaToken: "D4" } });
     await new Account(a.accessToken).syncEmails();
     expect(axiosMock.get).toHaveBeenCalledExactlyOnceWith("https://api.aurinko.io/v1/email/sync/updated", {
-      headers: { Authorization: `Bearer ${a.accessToken}` }, params: { deltaToken: "D3" },
+      headers: { Authorization: `Bearer ${a.accessToken}` }, params: { deltaToken: "D3" }, signal: expect.any(AbortSignal), timeout: 15000, maxContentLength: 20000000,
     });
   });
 
@@ -247,7 +246,7 @@ describe("SYNC-006 real callback checkpoint invalidation and reinitialization", 
     axiosMock.get.mockImplementation(() => {
       const data = pages[index++]; if (!data) throw new Error("Unexpected page"); return Promise.resolve({ data });
     });
-    await expect(queued[0]!.start()).resolves.toBe("completed");
+    await expect(queued[0]!.start()).resolves.toEqual({ status: "completed" });
     expect(await reread(a)).toMatchObject({ syncGeneration: 1, latestDeltaToken: "D-terminal", activeSyncRunId: null });
     expect(axiosMock.get.mock.calls.map(([, config]) => (config as { params: object }).params)).toEqual(shape === "multi-page" ? [{ deltaToken: "S0" }, { pageToken: "P1" }, { pageToken: "P2" }] : [{ deltaToken: "S0" }]);
     expect(await db.email.count({ where: { threadId: message(a).threadId } })).toBe(shape === "multi-page" ? 3 : shape === "empty" ? 0 : 1);

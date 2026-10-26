@@ -6,6 +6,7 @@ import type * as SyncExecutionModule from "~/lib/sync-execution";
 vi.mock("~/lib/sync-execution", async (original) => ({
   ...await original<typeof SyncExecutionModule>(),
   claimSyncExecution: vi.fn(async () => execution), releaseSyncExecution: vi.fn(),
+  ownsSyncExecution: vi.fn(async () => true), terminateSyncExecution: vi.fn(async () => true),
 }));
 
 const { axiosMock, dbMock, syncEmailsToDatabaseMock } = vi.hoisted(() => ({
@@ -15,6 +16,7 @@ const { axiosMock, dbMock, syncEmailsToDatabaseMock } = vi.hoisted(() => ({
 }));
 
 vi.mock("axios", () => ({ default: axiosMock }));
+vi.mock("~/lib/sync-database", async (original) => ({ ...await original<object>(), ...await import("../mocks/sync-database") }));
 vi.mock("~/server/db", () => ({ db: dbMock }));
 vi.mock("~/lib/sync-to-db", () => ({ syncEmailsToDatabase: syncEmailsToDatabaseMock }));
 
@@ -82,9 +84,9 @@ describe("SYNC-002 Account.syncEmails persistence ordering", () => {
     configureAccount([page([email("A")])]);
     syncEmailsToDatabaseMock.mockRejectedValue(new Error("synthetic persistence failure"));
 
-    await expect(new Account("synthetic-token").syncEmails()).rejects.toThrow("synthetic persistence failure");
+    await expect(new Account("synthetic-token").syncEmails()).resolves.toEqual({ status: "internal-failure", reason: "persistence-failure" });
 
-    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([email("A")], execution);
+    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([email("A")], execution, expect.anything());
     expect(dbMock.account.updateMany).not.toHaveBeenCalled();
     expect(errorSpy).toHaveBeenCalledWith("Incremental sync failed.");
   });
@@ -102,7 +104,7 @@ describe("SYNC-002 Account.syncEmails persistence ordering", () => {
     });
 
     expect(requests).toEqual([{ deltaToken: "D1" }, { pageToken: "P2" }, { pageToken: "P3" }]);
-    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([first, second, third], execution);
+    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([first, second, third], execution, expect.anything());
     expect(dbMock.account.updateMany).toHaveBeenCalledOnce();
   });
 });

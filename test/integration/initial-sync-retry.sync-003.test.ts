@@ -89,7 +89,7 @@ describe("SYNC-003 real mail persistence and sequential same-input recovery", ()
       expect(before.attachments).toHaveLength(1);
       return realUpdateMany(args);
     }) as typeof realUpdateMany);
-    await expect(f.run()).resolves.toBe("completed");
+    await expect(f.run()).resolves.toEqual({ status: "completed" });
     expect(write).toHaveBeenCalledOnce();
     expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId, accessToken: `${f.id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
     expectConverged(await state(f.id, f.emails), f.emails);
@@ -99,21 +99,21 @@ describe("SYNC-003 real mail persistence and sequential same-input recovery", ()
     const f = await fixture("partial");
     interceptTransactions((tx) => ({ ...tx, emailAttachment: { ...tx.emailAttachment, upsert: (() => { throw new Error("synthetic failure"); }) as typeof tx.emailAttachment.upsert } }));
     const write = interceptCheckpoints();
-    await expect(f.run()).rejects.toThrow("Failed to sync emails to database.");
+    await expect(f.run()).resolves.toEqual({ status: "internal-failure", reason: "persistence-failure" });
     expect(write).not.toHaveBeenCalled();
     const partial = await state(f.id, f.emails);
     expect(partial).toMatchObject({ token: "D0", threads: [{ id: f.emails[0]!.threadId }], emails: [{ id: f.emails[0]!.id }], attachments: [] });
     expect(partial.addresses).toHaveLength(2);
     restoreDelegates();
     provider.mockResolvedValue({ emails: f.emails, latestDeltaToken: "D1" });
-    await expect(f.run()).resolves.toBe("completed");
+    await expect(f.run()).resolves.toEqual({ status: "completed" });
     expectConverged(await state(f.id, f.emails), f.emails);
   });
 
   it("retains D0 after a deterministic pre-write failure, then re-upserts mail and commits", async () => {
     const f = await fixture("prewrite");
     interceptCheckpoints((() => { throw new Error("synthetic no-commit failure"); }) as typeof realUpdateMany);
-    await expect(f.run()).rejects.toThrow("synthetic no-commit failure");
+    await expect(f.run()).resolves.toEqual({ status: "internal-failure", reason: "persistence-failure" });
     const first = await state(f.id, f.emails);
     expect(first.token).toBe("D0");
     expect(first.threads).toHaveLength(2);
@@ -122,7 +122,7 @@ describe("SYNC-003 real mail persistence and sequential same-input recovery", ()
     expect(first.attachments).toHaveLength(1);
     restoreDelegates();
     provider.mockResolvedValue({ emails: f.emails, latestDeltaToken: "D1" });
-    await expect(f.run()).resolves.toBe("completed");
+    await expect(f.run()).resolves.toEqual({ status: "completed" });
     expectConverged(await state(f.id, f.emails), f.emails);
   });
 
@@ -133,13 +133,13 @@ describe("SYNC-003 real mail persistence and sequential same-input recovery", ()
       expect(result.count).toBe(1);
       throw new Error("synthetic lost acknowledgement");
     }) as typeof realUpdateMany);
-    await expect(f.run()).rejects.toThrow("synthetic lost acknowledgement");
+    await expect(f.run()).resolves.toEqual({ status: "indeterminate-completion", reason: "completion-indeterminate" });
     expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId, accessToken: `${f.id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
     const reread = await state(f.id, f.emails);
     expectConverged(reread, f.emails); // D1 committed even though caller saw failure.
     restoreDelegates();
     provider.mockResolvedValue({ emails: f.emails, latestDeltaToken: "D1" });
-    await expect(f.run()).resolves.toBe("completed");
+    await expect(f.run()).resolves.toEqual({ status: "completed" });
     expectConverged(await state(f.id, f.emails), f.emails);
   });
 });

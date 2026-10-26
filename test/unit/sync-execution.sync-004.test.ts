@@ -6,13 +6,17 @@ const { updateMany, query, transaction } = vi.hoisted(() => ({ updateMany: vi.fn
 vi.mock("~/server/db", () => ({ db: { account: { updateMany }, $transaction: transaction } }));
 import { claimSyncExecution, completeSyncExecution, lockSyncExecution, releaseSyncExecution, StaleSyncExecutionError, SyncNotAcquiredError } from "~/lib/sync-execution";
 import { syncEmailsToDatabase } from "~/lib/sync-to-db";
+vi.mock("~/lib/sync-database", async (original) => {
+  const operation = (callback: (tx: unknown) => Promise<unknown>) => transaction(callback) as Promise<unknown>;
+  return { ...await original<object>(), withSyncDatabase: operation, submitSyncDatabase: operation };
+});
 import { execution } from "../fixtures/sync-execution";
 import type { Prisma } from "@prisma/client";
 
 beforeEach(() => {
   updateMany.mockResolvedValue({ count: 1 });
   query.mockResolvedValue([{ id: execution.accountId }]);
-  transaction.mockImplementation((callback: (tx: unknown) => unknown) => callback({ $queryRaw: query }));
+  transaction.mockImplementation((callback: (tx: unknown) => unknown) => callback({ $queryRaw: query, account: { updateMany } }));
 });
 
 describe("SYNC-004 durable execution boundary", () => {
@@ -66,10 +70,10 @@ describe("SYNC-004 durable execution boundary", () => {
   });
 
   it("has no production sync persistence call without execution context", () => {
-    for (const file of ["src/lib/account.ts", "src/lib/initial-sync.ts"]) {
-      const source = readFileSync(file, "utf8");
-      expect(source).toMatch(/await syncEmailsToDatabase\([^;]+, execution\)/);
-    }
+    const runSource = readFileSync("src/lib/sync-run.ts", "utf8");
+    expect(runSource).toContain("syncEmailsToDatabase(dataset.emails, execution, run)");
+    expect(readFileSync("src/lib/account.ts", "utf8")).toContain("return executeSync(");
+    expect(readFileSync("src/lib/initial-sync.ts", "utf8")).toContain("await executeSync(");
     const source = readFileSync("src/lib/sync-to-db.ts", "utf8");
     expect(source).toContain("execution: SyncExecution");
     expect(source).toContain("await lockSyncExecution(tx, execution)");

@@ -101,9 +101,9 @@ describe("SYNC-002 real PostgreSQL checkpoint ordering", () => {
     configureProvider([page([email("A")])]);
     syncEmailsToDatabaseMock.mockRejectedValue(new Error("synthetic-persistence-SECRET-SENTINEL"));
 
-    await expect(new Account(account.accessToken).syncEmails()).rejects.toThrow("synthetic-persistence-SECRET-SENTINEL");
+    await expect(new Account(account.accessToken).syncEmails()).resolves.toEqual({ status: "internal-failure", reason: "persistence-failure" });
 
-    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([email("A")], expect.objectContaining({ accountId: account.id, userId, generation: 0, runId: expect.any(String) }));
+    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([email("A")], expect.objectContaining({ accountId: account.id, userId, generation: 0, runId: expect.any(String) }), expect.anything());
     expect(await db.account.findUnique({ where: { id: account.id } })).toMatchObject({ latestDeltaToken: "D1" });
     expect(errorSpy).toHaveBeenCalledTimes(1);
     expect(errorSpy).toHaveBeenCalledWith("Incremental sync failed.");
@@ -114,7 +114,7 @@ describe("SYNC-002 real PostgreSQL checkpoint ordering", () => {
     configureProvider([page([email("A")], "P2"), { records: [] }]);
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
-    await expect(new Account(account.accessToken).syncEmails()).rejects.toThrow("Sync terminal checkpoint is missing or invalid.");
+    await expect(new Account(account.accessToken).syncEmails()).resolves.toEqual({ status: "internal-failure", reason: "provider-contract" });
     expect(syncEmailsToDatabaseMock).not.toHaveBeenCalled();
     expect(await db.account.findUniqueOrThrow({ where: { id: account.id } })).toMatchObject({ latestDeltaToken: "D1", activeSyncRunId: null });
     expect(errorSpy).toHaveBeenCalledWith("Incremental sync failed.");
@@ -138,7 +138,7 @@ describe("SYNC-002 real PostgreSQL checkpoint ordering", () => {
     });
 
     expect(requests).toEqual([{ deltaToken: "D1" }, { pageToken: "P2" }, { pageToken: "P3" }]);
-    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([first, second, third], expect.objectContaining({ accountId: account.id, userId, generation: 0, runId: expect.any(String) }));
+    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([first, second, third], expect.objectContaining({ accountId: account.id, userId, generation: 0, runId: expect.any(String) }), expect.anything());
     expect(await db.account.findUnique({ where: { id: account.id } })).toMatchObject({ latestDeltaToken: "D2" });
   });
 });

@@ -77,7 +77,7 @@ describe("SYNC-008 real persistence failure contract under execution fencing", (
     axiosMock.get.mockResolvedValue({ data: { records: [message], nextDeltaToken: "D2" } });
     interceptTransactions((tx) => ({ ...tx, email: { ...tx.email, upsert: (() => { throw new Error("SECRET-SENTINEL"); }) as typeof tx.email.upsert } }));
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
-    await expect(new Account(account.accessToken).syncEmails()).rejects.toThrow("Failed to sync emails to database.");
+    await expect(new Account(account.accessToken).syncEmails()).resolves.toEqual({ status: "internal-failure", reason: "persistence-failure" });
     expect(await db.account.findUnique({ where: { id: account.id } })).toMatchObject({ latestDeltaToken: "D1", activeSyncRunId: null });
     expect(errorSpy).toHaveBeenCalledWith("Failed to sync emails to database.");
     expect(errorSpy).toHaveBeenCalledWith("Incremental sync failed.");

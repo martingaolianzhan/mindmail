@@ -57,7 +57,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   clerkAuthMock.mockResolvedValue({ userId: alice });
   detailsMock.mockResolvedValue({ email: "linked@example.test", name: "Linked" });
-  initialSyncMock.mockResolvedValue("completed");
+  initialSyncMock.mockResolvedValue({ status: "completed" });
 });
 
 afterAll(async () => {

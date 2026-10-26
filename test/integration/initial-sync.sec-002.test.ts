@@ -48,16 +48,16 @@ afterAll(async () => {
 
 describe("SEC-002 trusted initial-sync service ownership", () => {
   it("allows the account owner to reach the mocked provider and persistence boundary", async () => {
-    await expect(performInitialSync({ accountId: a1, userId: alice })).resolves.toBe("completed");
+    await expect(performInitialSync({ accountId: a1, userId: alice })).resolves.toEqual({ status: "completed" });
 
     expect(AccountMock).toHaveBeenCalledWith(`${prefix}-token-a1`);
     expect(performInitialSyncMock).toHaveBeenCalledOnce();
-    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([], expect.objectContaining({ accountId: a1, userId: alice, generation: 0, runId: expect.any(String) }));
+    expect(syncEmailsToDatabaseMock).toHaveBeenCalledWith([], expect.objectContaining({ accountId: a1, userId: alice, generation: 0, runId: expect.any(String) }), expect.anything());
     expect(await db.account.findUnique({ where: { id: a1 } })).toMatchObject({ latestDeltaToken: `${prefix}-delta` });
   });
 
   it("rejects Alice synchronising Bob's account before provider or persistence work", async () => {
-    await expect(performInitialSync({ accountId: b1, userId: alice })).resolves.toBe("account-not-found");
+    await expect(performInitialSync({ accountId: b1, userId: alice })).resolves.toEqual({ status: "account-not-found", reason: "account-not-found" });
 
     expect(AccountMock).not.toHaveBeenCalled();
     expect(performInitialSyncMock).not.toHaveBeenCalled();
@@ -66,7 +66,7 @@ describe("SEC-002 trusted initial-sync service ownership", () => {
   });
 
   it("rejects a non-existent account before provider or persistence work", async () => {
-    await expect(performInitialSync({ accountId: `${prefix}-missing`, userId: alice })).resolves.toBe("account-not-found");
+    await expect(performInitialSync({ accountId: `${prefix}-missing`, userId: alice })).resolves.toEqual({ status: "account-not-found", reason: "account-not-found" });
 
     expect(AccountMock).not.toHaveBeenCalled();
     expect(performInitialSyncMock).not.toHaveBeenCalled();

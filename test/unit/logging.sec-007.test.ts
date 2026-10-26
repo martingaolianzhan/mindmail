@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const { axiosMock, dbMock, streamTextMock, streamableValueMock } = vi.hoisted(() => ({
   axiosMock: { get: vi.fn(), isAxiosError: vi.fn(), post: vi.fn() },
   dbMock: {
-    account: { findUnique: vi.fn(), updateMany: vi.fn() },
+    account: { findUnique: vi.fn(), findFirst: vi.fn(), count: vi.fn(), updateMany: vi.fn() },
     $transaction: vi.fn(), $queryRaw: vi.fn(),
     email: { findMany: vi.fn(), upsert: vi.fn() },
     emailAddress: { create: vi.fn(), findUnique: vi.fn() },
@@ -22,6 +22,7 @@ vi.mock("@ai-sdk/google", () => ({ google: vi.fn(() => "synthetic-model") }));
 
 import { getAccountDetails, exchangeCodeForAccessToken } from "~/lib/aurinko";
 import { Account } from "~/lib/account";
+import { performInitialSync } from "~/lib/initial-sync";
 import { syncEmailsToDatabase } from "~/lib/sync-to-db";
 import { execution } from "../fixtures/sync-execution";
 import { autoAIComplete, generateEmail } from "~/app/mail/components/ai-compose/ai-actions";
@@ -52,6 +53,8 @@ function expectNoSensitiveLogs(spy: ReturnType<typeof vi.spyOn>) {
 beforeEach(() => {
   axiosMock.isAxiosError.mockReturnValue(true);
   dbMock.account.updateMany.mockResolvedValue({ count: 1 });
+  dbMock.account.count.mockResolvedValue(1);
+  dbMock.account.findFirst.mockResolvedValue({ id: "account-1", userId: "synthetic-user", accessToken: "access-token-SECRET-SENTINEL", syncGeneration: 0 });
   dbMock.$queryRaw.mockResolvedValue([{ id: execution.accountId }]);
   dbMock.$transaction.mockImplementation((callback: (tx: typeof dbMock) => unknown) => callback(dbMock));
   streamableValueMock.mockImplementation(() => ({ done: vi.fn(), error: vi.fn(), update: vi.fn(), value: {} }));
@@ -114,7 +117,7 @@ describe("SEC-007 sensitive logging boundaries", () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
     axiosMock.post.mockRejectedValue({ response: { data: { body: "mail-body-SECRET-SENTINEL", secret: "provider-secret-SECRET-SENTINEL" } } });
 
-    await expect(new Account("access-token-SECRET-SENTINEL").performInitialSync()).resolves.toBeUndefined();
+    await expect(performInitialSync({ accountId: "account-1", userId: "synthetic-user" })).resolves.toEqual({ status: "internal-failure", reason: "provider-contract" });
 
     expect(errorSpy).toHaveBeenCalledWith("Initial sync failed.");
     expectNoSensitiveLogs(errorSpy);
@@ -182,7 +185,7 @@ describe("SEC-007 sensitive logging boundaries", () => {
     dbMock.account.findUnique.mockResolvedValue({ id: "account-1", userId: "synthetic-user", accessToken: "access-token-SECRET-SENTINEL", syncGeneration: 0, activeSyncRunId: null, latestDeltaToken: "delta" });
     axiosMock.get.mockRejectedValue({ response: { data: { body: "mail-body-SECRET-SENTINEL", token: "access-token-SECRET-SENTINEL", secret: "provider-secret-SECRET-SENTINEL" } } });
 
-    await expect(new Account("access-token-SECRET-SENTINEL").syncEmails()).rejects.toBeDefined();
+    await expect(new Account("access-token-SECRET-SENTINEL").syncEmails()).resolves.toEqual({ status: "internal-failure", reason: "provider-contract" });
 
     expect(errorSpy).toHaveBeenCalledWith("Incremental sync failed.");
     expectNoSensitiveLogs(errorSpy);

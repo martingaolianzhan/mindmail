@@ -1,9 +1,11 @@
 import type { EmailAddress, EmailAttachment, EmailMessage } from "~/type";
-import { db } from "~/server/db";
+import { withSyncDatabase } from "./sync-database";
+import { SYNC_LIMITS } from "./sync-limits";
+import type { SyncRun } from "./sync-run";
 import type { Prisma } from "@prisma/client";
 import { lockSyncExecution, type SyncExecution } from "./sync-execution";
 
-export const syncEmailsToDatabase = async (emails: EmailMessage[], execution: SyncExecution) => {
+export const syncEmailsToDatabase = async (emails: EmailMessage[], execution: SyncExecution, run?: SyncRun) => {
     console.log("Syncing emails to database...", emails.length);
 
     try {
@@ -11,13 +13,21 @@ export const syncEmailsToDatabase = async (emails: EmailMessage[], execution: Sy
         // legacy writes. Each email is one bounded protected unit. Earlier units
         // may remain committed on failure; same-input retry still converges.
         for (const email of emails.length ? emails : [undefined]) {
-            await db.$transaction(async (tx) => {
+            await run?.boundary();
+            // Once submitted, this unit drains under finite DB bounds, not JS
+            // AbortSignal. Cancellation cannot promise rollback of this email.
+            run?.assertActive();
+            await withSyncDatabase(async (tx) => {
                 await lockSyncExecution(tx, execution);
                 if (email) await upsertEmail(tx, email, execution.accountId);
-            }, { isolationLevel: "ReadCommitted" });
+            }, run?.limits ?? SYNC_LIMITS, true);
+            await run?.boundary();
         }
-    } catch {
+    } catch (error) {
         console.error("Failed to sync emails to database.");
+        // The run boundary maps this to a sanitized outcome. Retain typed
+        // authority/observation failures without exposing the raw DB exception.
+        if (run) throw error;
         throw new Error("Failed to sync emails to database.");
     }
 };

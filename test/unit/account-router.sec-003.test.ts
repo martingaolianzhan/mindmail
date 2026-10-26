@@ -63,10 +63,39 @@ beforeEach(() => {
     if (where.accountId === accounts.bob.id) return threads.bob;
     throw new Error("Thread query was not scoped to an authorised account");
   });
-  syncEmailsMock.mockResolvedValue(undefined);
+  syncEmailsMock.mockResolvedValue({ status: "completed" });
 });
 
 describe("SEC-003 getThreads account ownership", () => {
+  it.each(["retryable-failure", "action-required", "ownership-lost", "safety-limit", "indeterminate-completion"])("SYNC-007 consumes resolved %s without breaking thread reads or exposing outcome data", async (status) => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      syncEmailsMock.mockResolvedValue({ status, privateDetail: "SECRET-MUST-NOT-ESCAPE" });
+      await expect(createCaller(accounts.alice.userId).getThreads({ accountId: accounts.alice.id, tabCategory: "inbox", done: false })).resolves.toEqual(threads.alice);
+      expect(log).toHaveBeenCalledWith("Background sync ended:", status);
+      expect(JSON.stringify(log.mock.calls)).not.toContain("SECRET-MUST-NOT-ESCAPE");
+    } finally { log.mockRestore(); }
+  });
+
+  it("SYNC-007 completed sync data/checkpoint stays internal, outside thread response and logs", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      syncEmailsMock.mockResolvedValue({ status: "completed", latestDeltaToken: "CHECKPOINT-SECRET", emails: [{ body: "SYNC-MAIL-SECRET" }] });
+      const result = await createCaller(accounts.alice.userId).getThreads({ accountId: accounts.alice.id, tabCategory: "inbox", done: false });
+      expect(result).toEqual(threads.alice); expect(log).not.toHaveBeenCalled();
+      expect(JSON.stringify(result)).not.toMatch(/CHECKPOINT-SECRET|SYNC-MAIL-SECRET/);
+    } finally { log.mockRestore(); }
+  });
+
+  it("SYNC-007 contains unexpected background rejection without failing the read", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      syncEmailsMock.mockRejectedValue(new Error("RAW-SECRET"));
+      await expect(createCaller(accounts.alice.userId).getThreads({ accountId: accounts.alice.id, tabCategory: "inbox", done: false })).resolves.toEqual(threads.alice);
+      expect(log).toHaveBeenCalledWith("Background account sync failed.");
+      expect(JSON.stringify(log.mock.calls)).not.toContain("RAW-SECRET");
+    } finally { log.mockRestore(); }
+  });
   it("connects the Clerk and Prisma mocks to the production tRPC context", async () => {
     clerkAuthMock.mockResolvedValue({ userId: accounts.alice.userId });
 

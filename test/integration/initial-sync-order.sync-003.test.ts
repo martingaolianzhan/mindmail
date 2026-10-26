@@ -56,11 +56,11 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
 
     const run = performInitialSync(input(id));
     await invoked;
-    expect(syncEmailsToDatabase).toHaveBeenCalledWith(emails, expect.objectContaining({ accountId: id, userId, generation: 0 }));
+    expect(syncEmailsToDatabase).toHaveBeenCalledWith(emails, expect.objectContaining({ accountId: id, userId, generation: 0 }), expect.anything());
     expect(write).not.toHaveBeenCalled();
     expect(await token(id)).toBe("D0");
     resolve();
-    await expect(run).resolves.toBe("completed");
+    await expect(run).resolves.toEqual({ status: "completed" });
     expect(write).toHaveBeenCalledOnce();
     expect(write).toHaveBeenCalledWith({ where: { id, userId, accessToken: `${id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
     expect(await token(id)).toBe("D1");
@@ -75,7 +75,7 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
     vi.mocked(syncEmailsToDatabase).mockRejectedValueOnce(new Error("synthetic persistence failure"));
     const write = interceptCheckpoints();
 
-    await expect(performInitialSync(input(id))).rejects.toThrow("synthetic persistence failure");
+    await expect(performInitialSync(input(id))).resolves.toEqual({ status: "internal-failure", reason: "persistence-failure" });
     expect(write).not.toHaveBeenCalled();
     expect(await token(id)).toBe(previous);
   });
@@ -103,7 +103,7 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
 
     const oldRun = performInitialSync(input(id));
     await persistenceStarted;
-    expect(syncEmailsToDatabase).toHaveBeenCalledWith(emails, expect.objectContaining({ accountId: id, userId, generation: 0 }));
+    expect(syncEmailsToDatabase).toHaveBeenCalledWith(emails, expect.objectContaining({ accountId: id, userId, generation: 0 }), expect.anything());
     expect(write).not.toHaveBeenCalled();
     expect(await db.account.findUniqueOrThrow({ where: { id } })).toMatchObject({
       id, userId, accessToken: originalAccessToken, latestDeltaToken: "D0",
@@ -122,13 +122,11 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
     updateCounts.length = 0;
     write.mockClear();
     releasePersistence();
-    await expect(oldRun).resolves.toBe("sync-failed");
-    expect(write).toHaveBeenCalledOnce();
-    expect(write).toHaveBeenCalledWith({
-      where: { id, userId, accessToken: originalAccessToken, syncGeneration: 0, activeSyncRunId: expect.any(String) },
-      data: { latestDeltaToken: "D1", activeSyncRunId: null },
-    });
-    expect(updateCounts).toEqual([0]);
+    await expect(oldRun).resolves.toEqual({ status: "ownership-lost", reason: "ownership-lost" });
+    // SYNC-007 now observes lost authority before submitting completion. Direct
+    // stale completion predicates remain separately covered by SYNC-004.
+    expect(write).not.toHaveBeenCalled();
+    expect(updateCounts).toEqual([]);
     expect(await db.account.findUniqueOrThrow({ where: { id } })).toMatchObject({
       id, userId, accessToken: replacementAccessToken, latestDeltaToken: "D0",
     });
@@ -145,7 +143,7 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
     }) as typeof realUpdateMany);
     await db.user.create({ data: { id: `${prefix}-other-user`, emailAddress: "other@example.test", firstName: "Other", lastName: "Test" } });
     try {
-      await expect(performInitialSync(input(id))).resolves.toBe("sync-failed");
+      await expect(performInitialSync(input(id))).resolves.toEqual({ status: "ownership-lost", reason: "ownership-lost" });
       expect(write).toHaveBeenCalledWith({ where: { id, userId, accessToken: `${id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
       expect(await token(id)).toBe("D0");
     } finally {

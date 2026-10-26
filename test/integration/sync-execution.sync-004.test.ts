@@ -12,13 +12,13 @@ vi.mock("@clerk/nextjs/server", async () => (await import("../mocks/clerk")).cle
 vi.mock("~/lib/aurinko", () => ({ exchangeCodeForAccessToken: exchange, getAccountDetails: details }));
 // Callback background execution is isolated; direct initial-sync tests below use
 // the actual service, actual Account provider adapter (mocked axios), and real DB.
-vi.mock("~/lib/initial-sync", () => ({ performInitialSync: vi.fn(async () => "completed") }));
+vi.mock("~/lib/initial-sync", () => ({ performInitialSync: vi.fn(async () => ({ status: "completed" })) }));
 vi.mock("@vercel/functions", () => ({ waitUntil: vi.fn() }));
 
 import { db } from "~/server/db";
 import { Account } from "~/lib/account";
 import { syncEmailsToDatabase } from "~/lib/sync-to-db";
-import { claimSyncExecution, completeSyncExecution, releaseSyncExecution, SyncNotAcquiredError, StaleSyncExecutionError } from "~/lib/sync-execution";
+import { claimSyncExecution, completeSyncExecution, releaseSyncExecution, StaleSyncExecutionError, SyncNotAcquiredError } from "~/lib/sync-execution";
 import { GET } from "~/app/api/aurinko/callback/route";
 import { createAurinkoOAuthCorrelation, AURINKO_OAUTH_STATE_COOKIE } from "~/lib/aurinko-oauth-state";
 import { clerkAuthMock } from "../mocks/clerk";
@@ -94,8 +94,8 @@ describe("SYNC-004 real PostgreSQL execution ownership and hard fencing", () => 
     await started.promise;
     const owned = await reread(a);
     expect(owned.activeSyncRunId).toEqual(expect.any(String));
-    await expect(new Account(a.accessToken).syncEmails()).rejects.toBeInstanceOf(SyncNotAcquiredError);
-    await expect(performInitialSync({ accountId: a.id, userId })).resolves.toBe("not-acquired");
+    await expect(new Account(a.accessToken).syncEmails()).resolves.toEqual({ status: "not-acquired", reason: "not-acquired" });
+    await expect(performInitialSync({ accountId: a.id, userId })).resolves.toEqual({ status: "not-acquired", reason: "not-acquired" });
     expect(axiosMock.get).toHaveBeenCalledTimes(1);
     expect(axiosMock.post).not.toHaveBeenCalled();
     expect(await reread(a)).toMatchObject({ activeSyncRunId: owned.activeSyncRunId, latestDeltaToken: "D0" });
@@ -137,7 +137,7 @@ describe("SYNC-004 real PostgreSQL execution ownership and hard fencing", () => 
     const r2 = await claimSyncExecution(current);
     provider.resolve({ data: page([message(a, "OLD-G1")], "STALE-D2") });
     const outcome = await result;
-    expect(outcome).toEqual({ error: expect.any(Error) });
+    expect(outcome).toEqual({ value: { status: "ownership-lost", reason: "ownership-lost" } });
     expect(await reread(a)).toMatchObject({ syncGeneration: 1, activeSyncRunId: r2.runId, latestDeltaToken: null });
     expect(await db.thread.count({ where: { accountId: a.id } })).toBe(0);
     await releaseSyncExecution(r2);
@@ -202,7 +202,7 @@ describe("SYNC-004 real PostgreSQL execution ownership and hard fencing", () => 
       newOwner = (await claimSyncExecution(current)).runId;
       return realUpdateMany(args);
     }) as typeof realUpdateMany);
-    await expect(new Account(a.accessToken).syncEmails()).rejects.toBeInstanceOf(StaleSyncExecutionError);
+    await expect(new Account(a.accessToken).syncEmails()).resolves.toEqual({ status: "ownership-lost", reason: "ownership-lost" });
     expect(await reread(a)).toMatchObject({ syncGeneration: 1, activeSyncRunId: newOwner, latestDeltaToken: null });
   });
 

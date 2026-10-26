@@ -46,7 +46,7 @@ describe("SEC-002 Aurinko callback initial-sync boundary", () => {
     getAccountDetailsMock.mockResolvedValue({ email: "alice@example.test", name: "Alice" });
     accountFindUniqueMock.mockResolvedValue({ id: "42", userId: "clerk-alice" });
     accountUpdateManyMock.mockResolvedValue({ count: 1 });
-    initialSyncMock.mockResolvedValue("completed");
+    initialSyncMock.mockResolvedValue({ status: "completed" });
 
     const response = await GET(new NextRequest("http://mindmail.test/api/aurinko/callback?status=success&code=synthetic-code", { headers: { cookie: "mindmail_aurinko_oauth=synthetic" } }));
 
