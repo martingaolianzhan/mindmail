@@ -1,5 +1,7 @@
 # SYNC-007 — one bounded synchronization run
 
+References in this document to SYNC-005 as “not yet implemented” or “the next task” reflect its status when SYNC-007 was completed. The SYNC-005 durable scheduling core and Cloudflare wake-up adapter have since been implemented, but deployment acceptance is still pending. SYNC-005 remains TODO; see FIX_PLAN.md for its current status.
+
 ## Scope and production paths
 
 One run only. There is no queue, scheduler, lease, continuous ownership watcher,

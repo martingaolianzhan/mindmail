@@ -25,7 +25,8 @@ Target cadence is one minute. The original plan row remains open.
 ```text
 Account durable schedule
   -> Cloudflare Cron / Worker (manual deployment verification pending)
-  -> POST /api/cron/sync (Bearer auth)
+  -> x-vercel-protection-bypass -> Vercel protected Preview
+  -> POST /api/cron/sync (independent MindMail Bearer auth)
   -> consumeDueSyncWork / discoverSyncWork
   -> consumeSyncCandidate
   -> existing executeSync / claimSyncExecution (one conditional UPDATE)
@@ -371,8 +372,10 @@ verification remain the acceptance blockers.
 ```text
 Cloudflare Cron (* * * * *)
   -> tiny Worker
-  -> HTTPS POST /api/cron/sync
+  -> HTTPS POST with x-vercel-protection-bypass
+  -> Vercel Deployment Protection / protected Preview
   -> Authorization: Bearer <SYNC_CRON_SECRET>
+  -> /api/cron/sync
   -> existing consumeDueSyncWork()
   -> PostgreSQL scheduling state
 ```
@@ -400,31 +403,57 @@ internal scheduling state. Only POST is exported.
 The route explicitly selects Node.js and `maxDuration = 300`. Current Next.js
 supports this App Router configuration: the offline build emits
 `.next/server/functions-config-manifest.json` with `/api/cron/sync.maxDuration=300`.
-This repository evidence is **not proof** that the deployed Vercel project/plan/runtime accepts it. Deployment must confirm
-successful route deployment, accepted 300s duration and no premature termination
-before the unchanged ~144s conservative responsive SYNC-007 envelope can finish.
+This repository evidence is **not proof** that the deployed Vercel project/plan/runtime accepts it. Deployment must verify the intended 300-second allowance,
+which exceeds the unchanged ~144s conservative responsive SYNC-007 envelope.
+An allowance is not proof that a real provider-backed ~144s sync completed remotely;
+that live-provider verification is not required for SYNC-005 close-out.
 If sufficient deployed duration cannot be verified, leave SYNC-005 open; do not
 shorten SYNC-007 or select replacement infrastructure.
 
 Worker source: `infra/cloudflare/mindmail-sync-wakeup/worker.js` (plain module JS;
 no Wrangler dependency, CI/CD or GitHub connection required). It reads:
 
-* `MINDMAIL_SYNC_URL`: deployed HTTPS URL, pathname exactly `/api/cron/sync`.
-* `MINDMAIL_CRON_SECRET`: Cloudflare secret, matching MindMail `SYNC_CRON_SECRET`.
+* `MINDMAIL_SYNC_URL`: normal Worker variable/non-secret configuration; the exact
+  protected Preview deployment HTTPS URL, pathname exactly `/api/cron/sync`.
+* `MINDMAIL_CRON_SECRET`: Cloudflare Worker secret, configured later by the user,
+  matching MindMail/Vercel `SYNC_CRON_SECRET` for application authorization.
+* `VERCEL_AUTOMATION_BYPASS_SECRET`: separate required Cloudflare Worker secret,
+  configured later by the user from Vercel Protection Bypass for Automation.
+  The Worker sends it in the exact `x-vercel-protection-bypass` header.
 
-Before constructing/sending Bearer headers, the Worker parses the URL and requires
+This patch defines bindings and request behavior only: it does not generate or
+configure real credentials, deploy MindMail or update a Cloudflare resource.
+Vercel bypass passes the infrastructure deployment-protection layer; it is **not
+scoped by MindMail to the cron route**. It may permit bypass for deployment URLs
+within the Vercel project's configured scope. Treat it as a sensitive infrastructure
+credential, never expose it to browser/client code, and never reuse its value for
+MindMail cron authentication. Passing that layer does not authorize scheduler work:
+`/api/cron/sync` still independently validates only its existing Bearer credential.
+
+MindMail application code does not read, validate, authorize with or depend on
+`VERCEL_AUTOMATION_BYPASS_SECRET`; do not add an application-managed configuration
+requirement for it. Vercel may independently expose one configured automation
+bypass secret inside deployments as the same-named **system environment variable**.
+Its possible presence does not make it a MindMail dependency; application code
+must not rely on that platform-provided variable.
+
+Before constructing/sending either credential header, the Worker parses the URL and requires
 exact `https:` and exact pathname. Invalid URL, plaintext/non-HTTPS, wrong path,
 `/api/cron/sync/extra`, URL userinfo/query/fragment, or empty/whitespace-containing
-secret fails before fetch. It never rewrites/appends a path. Configure the intended
+MindMail or bypass secret fails before fetch. Bypass secrets also reject ASCII
+control characters and DEL. Neither credential is transmitted on validation
+failure. It never rewrites/appends a path. Configure the intended
 MindMail hostname carefully: HTTPS/path validation is not a hostname allowlist.
 It sends one POST with `redirect: "manual"`. Only 2xx succeeds; redirects and all
 other status codes fail. Network rejections are caught and **replaced**, with no
 `cause`, by `Error("MindMail sync wake-up failed.")`. Every failure class uses that
-same generic error, containing no URL, secret, Authorization value, response body
+same generic error, containing no URL, either secret/header value, response body
 or raw network text. It does not read/log response bodies or retry requests.
 
-Generate a high-entropy secret locally and store it separately in the two platforms;
-no production secret is generated or committed here. Do not put real values in
+The owner will later configure two distinct credentials: a fresh high-entropy
+MindMail cron secret shared between MindMail and the Worker, and a dedicated
+Vercel-generated automation bypass secret stored separately in the Worker.
+No real secret is generated, configured or committed here. Do not put real values in
 Git, Worker source, command history, screenshots or logs. `.env.example` contains
 only an empty server-side placeholder; runtime route configuration fails closed
 without it. Worker source in Git does not configure the already-created Worker
@@ -438,29 +467,67 @@ unchanged: pre-SYNC-005 Accounts advance generation, invalidate owner/checkpoint
 become blocked and require relink. **Separately review this adoption policy before
 applying it to any supported environment with real existing linked users.**
 
-1. Deploy/update MindMail.
-2. Set Vercel/MindMail `SYNC_CRON_SECRET` (server-only).
-3. Confirm the deployed route accepts `maxDuration = 300`, and that an actual
-   invocation is not terminated before bounded sync can finish (~144s envelope).
-4. Deploy/update the already-created Cloudflare Worker with the module source.
-5. Set Worker `MINDMAIL_SYNC_URL` to an HTTPS URL whose pathname is exactly
-   `/api/cron/sync` (no query, fragment or userinfo).
-6. Set Worker secret `MINDMAIL_CRON_SECRET`.
-7. Confirm both secrets contain the same value, without displaying/logging them.
-8. Manually test the Worker's scheduled-handler request using Cloudflare's test
-   facilities (not merely visiting its workers.dev URL; no fetch handler is added).
-9. Verify MindMail responds 2xx.
-10. Verify an unauthorized MindMail request fails (401).
-11. Verify invalid/non-HTTPS Worker URL configuration fails closed before sending
-    the secret; restore the valid target afterward.
-12. Configure Cloudflare Cron Trigger `* * * * *` (approximately once per minute).
-13. Observe at least one **actual scheduled** trigger, without UI reads, manual
-    requests or incidental application traffic, including durable work after restart.
-14. Confirm Cloudflare reports success only on MindMail 2xx (redirect/non-2xx/network
-    failures must fail the event).
-15. Confirm MindMail's existing scheduler ran or safely no-op'd.
-16. Confirm no Clerk session was involved.
-17. Only then perform final SYNC-005 DONE close-out after recording the evidence.
+1. After separate authorization, create a new empty non-production PostgreSQL
+   database and apply the committed migrations **before application traffic**.
+   Do not reuse historical infrastructure/credentials or the local test database.
+2. Create/prepare the intended Vercel project without an unprotected public product
+   deployment; configure **Preview Deployment Protection before exposure**.
+3. Configure the minimum Preview build/cron environment: `DATABASE_URL`, required
+   Clerk configuration (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`),
+   and server-only `SYNC_CRON_SECRET`. Keep real provider credentials unset unless
+   separately authorized. The exact cron exception skips Clerk protect, not the
+   surrounding SDK's configuration requirements; no active Clerk user is required.
+4. Configure Vercel Protection Bypass for Automation for the intended project and
+   obtain a dedicated Vercel-generated bypass secret. This is a future user action.
+5. Deploy the **protected Preview** with those settings. If Vercel configuration
+   changes afterward, create a new deployment before testing changed settings;
+   environment changes do not update an existing deployment.
+6. Record the **exact Preview deployment URL and commit** being accepted. Verify
+   the deployed route/runtime provides the intended `maxDuration = 300` allowance.
+   Do not confuse allowance verification with observed real-provider run completion.
+7. Deploy/update the Cloudflare Worker source.
+8. Set Worker `MINDMAIL_SYNC_URL` to that specific Preview deployment's HTTPS
+   `/api/cron/sync` URL, with no query, fragment or userinfo.
+9. Set Cloudflare secret `MINDMAIL_CRON_SECRET` equal to MindMail/Vercel
+   `SYNC_CRON_SECRET`.
+10. Set Cloudflare secret `VERCEL_AUTOMATION_BYPASS_SECRET` to the dedicated
+    Vercel-generated automation bypass value, **different from the cron secret**.
+11. Confirm credentials remain undisplayed/unlogged and are never committed.
+12. **Outer boundary A:** request the exact protected Preview cron URL **without**
+    `x-vercel-protection-bypass` (even if using a valid MindMail Bearer). Verify
+    Vercel blocks it before MindMail route authorization. Record actual Vercel
+    protection behavior; do not assume an application-level HTTP status.
+13. **Inner boundary B:** send valid `x-vercel-protection-bypass` but omit/use invalid
+    MindMail Authorization. Verify Vercel passes the request to `/api/cron/sync`,
+    where MindMail returns its existing **401**. Vercel bypass is not scheduler auth.
+14. **Both-valid boundary C:** use the exact Preview URL, valid Vercel bypass and
+    valid MindMail Bearer. Verify the route invokes the durable scheduler, reaches
+    the fresh PostgreSQL database and returns safe **2xx/no-op** for empty/no-due
+    work. No Clerk user session should be involved.
+15. Manually test the Worker's scheduled-handler request using platform test
+    facilities, not merely visiting workers.dev (no fetch handler exists).
+    Confirm only MindMail 2xx succeeds; redirect/non-2xx/network errors fail.
+16. Verify invalid/non-HTTPS/wrong-path Worker targets and missing/invalid bypass
+    configuration fail before either secret is sent; restore valid configuration.
+17. Configure Cloudflare Cron Trigger `* * * * *` (approximately once per minute).
+18. Observe and record at least one **genuine scheduled** successful wake-up without
+    an active Clerk session, UI reads, manual requests or incidental app traffic.
+    Confirm the existing scheduler reached PostgreSQL and safely no-op'd.
+19. Assemble compositional evidence: existing disposable-local-PostgreSQL durable
+    semantics tests + deployed automatic protected-Preview/DB no-op + verified
+    300-second platform allowance. An empty/no-due 2xx does **not directly prove**
+    that a real provider-backed ~144-second sync completed remotely.
+20. Only after actual evidence exists, obtain the final Review Gate decision and,
+    if accepted, close SYNC-005. Remote real-provider mailbox sync is **not required**
+    for that closure; future live-provider unattended sync belongs to INT-002 under
+    its separate authorization, dependencies and BLOCKED status.
+
+If redeployment changes the Preview URL, update `MINDMAIL_SYNC_URL` and repeat
+relevant protection, authentication and connectivity checks against the **new exact
+URL**. Evidence from an earlier Preview does not automatically accept a later one.
+None of states A/B/C, a Vercel deployment, Cloudflare configuration, actual Cron
+invocation or deployed duration support has been verified/performed by this patch.
+SYNC-005 remains TODO until deployed evidence is collected and reviewed.
 
 ### Wake-up patch automated evidence
 
@@ -488,3 +555,13 @@ Wake-up patch files: `src/app/api/cron/sync/route.ts`, `src/middleware.ts`,
 `test/unit/{cron-route,cron-worker}.sync-005.test.ts`,
 `test/integration/cron-route.sync-005.test.ts`, this document and `FIX_PLAN.md`.
 No core, schema, migration, policy, dependency or deployment-account changes.
+
+Protected-Preview header follow-up validation: **35 Worker cases and 20 unchanged
+cron/middleware cases passed (55 targeted); all 339 unit tests / 28 files passed**.
+Typecheck, explicit changed-source/test ESLint, full lint (existing warnings only),
+offline-safe build (synthetic configuration/local fonts/network denial; zero
+network attempts) and git diff --check pass. Only Worker source/tests and these
+SYNC-005/FIX_PLAN notes changed; application auth, middleware and core are untouched.
+No redundant PostgreSQL tests were added/run for this Worker-only header patch;
+no database action occurred. Deployed outcomes, Cloudflare configuration and
+Vercel duration support remain unverified.
