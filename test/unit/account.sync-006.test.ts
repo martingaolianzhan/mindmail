@@ -13,7 +13,7 @@ vi.mock("~/lib/sync-to-db", () => ({ syncEmailsToDatabase: persist }));
 import { Account } from "~/lib/account";
 import { performInitialSync } from "~/lib/initial-sync";
 
-const a = { id: "A1", userId: "U1", accessToken: "synthetic-T1", syncGeneration: 0, activeSyncRunId: null, latestDeltaToken: "D1" };
+const a = { syncScheduleState: "scheduled", syncScheduleVersion: 0, id: "A1", userId: "U1", accessToken: "synthetic-T1", syncGeneration: 0, activeSyncRunId: null, latestDeltaToken: "D1" };
 const email = (id: string) => ({ id }) as EmailMessage;
 const page = (records: EmailMessage[], nextDeltaToken?: string, nextPageToken?: string): SyncUpdatedEmailsReponse => ({ records, nextDeltaToken, nextPageToken });
 const checkpointWrites = () => dbMock.account.updateMany.mock.calls.filter(([args]) => "latestDeltaToken" in (args as { data: object }).data);

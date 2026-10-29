@@ -5,6 +5,7 @@ vi.mock("axios", () => ({ default: http }));
 import { Account } from "~/lib/account";
 import { performInitialSync } from "~/lib/initial-sync";
 import { db } from "~/server/db";
+import { testSyncSchedule, scheduleTestRun } from "../helpers/scheduling";
 import * as persistence from "~/lib/sync-to-db";
 import * as executions from "~/lib/sync-execution";
 
@@ -19,7 +20,7 @@ function page(size: number, nextPageToken?: string, records: EmailMessage[] = []
 }
 async function fixture(checkpoint: string | null) {
   const id = `${prefix}-${crypto.randomUUID()}`;
-  return db.account.create({ data: { id, userId, accessToken: `${id}-TOKEN-SECRET`, latestDeltaToken: checkpoint, emailAddress: `${id}@example.test`, name: "Synthetic" } });
+  return db.account.create({ data: { ...testSyncSchedule, id, userId, accessToken: `${id}-TOKEN-SECRET`, latestDeltaToken: checkpoint, emailAddress: `${id}@example.test`, name: "Synthetic" } });
 }
 beforeAll(async () => {
   await db.user.create({ data: { id: userId, emailAddress: `${userId}@example.test`, firstName: "Synthetic", lastName: "User" } });
@@ -63,6 +64,7 @@ describe("SYNC-007 cumulative mailbox budget with real PostgreSQL fencing", () =
     const a = await fixture("D0"); const client = new Account(a.accessToken);
     const data = page(1000); http.get.mockResolvedValue({ data });
     for (let i = 0; i < 2; i++) {
+      await scheduleTestRun(a);
       await expect(client.syncEmails({ limits })).resolves.toMatchObject({ status: "completed", latestDeltaToken: "D-next", emails: [] });
       expect(await db.account.findUniqueOrThrow({ where: { id: a.id } })).toMatchObject({ latestDeltaToken: "D-next", activeSyncRunId: null });
     }

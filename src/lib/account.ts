@@ -93,6 +93,12 @@ export class Account {
         }
     }
 
+    // Provider phase used by durable orchestration after a confirmed claim.
+    fetchIncrementalSync(checkpoint: string, run: SyncRun) {
+        return this.fetchPages(checkpoint, run);
+    }
+
+    // Low-level single-run primitive; application triggers use sync-orchestration.
     syncEmails(options: SyncRunOptions = {}) {
         return executeSync(
             (tx) => tx.account.findUnique({ where: { accessToken: this.token } }),

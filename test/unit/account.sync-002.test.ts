@@ -75,7 +75,7 @@ describe("SYNC-002 Account.syncEmails persistence ordering", () => {
     await expect(sync).resolves.toMatchObject({ emails: [email("A")], latestDeltaToken: "D2" });
     expect(dbMock.account.updateMany).toHaveBeenCalledWith({
       where: { id: execution.accountId, userId: execution.userId, accessToken: execution.originalAccessToken, syncGeneration: 0, activeSyncRunId: execution.runId },
-      data: { latestDeltaToken: "D2", activeSyncRunId: null },
+      data: { latestDeltaToken: "D2", activeSyncRunId: null, activeSyncLeaseExpiresAt: null },
     });
   });
 

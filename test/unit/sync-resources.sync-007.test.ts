@@ -12,7 +12,7 @@ import { performInitialSync } from "~/lib/initial-sync";
 import { executeSync } from "~/lib/sync-run";
 import { SYNC_LIMITS, type SyncLimits } from "~/lib/sync-limits";
 
-const a = { id: "A", userId: "U", accessToken: "TOKEN-SECRET", syncGeneration: 1, latestDeltaToken: "D1", activeSyncRunId: null };
+const a = { syncScheduleState: "scheduled", syncScheduleVersion: 0, id: "A", userId: "U", accessToken: "TOKEN-SECRET", syncGeneration: 1, latestDeltaToken: "D1", activeSyncRunId: null };
 const client = new Account(a.accessToken);
 let checkpoint: string;
 const overflow = { status: "safety-limit", reason: "response-bytes-limit" };

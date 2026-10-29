@@ -9,7 +9,8 @@ const isPublicRoute = createRouteMatcher([
 // Clerk middleware to protect public routes
 export default clerkMiddleware(async (auth, request) => {
     // protect private routes
-    if (!isPublicRoute(request)) {
+    // Only this exact pathname bypasses Clerk; its handler requires Bearer auth.
+    if (request.nextUrl.pathname !== '/api/cron/sync' && !isPublicRoute(request)) {
         // if not logged-in, redirect to sign-in page
         await auth.protect()
     }

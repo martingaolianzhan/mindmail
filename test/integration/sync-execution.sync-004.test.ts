@@ -12,10 +12,11 @@ vi.mock("@clerk/nextjs/server", async () => (await import("../mocks/clerk")).cle
 vi.mock("~/lib/aurinko", () => ({ exchangeCodeForAccessToken: exchange, getAccountDetails: details }));
 // Callback background execution is isolated; direct initial-sync tests below use
 // the actual service, actual Account provider adapter (mocked axios), and real DB.
-vi.mock("~/lib/initial-sync", () => ({ performInitialSync: vi.fn(async () => ({ status: "completed" })) }));
+vi.mock("~/lib/sync-orchestration", () => ({ orchestrateAccountSync: vi.fn(async () => ({ status: "completed" })) }));
 vi.mock("@vercel/functions", () => ({ waitUntil: vi.fn() }));
 
 import { db } from "~/server/db";
+import { testSyncSchedule, scheduleTestRun } from "../helpers/scheduling";
 import { Account } from "~/lib/account";
 import { syncEmailsToDatabase } from "~/lib/sync-to-db";
 import { claimSyncExecution, completeSyncExecution, releaseSyncExecution, StaleSyncExecutionError, SyncNotAcquiredError } from "~/lib/sync-execution";
@@ -40,7 +41,7 @@ function deferred<T = void>() {
 async function fixture(owner = userId) {
   const id = String(sequence++);
   ids.push(id);
-  return db.account.create({ data: { id, userId: owner, accessToken: `${prefix}-${id}-T1`, emailAddress: `${id}@example.test`, name: "Synthetic", latestDeltaToken: "D0" } });
+  return db.account.create({ data: { ...testSyncSchedule, id, userId: owner, accessToken: `${prefix}-${id}-T1`, emailAddress: `${id}@example.test`, name: "Synthetic", latestDeltaToken: "D0" } });
 }
 const reread = (a: DbAccount) => db.account.findUniqueOrThrow({ where: { id: a.id } });
 function message(a: DbAccount, version: "OLD-G1" | "NEW-G2"): EmailMessage {
@@ -103,6 +104,7 @@ describe("SYNC-004 real PostgreSQL execution ownership and hard fencing", () => 
     provider.resolve({ data: page([message(a, "OLD-G1")]) });
     await expect(r1).resolves.toMatchObject({ latestDeltaToken: "D1" });
     expect(await reread(a)).toMatchObject({ activeSyncRunId: null, latestDeltaToken: "D1" });
+    await scheduleTestRun(a);
     axiosMock.get.mockResolvedValue({ data: page([], "D2") });
     await expect(new Account(a.accessToken).syncEmails()).resolves.toMatchObject({ latestDeltaToken: "D2" });
     expect(await reread(a)).toMatchObject({ activeSyncRunId: null, latestDeltaToken: "D2" });
@@ -185,7 +187,7 @@ describe("SYNC-004 real PostgreSQL execution ownership and hard fencing", () => 
     await completeSyncExecution(r1, "D1");
     await expect(claimSyncExecution(a)).rejects.toBeInstanceOf(SyncNotAcquiredError);
     expect(await reread(a)).toMatchObject({ latestDeltaToken: "D1", activeSyncRunId: null });
-    const r2 = await claimSyncExecution(await reread(a));
+    const r2 = await claimSyncExecution(await scheduleTestRun(a));
     await expect(syncEmailsToDatabase([message(a, "OLD-G1")], r1)).rejects.toThrow("Failed to sync emails to database.");
     await expect(completeSyncExecution(r1, "STALE")).rejects.toBeInstanceOf(StaleSyncExecutionError);
     await releaseSyncExecution(r1);
@@ -251,7 +253,7 @@ describe("SYNC-004 real PostgreSQL execution ownership and hard fencing", () => 
       const newer = message(a, "NEW-G2");
       await syncEmailsToDatabase([newer], current);
       await completeSyncExecution(current, "G2-D2");
-      const next = await claimSyncExecution(await reread(a));
+      const next = await claimSyncExecution(await scheduleTestRun(a));
       release.resolve(); await rejected;
       await expect(completeSyncExecution(old, "OLD-D1")).rejects.toBeInstanceOf(StaleSyncExecutionError);
       await releaseSyncExecution(old);

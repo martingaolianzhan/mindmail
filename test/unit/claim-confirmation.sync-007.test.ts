@@ -12,7 +12,7 @@ import { performInitialSync } from "~/lib/initial-sync";
 import { claimSyncExecution } from "~/lib/sync-execution";
 import * as database from "~/lib/sync-database";
 
-const a = { id: "A", userId: "U", accessToken: "TOKEN-SECRET", syncGeneration: 1, activeSyncRunId: null, latestDeltaToken: "DELTA-SECRET" } as DbAccount;
+const a = { syncScheduleState: "scheduled", syncScheduleVersion: 0, id: "A", userId: "U", accessToken: "TOKEN-SECRET", syncGeneration: 1, activeSyncRunId: null, latestDeltaToken: "DELTA-SECRET" } as DbAccount;
 const limits = { dbObservationMs: 20, deadlineMs: 200 };
 const unknown = { status: "indeterminate-completion", reason: "completion-indeterminate" };
 function deferred<T>() { let resolve!: (value: T) => void; let reject!: (error: Error) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
@@ -30,7 +30,7 @@ function expectExactCleanup() {
   expect(dbMock.account.updateMany).toHaveBeenCalledTimes(2);
   expect(dbMock.account.updateMany.mock.calls[1]![0]).toEqual({
     where: { id: a.id, userId: a.userId, accessToken: a.accessToken, syncGeneration: a.syncGeneration, activeSyncRunId: claimArgs().data.activeSyncRunId },
-    data: { activeSyncRunId: null },
+    data: { activeSyncRunId: null, activeSyncLeaseExpiresAt: null },
   });
 }
 function expectSafe(outcome: unknown) {
@@ -51,8 +51,8 @@ describe("SYNC-007 one claim observer with original settlement retained", () => 
   it("pre-generates full execution identity, keeps claim predicate, and observes the original native transaction exactly once", async () => {
     const observer = vi.spyOn(database, "observeDatabase");
     const execution = await claimSyncExecution(a);
-    expect(execution).toEqual({ accountId: a.id, userId: a.userId, originalAccessToken: a.accessToken, generation: a.syncGeneration, runId: expect.any(String) });
-    expect(claimArgs()).toEqual({ where: { id: a.id, userId: a.userId, accessToken: a.accessToken, syncGeneration: a.syncGeneration, activeSyncRunId: null, latestDeltaToken: a.latestDeltaToken }, data: { activeSyncRunId: execution.runId } });
+    expect(execution).toEqual({ accountId: a.id, userId: a.userId, originalAccessToken: a.accessToken, generation: a.syncGeneration, runId: expect.any(String), scheduleVersion: 1 });
+    expect(claimArgs()).toEqual({ where: { id: a.id, userId: a.userId, accessToken: a.accessToken, syncGeneration: a.syncGeneration, activeSyncRunId: null, latestDeltaToken: a.latestDeltaToken, syncScheduleVersion: 0, syncScheduleState: "scheduled", syncNextRunAt: { lte: new Date(0) } }, data: { activeSyncRunId: execution.runId, syncScheduleState: "running", syncNextRunAt: null, activeSyncLeaseExpiresAt: new Date(300_000), syncScheduleVersion: { increment: 1 } } });
     expect(observer).toHaveBeenCalledExactlyOnceWith(dbMock.$transaction.mock.results[0]!.value, 8000);
     expect(dbMock.$transaction.mock.calls[0]![1]).toEqual({ maxWait: 2000, timeout: 5000 });
     expect(dbMock.$queryRaw.mock.calls[0]!.slice(1)).toEqual(["4000", "2000"]);
@@ -63,10 +63,10 @@ describe("SYNC-007 one claim observer with original settlement retained", () => 
     dbMock.$transaction.mockImplementationOnce(async (callback: (tx: typeof dbMock) => Promise<unknown>) => { await gate.promise; return callback(dbMock); });
     const claiming = claimSyncExecution(account);
     expect(dbMock.$transaction).toHaveBeenCalledTimes(1);
-    account.userId = "CHANGED-USER"; account.accessToken = "CHANGED-TOKEN"; account.syncGeneration = 99; account.latestDeltaToken = "CHANGED-DELTA";
+    account.userId = "CHANGED-USER"; account.accessToken = "CHANGED-TOKEN"; account.syncGeneration = 99; account.latestDeltaToken = "CHANGED-DELTA"; account.syncScheduleVersion = 99; account.syncScheduleState = "blocked";
     gate.resolve(); const execution = await claiming;
     expect(execution).toMatchObject({ accountId: a.id, userId: a.userId, originalAccessToken: a.accessToken, generation: a.syncGeneration });
-    expect(claimArgs().where).toEqual({ id: a.id, userId: a.userId, accessToken: a.accessToken, syncGeneration: a.syncGeneration, activeSyncRunId: null, latestDeltaToken: a.latestDeltaToken });
+    expect(claimArgs().where).toEqual({ id: a.id, userId: a.userId, accessToken: a.accessToken, syncGeneration: a.syncGeneration, activeSyncRunId: null, latestDeltaToken: a.latestDeltaToken, syncScheduleVersion: 0, syncScheduleState: "scheduled", syncNextRunAt: { lte: new Date(0) } });
   });
 
   for (const kind of ["initial", "incremental"]) {

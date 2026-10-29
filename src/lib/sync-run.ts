@@ -1,6 +1,6 @@
 import type { Account, Prisma } from "@prisma/client";
 import type { EmailMessage, SyncUpdatedEmailsReponse } from "~/type";
-import { claimSyncExecution, completeSyncExecution, ownsSyncExecution, terminateSyncExecution, StaleSyncExecutionError, SyncNotAcquiredError, type SyncExecution } from "./sync-execution";
+import { claimSyncExecution, completeSyncExecution, ownsSyncExecution, terminateSyncExecution, StaleSyncExecutionError, SyncNotAcquiredError, type SyncExecution, type ScheduledExecution, type SyncScheduleClaim } from "./sync-execution";
 import { observeDatabase, SyncDatabaseObservationError, withSyncDatabase } from "./sync-database";
 import { syncLimits, type SyncLimits } from "./sync-limits";
 import { syncEmailsToDatabase } from "./sync-to-db";
@@ -229,6 +229,7 @@ export function executeSync(
   fetch: (account: Account, run: SyncRun) => Promise<SyncDataset>,
   options: SyncRunOptions = {},
   incremental = false,
+  orchestration?: { claim: SyncScheduleClaim; acquired: (execution: ScheduledExecution) => void },
 ): Promise<SyncOutcome> {
   const run = new SyncRun(options);
   void (async () => {
@@ -242,7 +243,10 @@ export function executeSync(
       if (incremental && account.latestDeltaToken == null) throw new SyncRunFailure({ status: "action-required", reason: "reinitialization-required" });
       // The claim helper owns ONE observation and retains its original DB
       // settlement for exact-run cleanup. An outer observer would orphan it.
-      const execution = await claimSyncExecution(account, run.limits);
+      const execution = await claimSyncExecution(account, run.limits, orchestration?.claim);
+      // This callback runs ONLY after definite acquisition, never on observation
+      // expiry. It is trusted internal context, not a public result extension.
+      if (orchestration) orchestration.acquired(execution);
       run.attach(execution);
       acquiring = false;
       await run.boundary();

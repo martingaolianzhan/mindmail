@@ -43,6 +43,19 @@ export const accountRouter = createTRPCRouter({
             }
         });
     }),
+    getSyncStatus: privateProcedure.input(z.object({ accountId: z.string() })).query(async ({ input, ctx }) => {
+        const status = await ctx.db.account.findFirst({
+            where: { id: input.accountId, userId: ctx.auth.userId },
+            select: {
+                syncScheduleState: true, syncRetryCount: true, syncNextRunAt: true,
+                syncLastOutcomeStatus: true, syncLastOutcomeReason: true,
+            },
+        }).catch(() => {
+            throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Unable to read sync status." });
+        });
+        if (!status) throw new TRPCError({ code: "NOT_FOUND", message: "Account not found" });
+        return status;
+    }),
     // get number of threads by category (inbox, sent, draft, etc..)
     getNumThreads: privateProcedure.input(z.object({
         accountId: z.string(),
@@ -78,14 +91,6 @@ export const accountRouter = createTRPCRouter({
         done: z.boolean() // thread status
     })).query(async ({ input, ctx }) => { 
         const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId);
-
-        // everytime get threads, update emails
-        const acc = new Account(account.accessToken);
-        void acc.syncEmails()
-            .then((result) => {
-                if (result.status !== "completed") console.error("Background sync ended:", result.status);
-            })
-            .catch(() => console.error("Background account sync failed."));
 
         // Always scope a successful thread query to the authenticated user's account.
         const filter: Prisma.ThreadWhereInput = {

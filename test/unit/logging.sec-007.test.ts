@@ -54,7 +54,7 @@ beforeEach(() => {
   axiosMock.isAxiosError.mockReturnValue(true);
   dbMock.account.updateMany.mockResolvedValue({ count: 1 });
   dbMock.account.count.mockResolvedValue(1);
-  dbMock.account.findFirst.mockResolvedValue({ id: "account-1", userId: "synthetic-user", accessToken: "access-token-SECRET-SENTINEL", syncGeneration: 0 });
+  dbMock.account.findFirst.mockResolvedValue({ syncScheduleState: "scheduled", syncScheduleVersion: 0, id: "account-1", userId: "synthetic-user", accessToken: "access-token-SECRET-SENTINEL", syncGeneration: 0 });
   dbMock.$queryRaw.mockResolvedValue([{ id: execution.accountId }]);
   dbMock.$transaction.mockImplementation((callback: (tx: typeof dbMock) => unknown) => callback(dbMock));
   streamableValueMock.mockImplementation(() => ({ done: vi.fn(), error: vi.fn(), update: vi.fn(), value: {} }));
@@ -182,7 +182,7 @@ describe("SEC-007 sensitive logging boundaries", () => {
 
   it("logs incremental provider failures generically while preserving rejection", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
-    dbMock.account.findUnique.mockResolvedValue({ id: "account-1", userId: "synthetic-user", accessToken: "access-token-SECRET-SENTINEL", syncGeneration: 0, activeSyncRunId: null, latestDeltaToken: "delta" });
+    dbMock.account.findUnique.mockResolvedValue({ syncScheduleState: "scheduled", syncScheduleVersion: 0, id: "account-1", userId: "synthetic-user", accessToken: "access-token-SECRET-SENTINEL", syncGeneration: 0, activeSyncRunId: null, latestDeltaToken: "delta" });
     axiosMock.get.mockRejectedValue({ response: { data: { body: "mail-body-SECRET-SENTINEL", token: "access-token-SECRET-SENTINEL", secret: "provider-secret-SECRET-SENTINEL" } } });
 
     await expect(new Account("access-token-SECRET-SENTINEL").syncEmails()).resolves.toEqual({ status: "internal-failure", reason: "provider-contract" });

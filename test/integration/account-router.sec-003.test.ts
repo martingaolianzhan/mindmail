@@ -104,7 +104,7 @@ describe("SEC-003 real PostgreSQL ownership and categories", () => {
     findManySpy.mockClear();
     await expect(callAs(alice, b1, "inbox")).rejects.toThrow("Account not found");
     expect(findManySpy).not.toHaveBeenCalled();
-    expect(syncEmailsMock).toHaveBeenCalledTimes(3);
+    expect(syncEmailsMock).not.toHaveBeenCalled();
   });
 
   it("rejects unauthenticated requests and nonexistent accounts before querying threads", async () => {

@@ -12,6 +12,7 @@ vi.mock("~/lib/sync-to-db", () => ({ syncEmailsToDatabase: syncEmailsToDatabaseM
 
 import { Account } from "~/lib/account";
 import { db } from "~/server/db";
+import { testSyncSchedule } from "../helpers/scheduling";
 import { interceptCheckpoints } from "../helpers/transactions";
 
 type Request = { deltaToken?: string; pageToken?: string };
@@ -30,7 +31,7 @@ async function createAccount(name: string) {
   const id = `${prefix}-${name}`;
   const accessToken = `${prefix}-${name}-token`;
   await db.account.create({
-    data: { id, userId, accessToken, emailAddress: `${name}@example.test`, name, latestDeltaToken: "D1" },
+    data: { ...testSyncSchedule, id, userId, accessToken, emailAddress: `${name}@example.test`, name, latestDeltaToken: "D1" },
   });
   return { id, accessToken };
 }

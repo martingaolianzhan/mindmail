@@ -14,6 +14,7 @@ vi.mock("~/lib/sync-to-db", () => ({ syncEmailsToDatabase: syncEmailsToDatabaseM
 
 import { performInitialSync } from "~/lib/initial-sync";
 import { db } from "~/server/db";
+import { testSyncSchedule } from "../helpers/scheduling";
 
 const prefix = `sec002-${crypto.randomUUID()}`;
 const alice = `${prefix}-alice`;
@@ -29,8 +30,8 @@ beforeAll(async () => {
     lastName: "User",
   })) });
   await db.account.createMany({ data: [
-    { id: a1, userId: alice, name: "A1", emailAddress: "a1@example.test", accessToken: `${prefix}-token-a1` },
-    { id: b1, userId: bob, name: "B1", emailAddress: "b1@example.test", accessToken: `${prefix}-token-b1` },
+    { ...testSyncSchedule, id: a1, userId: alice, name: "A1", emailAddress: "a1@example.test", accessToken: `${prefix}-token-a1` },
+    { ...testSyncSchedule, id: b1, userId: bob, name: "B1", emailAddress: "b1@example.test", accessToken: `${prefix}-token-b1` },
   ] });
 });
 

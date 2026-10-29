@@ -32,7 +32,7 @@ vi.mock("~/lib/aurinko-oauth-state", () => ({
   AURINKO_OAUTH_STATE_COOKIE: "mindmail_aurinko_oauth",
   verifyAurinkoOAuthCorrelation: vi.fn(() => true),
 }));
-vi.mock("~/lib/initial-sync", () => ({ performInitialSync: initialSyncMock }));
+vi.mock("~/lib/sync-orchestration", () => ({ orchestrateAccountSync: initialSyncMock }));
 vi.mock("@vercel/functions", () => ({ waitUntil: waitUntilMock }));
 vi.mock("axios", () => ({ default: { post: axiosPostMock } }));
 

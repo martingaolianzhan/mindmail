@@ -6,6 +6,7 @@ import { Account } from "~/lib/account";
 import { syncEmailsToDatabase } from "~/lib/sync-to-db";
 import { claimSyncExecution } from "~/lib/sync-execution";
 import { db } from "~/server/db";
+import { testSyncSchedule } from "../helpers/scheduling";
 import { interceptTransactions, restoreTransactions } from "../helpers/transactions";
 
 const prefix = `sync008-${crypto.randomUUID()}`;
@@ -24,7 +25,7 @@ const email = (suffix: string, attachment = false): EmailMessage => ({
 });
 async function createAccount(suffix: string) {
   const id = `${prefix}-account-${suffix}`;
-  return db.account.create({ data: { id, userId, accessToken: `${prefix}-token-${suffix}`, emailAddress: `${suffix}@example.test`, name: suffix, latestDeltaToken: "D1" } });
+  return db.account.create({ data: { ...testSyncSchedule, id, userId, accessToken: `${prefix}-token-${suffix}`, emailAddress: `${suffix}@example.test`, name: suffix, latestDeltaToken: "D1" } });
 }
 beforeAll(async () => {
   await db.user.create({ data: { id: userId, emailAddress: `${userId}@example.test`, firstName: "Synthetic", lastName: "User" } });

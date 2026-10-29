@@ -8,6 +8,7 @@ vi.mock("~/lib/sync-to-db", () => ({ syncEmailsToDatabase: vi.fn() }));
 import { performInitialSync } from "~/lib/initial-sync";
 import { syncEmailsToDatabase } from "~/lib/sync-to-db";
 import { db } from "~/server/db";
+import { testSyncSchedule } from "../helpers/scheduling";
 import { interceptCheckpoints } from "../helpers/transactions";
 
 const prefix = `sync003-order-${crypto.randomUUID()}`;
@@ -18,7 +19,7 @@ const input = (accountId: string) => ({ accountId, userId });
 async function createAccount(suffix: string, latestDeltaToken: string | null) {
   const id = `${prefix}-${suffix}`;
   await db.account.create({ data: {
-    id, userId, accessToken: `${id}-token`, name: suffix,
+    ...testSyncSchedule, id, userId, accessToken: `${id}-token`, name: suffix,
     emailAddress: `${suffix}@example.test`, latestDeltaToken,
   } });
   return id;
@@ -62,7 +63,7 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
     resolve();
     await expect(run).resolves.toEqual({ status: "completed" });
     expect(write).toHaveBeenCalledOnce();
-    expect(write).toHaveBeenCalledWith({ where: { id, userId, accessToken: `${id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
+    expect(write).toHaveBeenCalledWith({ where: { id, userId, accessToken: `${id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null, activeSyncLeaseExpiresAt: null } });
     expect(await token(id)).toBe("D1");
   });
 
@@ -144,7 +145,7 @@ describe("SYNC-003 confirmed-pending and rejected persistence against PostgreSQL
     await db.user.create({ data: { id: `${prefix}-other-user`, emailAddress: "other@example.test", firstName: "Other", lastName: "Test" } });
     try {
       await expect(performInitialSync(input(id))).resolves.toEqual({ status: "ownership-lost", reason: "ownership-lost" });
-      expect(write).toHaveBeenCalledWith({ where: { id, userId, accessToken: `${id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
+      expect(write).toHaveBeenCalledWith({ where: { id, userId, accessToken: `${id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null, activeSyncLeaseExpiresAt: null } });
       expect(await token(id)).toBe("D0");
     } finally {
       await db.account.update({ where: { id }, data: { userId } });

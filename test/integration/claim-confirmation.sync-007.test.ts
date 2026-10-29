@@ -1,9 +1,11 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Account as DbAccount, Prisma } from "@prisma/client";
+import type { Account as DbAccount } from "@prisma/client";
+import { holdClaimAcknowledgement } from "../helpers/claim-acknowledgement";
 const { http } = vi.hoisted(() => ({ http: { get: vi.fn(), post: vi.fn() } }));
 vi.mock("axios", () => ({ default: http }));
 import { Account } from "~/lib/account";
 import { db } from "~/server/db";
+import { testSyncSchedule, scheduleTestRun } from "../helpers/scheduling";
 import * as executions from "~/lib/sync-execution";
 import * as persistence from "~/lib/sync-to-db";
 import { SyncDatabaseObservationError } from "~/lib/sync-database";
@@ -15,51 +17,11 @@ const realTransaction = db.$transaction.bind(db);
 const realTerminate = executions.terminateSyncExecution;
 const limits = { dbObservationMs: 200, deadlineMs: 1000 };
 const unknown = { status: "indeterminate-completion", reason: "completion-indeterminate" };
-function deferred<T = void>() { let resolve!: (value: T) => void; const promise = new Promise<T>((r) => { resolve = r; }); return { promise, resolve }; }
 async function fixture() {
   const id = `${prefix}-${crypto.randomUUID()}`;
-  return db.account.create({ data: { id, userId, accessToken: `${id}-TOKEN-SECRET`, emailAddress: `${id}@example.test`, name: "Synthetic", syncGeneration: 1, latestDeltaToken: "DELTA-SECRET" } });
+  return db.account.create({ data: { ...testSyncSchedule, id, userId, accessToken: `${id}-TOKEN-SECRET`, emailAddress: `${id}@example.test`, name: "Synthetic", syncGeneration: 1, latestDeltaToken: "DELTA-SECRET" } });
 }
 const reread = (a: DbAccount) => db.account.findUniqueOrThrow({ where: { id: a.id } });
-
-// Gate the original transaction's acknowledgement AFTER PostgreSQL COMMIT, not
-// the higher-level claim helper. This reproduces its former INNER observer loss.
-function holdClaimAcknowledgement(rejectAfterCommit = false) {
-  const committed = deferred<executions.SyncExecution>(); const ack = deferred(); const settled = deferred();
-  type Revocation = { args: Prisma.AccountUpdateManyArgs; count: number };
-  const cleanup = deferred<Revocation>(); const revocations: Revocation[] = [];
-  let first = true; let released = false;
-  vi.spyOn(db, "$transaction").mockImplementation((async (callback: (tx: Prisma.TransactionClient) => Promise<unknown>, options: object) => {
-    let execution: executions.SyncExecution | undefined;
-    let revocation: Revocation | undefined;
-    const result = await realTransaction((tx) => callback(new Proxy(tx, {
-      get(target, key) {
-        if (key !== "account") { const value: unknown = Reflect.get(target, key); return value; }
-        return new Proxy(tx.account, {
-          get(delegate, method) {
-            if (method !== "updateMany") { const value: unknown = Reflect.get(delegate, method); return value; }
-            return async (args: Prisma.AccountUpdateManyArgs) => {
-              if (first && typeof args.data.activeSyncRunId === "string" && args.where?.activeSyncRunId === null) {
-                first = false;
-                execution = { accountId: args.where.id as string, userId: args.where.userId as string, originalAccessToken: args.where.accessToken as string, generation: args.where.syncGeneration as number, runId: args.data.activeSyncRunId };
-              }
-              const result = await tx.account.updateMany(args);
-              if (released && args.data.activeSyncRunId === null && typeof args.where?.activeSyncRunId === "string") revocation = { args, count: result.count };
-              return result;
-            };
-          },
-        });
-      },
-    })), options);
-    if (revocation) { revocations.push(revocation); cleanup.resolve(revocation); }
-    if (execution) {
-      committed.resolve(execution); await ack.promise; settled.resolve();
-      if (rejectAfterCommit) throw new Error("RAW-DB-SECRET ACK-SECRET");
-    }
-    return result;
-  }) as typeof db.$transaction);
-  return { committed: committed.promise, release: () => { released = true; ack.resolve(); }, settled: settled.promise, cleanup: cleanup.promise, revocations };
-}
 
 beforeAll(async () => {
   await db.user.create({ data: { id: userId, emailAddress: `${userId}@example.test`, firstName: "Synthetic", lastName: "User" } });
@@ -94,9 +56,9 @@ describe("SYNC-007 late original claim acknowledgement against real PostgreSQL",
     await held.settled;
     const cleanup = await held.cleanup;
     expect(held.revocations).toHaveLength(1);
-    expect(cleanup).toEqual({ args: { where: { id: r1.accountId, userId: r1.userId, accessToken: r1.originalAccessToken, syncGeneration: r1.generation, activeSyncRunId: r1.runId }, data: { activeSyncRunId: null } }, count: 1 });
+    expect(cleanup).toEqual({ args: { where: { id: r1.accountId, userId: r1.userId, accessToken: r1.originalAccessToken, syncGeneration: r1.generation, activeSyncRunId: r1.runId }, data: { activeSyncRunId: null, activeSyncLeaseExpiresAt: null } }, count: 1 });
     expect(await reread(a)).toMatchObject({ activeSyncRunId: null, latestDeltaToken: a.latestDeltaToken });
-    const r2 = await executions.claimSyncExecution(await reread(a));
+    const r2 = await executions.claimSyncExecution(await scheduleTestRun(a));
     expect(r2.runId).not.toBe(r1.runId);
     expect((await reread(a)).activeSyncRunId).toBe(r2.runId);
     await expect(run).resolves.toEqual(unknown);
@@ -121,13 +83,13 @@ describe("SYNC-007 late original claim acknowledgement against real PostgreSQL",
         // transition, not stale-owner reclamation, a lease or a recovery worker.
         expect(await realTerminate(r1)).toBe(true);
       }
-      r2 = await executions.claimSyncExecution(await reread(a));
+      r2 = await executions.claimSyncExecution(await scheduleTestRun(a));
       expect(r2.runId).not.toBe(r1.runId);
     } finally { held.release(); }
     await held.settled;
     const cleanup = await held.cleanup;
     expect(held.revocations).toHaveLength(1);
-    expect(cleanup).toEqual({ args: { where: { id: r1.accountId, userId: r1.userId, accessToken: r1.originalAccessToken, syncGeneration: r1.generation, activeSyncRunId: r1.runId }, data: { activeSyncRunId: null } }, count: 0 });
+    expect(cleanup).toEqual({ args: { where: { id: r1.accountId, userId: r1.userId, accessToken: r1.originalAccessToken, syncGeneration: r1.generation, activeSyncRunId: r1.runId }, data: { activeSyncRunId: null, activeSyncLeaseExpiresAt: null } }, count: 0 });
     expect(await reread(a)).toMatchObject({ activeSyncRunId: r2.runId, syncGeneration: kind === "new-generation" ? 2 : 1, accessToken: kind === "new-generation" ? `${a.accessToken}-T2` : a.accessToken, latestDeltaToken: kind === "new-generation" ? null : a.latestDeltaToken });
     expect(http.get).not.toHaveBeenCalled(); expect(http.post).not.toHaveBeenCalled();
     await expect(run).resolves.toEqual(unknown);

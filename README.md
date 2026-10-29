@@ -258,6 +258,14 @@ npm run build
 
 These commands have different environment requirements; the repository is still undergoing configuration/documentation cleanup and should not yet be treated as a zero-configuration clone-and-run project.
 
+### Scheduled sync wake-up
+
+The approved external clock is Cloudflare Cron/Worker → authenticated MindMail
+`POST /api/cron/sync`; MindMail remains deployed separately. Source and offline
+tests are provided, but actual Cron delivery and deployed function-duration
+verification remain pending. See the [SYNC-005 deployment checklist](docs/sync/SYNC-005.md#external-wake-up-close-out--deployment-checklist).
+This is not a production-readiness claim.
+
 ### Integration-test database
 
 Integration tests require a **pre-provisioned disposable local PostgreSQL database**.

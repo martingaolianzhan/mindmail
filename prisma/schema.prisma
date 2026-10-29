@@ -30,9 +30,20 @@ model Account {
     // latest delta token of email account, from Aurinko, optional
     latestDeltaToken String?
 
-    // Durable authority only; crash/restart owner reclamation belongs to SYNC-005.
+    // Execution authority (SYNC-004). Scheduling/lease metadata does not replace it.
     syncGeneration Int @default(0)
     activeSyncRunId String?
+    activeSyncLeaseExpiresAt DateTime?
+
+    syncScheduleState SyncScheduleState @default(blocked)
+    syncNextRunAt DateTime?
+    syncRetryCount Int @default(0)
+    syncLastOutcomeStatus String?
+    syncLastOutcomeReason String?
+    syncScheduleVersion Int @default(0)
+
+    @@index([syncScheduleState, syncNextRunAt])
+    @@index([activeSyncLeaseExpiresAt])
 
     threads Thread[] // email threads
 
@@ -150,6 +161,14 @@ model EmailAttachment {
     emailId         String
 }
 
+
+enum SyncScheduleState {
+    scheduled
+    running
+    retry_wait
+    reconciling
+    blocked
+}
 
 enum Sensitivity {
     normal

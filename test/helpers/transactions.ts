@@ -18,7 +18,7 @@ export function interceptCheckpoints(handler: typeof db.account.updateMany = rea
   vi.spyOn(executions, "completeSyncExecution").mockImplementation(async (execution, latestDeltaToken) => {
     const result = await observer({
       where: { id: execution.accountId, userId: execution.userId, accessToken: execution.originalAccessToken, syncGeneration: execution.generation, activeSyncRunId: execution.runId },
-      data: { latestDeltaToken, activeSyncRunId: null },
+      data: { latestDeltaToken, activeSyncRunId: null, activeSyncLeaseExpiresAt: null },
     });
     if (result.count !== 1) throw new executions.StaleSyncExecutionError();
   });

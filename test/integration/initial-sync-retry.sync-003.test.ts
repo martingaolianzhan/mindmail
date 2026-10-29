@@ -6,6 +6,7 @@ vi.mock("~/lib/account", () => ({ Account: vi.fn(() => ({ performInitialSync: pr
 
 import { performInitialSync } from "~/lib/initial-sync";
 import { db } from "~/server/db";
+import { testSyncSchedule, scheduleTestRun } from "../helpers/scheduling";
 import { interceptCheckpoints, interceptTransactions, restoreTransactions } from "../helpers/transactions";
 
 const prefix = `sync003-retry-${crypto.randomUUID()}`;
@@ -31,11 +32,14 @@ function message(suffix: string, withAttachment: boolean): EmailMessage {
 async function fixture(suffix: string) {
   const id = `${prefix}-account-${suffix}`;
   await db.account.create({ data: {
-    id, userId, accessToken: `${id}-token`, emailAddress: `${suffix}@example.test`, name: suffix, latestDeltaToken: "D0",
+    ...testSyncSchedule, id, userId, accessToken: `${id}-token`, emailAddress: `${suffix}@example.test`, name: suffix, latestDeltaToken: "D0",
   } });
   const emails = [message(`${suffix}-first`, false), message(`${suffix}-second`, true)];
   provider.mockResolvedValue({ emails, latestDeltaToken: "D1" });
-  return { id, emails, run: () => performInitialSync({ accountId: id, userId }) };
+  return { id, emails, run: async () => {
+    await scheduleTestRun({ id, userId });
+    return performInitialSync({ accountId: id, userId });
+  } };
 }
 
 async function state(id: string, emails: EmailMessage[]) {
@@ -91,7 +95,7 @@ describe("SYNC-003 real mail persistence and sequential same-input recovery", ()
     }) as typeof realUpdateMany);
     await expect(f.run()).resolves.toEqual({ status: "completed" });
     expect(write).toHaveBeenCalledOnce();
-    expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId, accessToken: `${f.id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
+    expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId, accessToken: `${f.id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null, activeSyncLeaseExpiresAt: null } });
     expectConverged(await state(f.id, f.emails), f.emails);
   });
 
@@ -134,7 +138,7 @@ describe("SYNC-003 real mail persistence and sequential same-input recovery", ()
       throw new Error("synthetic lost acknowledgement");
     }) as typeof realUpdateMany);
     await expect(f.run()).resolves.toEqual({ status: "indeterminate-completion", reason: "completion-indeterminate" });
-    expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId, accessToken: `${f.id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null } });
+    expect(write).toHaveBeenCalledWith({ where: { id: f.id, userId, accessToken: `${f.id}-token`, syncGeneration: 0, activeSyncRunId: expect.any(String) }, data: { latestDeltaToken: "D1", activeSyncRunId: null, activeSyncLeaseExpiresAt: null } });
     const reread = await state(f.id, f.emails);
     expectConverged(reread, f.emails); // D1 committed even though caller saw failure.
     restoreDelegates();

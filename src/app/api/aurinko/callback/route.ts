@@ -7,7 +7,8 @@ import {
   AURINKO_OAUTH_STATE_COOKIE,
   verifyAurinkoOAuthCorrelation,
 } from "~/lib/aurinko-oauth-state";
-import { performInitialSync } from "~/lib/initial-sync";
+import { orchestrateAccountSync } from "~/lib/sync-orchestration";
+import { newGenerationSchedule } from "~/lib/sync-schedule-policy";
 import { db } from "~/server/db";
 
 function failure(message: string, status: number) {
@@ -56,7 +57,7 @@ async function completeValidatedOAuthCallback(req: NextRequest, userId: string):
     // initial sync, safely even if background work never starts.
     const updated = await db.account.updateMany({
       where: { id: accountId, userId },
-      data: { accessToken: token.accessToken, syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null },
+      data: { accessToken: token.accessToken, syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null, ...newGenerationSchedule() },
     });
     if (updated.count !== 1) return failure("Unable to link this account", 403);
   } else {
@@ -69,6 +70,8 @@ async function completeValidatedOAuthCallback(req: NextRequest, userId: string):
           emailAddress: accountDetails.email,
           name: accountDetails.name,
           accessToken: token.accessToken,
+          ...newGenerationSchedule(),
+          syncScheduleVersion: 1,
         },
       });
     } catch (error) {
@@ -82,14 +85,14 @@ async function completeValidatedOAuthCallback(req: NextRequest, userId: string):
       }
       const updated = await db.account.updateMany({
         where: { id: accountId, userId },
-        data: { accessToken: token.accessToken, syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null },
+        data: { accessToken: token.accessToken, syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null, ...newGenerationSchedule() },
       });
       if (updated.count !== 1) return failure("Unable to link this account", 403);
     }
   }
 
   waitUntil(
-    performInitialSync({ accountId, userId })
+    orchestrateAccountSync({ accountId, userId })
       .then((result) => {
         if (result.status !== "completed") console.error("Initial sync ended:", result.status);
       })

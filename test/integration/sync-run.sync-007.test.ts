@@ -7,11 +7,12 @@ vi.mock("axios", () => ({ default: http }));
 vi.mock("@clerk/nextjs/server", async () => (await import("../mocks/clerk")).clerkServerMock);
 vi.mock("~/lib/aurinko", () => ({ exchangeCodeForAccessToken: exchange, getAccountDetails: vi.fn() }));
 vi.mock("@vercel/functions", () => ({ waitUntil: vi.fn() }));
-vi.mock("~/lib/initial-sync", async (original) => ({ ...await original<object>(), performInitialSync: vi.fn(async () => ({ status: "completed" })) }));
+vi.mock("~/lib/sync-orchestration", () => ({ orchestrateAccountSync: vi.fn(async () => ({ status: "completed" })) }));
 import type * as Initial from "~/lib/initial-sync";
 const { performInitialSync } = await vi.importActual<typeof Initial>("~/lib/initial-sync");
 import { Account } from "~/lib/account";
 import { db } from "~/server/db";
+import { testSyncSchedule, scheduleTestRun } from "../helpers/scheduling";
 import * as executions from "~/lib/sync-execution";
 import * as persistence from "~/lib/sync-to-db";
 import { GET } from "~/app/api/aurinko/callback/route";
@@ -30,7 +31,7 @@ const realOwns = executions.ownsSyncExecution;
 function deferred<T = void>() { let resolve!: (value: T) => void; let reject!: (error: unknown) => void; const promise = new Promise<T>((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
 async function fixture() {
   const id = String(sequence++); ids.push(id);
-  return db.account.create({ data: { id, userId, accessToken: `${prefix}-${id}-TOKEN-SECRET`, latestDeltaToken: "D0", emailAddress: `${id}@example.test`, name: "Synthetic" } });
+  return db.account.create({ data: { ...testSyncSchedule, id, userId, accessToken: `${prefix}-${id}-TOKEN-SECRET`, latestDeltaToken: "D0", emailAddress: `${id}@example.test`, name: "Synthetic" } });
 }
 const reread = (a: DbAccount) => db.account.findUniqueOrThrow({ where: { id: a.id } });
 function message(a: DbAccount, suffix: string): EmailMessage {
@@ -102,7 +103,7 @@ describe("SYNC-007 real PostgreSQL completion/termination linearization", () => 
     });
     const run = new Account(a.accessToken).syncEmails({ limits }); await committed.promise;
     if (laterRun) {
-      const next = await executions.claimSyncExecution(await reread(a));
+      const next = await executions.claimSyncExecution(await scheduleTestRun(a));
       await realComplete(next, "D1"); // Equivalent visible checkpoint is not R1 provenance.
     }
     ack.resolve();

@@ -25,7 +25,7 @@ vi.mock("@clerk/nextjs/server", async () => {
 });
 vi.mock("~/lib/aurinko", () => ({ exchangeCodeForAccessToken: exchangeMock, getAccountDetails: detailsMock }));
 vi.mock("~/server/db", () => ({ db: { account: { create: accountCreateMock, findUnique: accountFindUniqueMock, updateMany: accountUpdateManyMock } } }));
-vi.mock("~/lib/initial-sync", () => ({ performInitialSync: initialSyncMock }));
+vi.mock("~/lib/sync-orchestration", () => ({ orchestrateAccountSync: initialSyncMock }));
 vi.mock("@vercel/functions", () => ({ waitUntil: waitUntilMock }));
 
 import { GET } from "~/app/api/aurinko/callback/route";
@@ -33,6 +33,7 @@ import { AURINKO_OAUTH_STATE_COOKIE, createAurinkoOAuthCorrelation } from "~/lib
 import { clerkAuthMock } from "../mocks/clerk";
 
 const originalSecret = process.env.AURINKO_OAUTH_STATE_SECRET;
+const expectedSchedule = () => ({ activeSyncLeaseExpiresAt: null, syncScheduleState: "scheduled", syncNextRunAt: expect.any(Date), syncRetryCount: 0, syncScheduleVersion: { increment: 1 }, syncLastOutcomeStatus: null, syncLastOutcomeReason: null });
 
 function request(state: string | null, cookie?: string) {
   const query = new URLSearchParams({ status: "success", code: "synthetic-code" });
@@ -183,7 +184,7 @@ describe("SEC-005 callback state validation", () => {
     expect(response.status).toBe(307);
     expect(accountUpdateManyMock).toHaveBeenCalledExactlyOnceWith({
       where: { id: "41", userId: "alice" },
-      data: { accessToken: "synthetic-new-token", syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null },
+      data: { accessToken: "synthetic-new-token", syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null, ...expectedSchedule() },
     });
     expect(accountUpdateManyMock.mock.invocationCallOrder[0]).toBeLessThan(initialSyncMock.mock.invocationCallOrder[0]!);
     expect(initialSyncMock).toHaveBeenCalledWith({ accountId: "41", userId: "alice" });
@@ -197,7 +198,7 @@ describe("SEC-005 callback state validation", () => {
     expect(response.status).toBe(307);
     expect(accountUpdateManyMock).toHaveBeenCalledWith({
       where: { id: "41", userId: "alice" },
-      data: { accessToken: "synthetic-new-token", syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null },
+      data: { accessToken: "synthetic-new-token", syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null, ...expectedSchedule() },
     });
     expect(initialSyncMock).toHaveBeenCalledWith({ accountId: "41", userId: "alice" });
     expectConsumedCorrelation(response);

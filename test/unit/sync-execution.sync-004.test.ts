@@ -21,13 +21,13 @@ beforeEach(() => {
 
 describe("SYNC-004 durable execution boundary", () => {
   it("claims using account, user, credential, generation, unowned state and checkpoint snapshot", async () => {
-    const account = { id: "A1", userId: "U1", accessToken: "T1", syncGeneration: 3, latestDeltaToken: "D0" } as Account;
+    const account = { syncScheduleState: "scheduled", syncScheduleVersion: 0, id: "A1", userId: "U1", accessToken: "T1", syncGeneration: 3, latestDeltaToken: "D0" } as Account;
     const first = await claimSyncExecution(account);
     const second = await claimSyncExecution(account);
     expect(first.runId).not.toBe(second.runId);
     expect(updateMany).toHaveBeenCalledWith({
-      where: { id: "A1", userId: "U1", accessToken: "T1", syncGeneration: 3, activeSyncRunId: null, latestDeltaToken: "D0" },
-      data: { activeSyncRunId: first.runId },
+      where: { id: "A1", userId: "U1", accessToken: "T1", syncGeneration: 3, activeSyncRunId: null, latestDeltaToken: "D0", syncScheduleVersion: 0, syncScheduleState: "scheduled", syncNextRunAt: { lte: expect.any(Date) } },
+      data: { activeSyncRunId: first.runId, syncScheduleState: "running", syncNextRunAt: null, activeSyncLeaseExpiresAt: expect.any(Date), syncScheduleVersion: { increment: 1 } },
     });
   });
 
@@ -40,7 +40,7 @@ describe("SYNC-004 durable execution boundary", () => {
     await completeSyncExecution(execution, "D1");
     expect(updateMany).toHaveBeenCalledWith({
       where: { id: execution.accountId, userId: execution.userId, accessToken: execution.originalAccessToken, syncGeneration: 0, activeSyncRunId: execution.runId },
-      data: { latestDeltaToken: "D1", activeSyncRunId: null },
+      data: { latestDeltaToken: "D1", activeSyncRunId: null, activeSyncLeaseExpiresAt: null },
     });
     updateMany.mockResolvedValue({ count: 0 });
     await expect(completeSyncExecution(execution, "D2")).rejects.toBeInstanceOf(StaleSyncExecutionError);
@@ -50,7 +50,7 @@ describe("SYNC-004 durable execution boundary", () => {
     await releaseSyncExecution(execution);
     expect(updateMany).toHaveBeenCalledWith({
       where: { id: execution.accountId, userId: execution.userId, syncGeneration: 0, activeSyncRunId: execution.runId },
-      data: { activeSyncRunId: null },
+      data: { activeSyncRunId: null, activeSyncLeaseExpiresAt: null },
     });
   });
 

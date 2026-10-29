@@ -67,12 +67,13 @@ beforeEach(() => {
 });
 
 describe("SEC-003 getThreads account ownership", () => {
-  it.each(["retryable-failure", "action-required", "ownership-lost", "safety-limit", "indeterminate-completion"])("SYNC-007 consumes resolved %s without breaking thread reads or exposing outcome data", async (status) => {
+  it.each(["retryable-failure", "action-required", "ownership-lost", "safety-limit", "indeterminate-completion"])("SYNC-005 never invokes sync, regardless of hypothetical %s outcome", async (status) => {
     const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
     try {
       syncEmailsMock.mockResolvedValue({ status, privateDetail: "SECRET-MUST-NOT-ESCAPE" });
       await expect(createCaller(accounts.alice.userId).getThreads({ accountId: accounts.alice.id, tabCategory: "inbox", done: false })).resolves.toEqual(threads.alice);
-      expect(log).toHaveBeenCalledWith("Background sync ended:", status);
+      expect(syncEmailsMock).not.toHaveBeenCalled();
+      expect(log).not.toHaveBeenCalled();
       expect(JSON.stringify(log.mock.calls)).not.toContain("SECRET-MUST-NOT-ESCAPE");
     } finally { log.mockRestore(); }
   });
@@ -92,9 +93,20 @@ describe("SEC-003 getThreads account ownership", () => {
     try {
       syncEmailsMock.mockRejectedValue(new Error("RAW-SECRET"));
       await expect(createCaller(accounts.alice.userId).getThreads({ accountId: accounts.alice.id, tabCategory: "inbox", done: false })).resolves.toEqual(threads.alice);
-      expect(log).toHaveBeenCalledWith("Background account sync failed.");
+      expect(syncEmailsMock).not.toHaveBeenCalled();
+      expect(log).not.toHaveBeenCalled();
       expect(JSON.stringify(log.mock.calls)).not.toContain("RAW-SECRET");
     } finally { log.mockRestore(); }
+  });
+  it("SYNC-005 status errors do not expose raw database exceptions", async () => {
+    prismaMock.account.findFirst.mockRejectedValueOnce(new Error("RAW-DB-SECRET TOKEN-SECRET"));
+    await expect(createCaller(accounts.alice.userId).getSyncStatus({ accountId: accounts.alice.id })).rejects.toMatchObject({ code: "INTERNAL_SERVER_ERROR", message: "Unable to read sync status.", cause: undefined });
+    expect(syncEmailsMock).not.toHaveBeenCalled();
+  });
+  it("SYNC-005 repeated five-second-style reads cause zero sync work", async () => {
+    for (let i = 0; i < 4; i++) await createCaller(accounts.alice.userId).getThreads({ accountId: accounts.alice.id, tabCategory: "inbox", done: false });
+    expect(syncEmailsMock).not.toHaveBeenCalled();
+    expect(prismaMock.thread.findMany).toHaveBeenCalledTimes(4);
   });
   it("connects the Clerk and Prisma mocks to the production tRPC context", async () => {
     clerkAuthMock.mockResolvedValue({ userId: accounts.alice.userId });
@@ -126,7 +138,7 @@ describe("SEC-003 getThreads account ownership", () => {
         },
       }),
     );
-    expect(syncEmailsMock).toHaveBeenCalledTimes(1);
+    expect(syncEmailsMock).not.toHaveBeenCalled();
   });
 
   it("rejects an invalid category before retrieving threads", async () => {

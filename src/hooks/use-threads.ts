@@ -24,7 +24,7 @@ const useThreads = () => {
         enabled: !!accountId && !!tabCategory,
         // set placeholder data displaying while query is loading in UI
         // placeholderData: previousData => previousData,
-        // set auto-refetch interval，therefore, after update any information, the UI will be updated every 5 seconds
+        // Local DB refresh only; external sync has independent durable scheduling.
         refetchInterval: 5000
     })
 

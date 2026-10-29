@@ -11,10 +11,11 @@ vi.mock("axios", () => ({ default: axiosMock }));
 vi.mock("@clerk/nextjs/server", async () => (await import("../mocks/clerk")).clerkServerMock);
 vi.mock("~/lib/aurinko", () => ({ exchangeCodeForAccessToken: exchange, getAccountDetails: details }));
 // Gate the actual service boundary: delaying waitUntil alone would be too late.
-vi.mock("~/lib/initial-sync", () => ({ performInitialSync: backgroundInitial }));
+vi.mock("~/lib/sync-orchestration", () => ({ orchestrateAccountSync: backgroundInitial }));
 vi.mock("@vercel/functions", () => ({ waitUntil: vi.fn() }));
 import { Account } from "~/lib/account";
 import { db } from "~/server/db";
+import { testSyncSchedule, scheduleTestRun } from "../helpers/scheduling";
 import { GET } from "~/app/api/aurinko/callback/route";
 import { createAurinkoOAuthCorrelation, AURINKO_OAUTH_STATE_COOKIE } from "~/lib/aurinko-oauth-state";
 import { claimSyncExecution, completeSyncExecution } from "~/lib/sync-execution";
@@ -24,6 +25,7 @@ import { syntheticEmail } from "../fixtures/emails";
 import { interceptCheckpoints, interceptTransactions, restoreTransactions } from "../helpers/transactions";
 const { performInitialSync: runInitial } = await vi.importActual<typeof InitialSyncModule>("~/lib/initial-sync");
 
+const expectedSchedule = () => ({ activeSyncLeaseExpiresAt: null, syncScheduleState: "scheduled", syncNextRunAt: expect.any(Date), syncRetryCount: 0, syncScheduleVersion: { increment: 1 }, syncLastOutcomeStatus: null, syncLastOutcomeReason: null });
 type InitialResult = InitialSyncModule.InitialSyncResult;
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -41,7 +43,7 @@ const realCreate = db.account.create.bind(db.account);
 const reread = (a: DbAccount) => db.account.findUniqueOrThrow({ where: { id: a.id } });
 async function fixture(checkpoint: string | null = "D1") {
   const id = String(sequence++); accountIds.push(id);
-  return db.account.create({ data: { id, userId, emailAddress: `${id}@example.test`, name: "Synthetic", accessToken: `${prefix}-${id}-T1`, latestDeltaToken: checkpoint } });
+  return db.account.create({ data: { ...testSyncSchedule, id, userId, emailAddress: `${id}@example.test`, name: "Synthetic", accessToken: `${prefix}-${id}-T1`, latestDeltaToken: checkpoint } });
 }
 function message(a: DbAccount, subject = "G2"): EmailMessage {
   return { ...syntheticEmail, id: `${prefix}-${a.id}-email`, threadId: `${prefix}-${a.id}-thread`, subject,
@@ -138,14 +140,14 @@ describe("SYNC-006 real callback checkpoint invalidation and reinitialization", 
   it("atomically clears D1 and the owner before background initial work; other Accounts and all mail remain intact", async () => {
     const a = await fixture(); const other = await fixture("OTHER-D2");
     await seedMail(a);
-    await claimSyncExecution(await reread(a));
+    await claimSyncExecution(await scheduleTestRun(a));
     const before = await mailState(a);
     const write = vi.spyOn(db.account, "updateMany").mockImplementation(realUpdate);
     const token = `${a.accessToken}-T2`;
     const current = await relink(a, token);
     expect(write).toHaveBeenCalledExactlyOnceWith({
       where: { id: a.id, userId },
-      data: { accessToken: token, syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null },
+      data: { accessToken: token, syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null, ...expectedSchedule() },
     });
     expect(current).toMatchObject({ accessToken: token, syncGeneration: 1, activeSyncRunId: null, latestDeltaToken: null });
     expect(backgroundInitial).toHaveBeenCalledWith({ accountId: a.id, userId });
@@ -166,7 +168,7 @@ describe("SYNC-006 real callback checkpoint invalidation and reinitialization", 
     const current = await relink(a, token);
     expect(write).toHaveBeenCalledExactlyOnceWith({
       where: { id: a.id, userId },
-      data: { accessToken: token, syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null },
+      data: { accessToken: token, syncGeneration: { increment: 1 }, activeSyncRunId: null, latestDeltaToken: null, ...expectedSchedule() },
     });
     expect(current).toMatchObject({ accessToken: token, syncGeneration: 1, activeSyncRunId: null, latestDeltaToken: null });
     await assertBlocked(current);
@@ -190,6 +192,7 @@ describe("SYNC-006 real callback checkpoint invalidation and reinitialization", 
     });
     expect(await db.email.count({ where: { threadId: message(a).threadId } })).toBe(1);
     checkpoint.mockImplementation(realUpdate);
+    await scheduleTestRun(a);
     axiosMock.get.mockReset().mockResolvedValue({ data: { records: [], nextDeltaToken: "D3" } });
     await expect(new Account(current.accessToken).syncEmails()).resolves.toMatchObject({ latestDeltaToken: "D3" });
     expect(axiosMock.get).toHaveBeenCalledExactlyOnceWith("https://api.aurinko.io/v1/email/sync/updated", {
@@ -227,6 +230,7 @@ describe("SYNC-006 real callback checkpoint invalidation and reinitialization", 
     await assertBlocked(current);
     initialResponse(a, "D3"); await expect(queued[1]!.start()).resolves.toEqual({ status: "completed" });
     expect((await reread(a)).latestDeltaToken).toBe("D3");
+    await scheduleTestRun(a);
     axiosMock.get.mockReset().mockResolvedValue({ data: { records: [], nextDeltaToken: "D4" } });
     await new Account(a.accessToken).syncEmails();
     expect(axiosMock.get).toHaveBeenCalledExactlyOnceWith("https://api.aurinko.io/v1/email/sync/updated", {

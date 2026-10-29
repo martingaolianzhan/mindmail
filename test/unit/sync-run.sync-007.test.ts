@@ -13,7 +13,7 @@ import { SyncRun, SyncRunFailure, type SyncRunOptions } from "~/lib/sync-run";
 import { observeDatabase, SyncDatabaseObservationError } from "~/lib/sync-database";
 import { SYNC_LIMITS } from "~/lib/sync-limits";
 
-const a = { id: "A", userId: "U", accessToken: "TOKEN-SECRET", syncGeneration: 1, latestDeltaToken: "DELTA-SECRET", activeSyncRunId: null };
+const a = { syncScheduleState: "scheduled", syncScheduleVersion: 0, id: "A", userId: "U", accessToken: "TOKEN-SECRET", syncGeneration: 1, latestDeltaToken: "DELTA-SECRET", activeSyncRunId: null };
 const options: SyncRunOptions = { limits: { requestTimeoutMs: 100, deadlineMs: 10_000, backoffMs: 10, readinessIntervalMs: 20, maxReadinessPolls: 3, maxPages: 2, maxRecords: 2, dbObservationMs: 200 } };
 const page = (count = 0, nextPageToken?: string) => ({ data: { records: Array.from({ length: count }, (_, i) => ({ id: `E${i}`, body: "MAIL-SECRET" }) as EmailMessage), nextDeltaToken: "FINAL-SECRET", nextPageToken } });
 const initial = (extra: SyncRunOptions = {}) => performInitialSync({ accountId: a.id, userId: a.userId }, { ...options, ...extra, limits: { ...options.limits, ...extra.limits } });
