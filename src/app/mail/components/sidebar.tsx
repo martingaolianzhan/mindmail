@@ -31,7 +31,7 @@ const Sidebar = ({ isCollapsed }: Props) => {
 
     const { data: sentNum } = api.account.getNumThreads.useQuery({
         accountId,
-        tabCategory: "draft"
+        tabCategory: "sent"
     })
 
 
