@@ -1,30 +1,31 @@
 # SYNC-005 — durable Account orchestration
 
-## Status / deployment acceptance blocker
+## Status — DONE
 
-**Durable core and approved Cloudflare wake-up adapter implemented; SYNC-005 is
-NOT DONE. Actual scheduled deployment and function-duration verification remain
-pending.** See [external wake-up close-out](#external-wake-up-close-out--deployment-checklist).
+**SYNC-005 is DONE** under the approved compositional evidence model: existing
+local correctness regressions, owner-observed automatic protected-Preview/database
+no-op execution, and sufficient configured runtime budget for the current design.
+See [final close-out evidence](#final-close-out-evidence). This is not production
+readiness or real-provider unattended-mailbox validation; INT-002 remains BLOCKED.
 
 `CURRENT.md` was absent. The initial worktree was clean. Inspection covered
 `AGENTS.md`, all of `FIX_PLAN.md`, [SYNC-007](SYNC-007.md), current execution,
 provider, persistence, callback, router/hook, Prisma, migrations and test setup,
 and existing SYNC-004/006/007 regression tests before implementation.
 
-The original core inspection found Next.js build/start/preview scripts,
-`@vercel/functions`/`waitUntil`, but no configured scheduler or deployed-runtime
-proof. The owner has now approved Cloudflare Cron + a tiny Worker as the wake-up
-clock, with MindMail deployed separately (currently expected on Vercel). Source
-and authenticated HTTP integration are present; no Cloudflare/Vercel account or
-API action was performed. Real Cron delivery, restart discovery without
-UI/manual/incidental traffic, and sufficient deployed duration are still unverified.
-Target cadence is one minute. The original plan row remains open.
+The original core inspection found no configured scheduler or deployed-runtime
+proof; that historical gate is resolved. The owner supplied manual evidence of
+Cloudflare Cron + the repository Worker waking a separately deployed, protected
+Vercel Preview backed by a fresh non-production Neon database. Local PostgreSQL
+regressions supply restart/recovery semantics; owner-observed recurring deployed
+no-ops supply the automatic external path. Pi did not reproduce those cloud actions.
+The one-minute wake-up cadence and all durable scheduling policies are unchanged.
 
 ## Architecture / ownership boundaries
 
 ```text
 Account durable schedule
-  -> Cloudflare Cron / Worker (manual deployment verification pending)
+  -> Cloudflare Cron / Worker (* * * * *; owner-observed deployed wake-up)
   -> x-vercel-protection-bypass -> Vercel protected Preview
   -> POST /api/cron/sync (independent MindMail Bearer auth)
   -> consumeDueSyncWork / discoverSyncWork
@@ -328,7 +329,7 @@ or historical credential use. Offline build uses synthetic configuration, local
 font responses, environment-file shielding and network-denial preload outside the
 repository; zero network attempts are recorded. Existing lint warnings remain.
 
-## Changed-file inventory
+## Historical implementation changed-file inventory
 
 Production/schema: `prisma/schema.prisma`,
 `prisma/migrations/20261024000000_sync_scheduling/migration.sql`,
@@ -351,8 +352,9 @@ integration `account-router.sec-003`, `account.sync-002`,
 `sync-resources.sync-007`, `sync-run.sync-007`, `sync-to-db.sync-008`.
 They retain their correctness assertions, with explicit test scheduling, added
 lease clearing, and callback mocks now targeting the durable entry point.
-Documentation: this file and appended `FIX_PLAN.md` evidence; original plan row
-is not rewritten or marked DONE.
+Documentation at that implementation stage: this file and appended `FIX_PLAN.md`
+evidence; the original plan row was not then rewritten or marked DONE. The final
+close-out below changes only its status to DONE, preserving acceptance criteria.
 
 ## Unchanged scope / limitations
 
@@ -362,10 +364,10 @@ SYNC-007’s resource limits, retries, timeouts, persistence/checkpoint semantic
 completion/termination arbitration remain unchanged. Sending still has no retry.
 No batching/streaming persistence was implemented. No page token is durable.
 `daysWithin: 2` is unchanged; scheduling initial work does **not** establish
-arbitrary-downtime historical completeness. SYNC-009 was not started. No live
-Aurinko, Clerk, Gmail, Gemini, remote PostgreSQL or removed infrastructure was
-contacted. Stop after SYNC-005; actual external wake-up and deployed-duration
-verification remain the acceptance blockers.
+arbitrary-downtime historical completeness. SYNC-009 was not started. Pi's automated verification contacted no live Aurinko,
+Clerk, Gmail, Gemini, remote PostgreSQL or removed infrastructure. Owner-observed
+deployment evidence is separate and recorded below. SYNC-005 is closed; future
+real-provider verification remains INT-002, not a production-readiness claim.
 
 ## External wake-up close-out / deployment checklist
 
@@ -403,26 +405,29 @@ internal scheduling state. Only POST is exported.
 The route explicitly selects Node.js and `maxDuration = 300`. Current Next.js
 supports this App Router configuration: the offline build emits
 `.next/server/functions-config-manifest.json` with `/api/cron/sync.maxDuration=300`.
-This repository evidence is **not proof** that the deployed Vercel project/plan/runtime accepts it. Deployment must verify the intended 300-second allowance,
-which exceeds the unchanged ~144s conservative responsive SYNC-007 envelope.
-An allowance is not proof that a real provider-backed ~144s sync completed remotely;
-that live-provider verification is not required for SYNC-005 close-out.
-If sufficient deployed duration cannot be verified, leave SYNC-005 open; do not
-shorten SYNC-007 or select replacement infrastructure.
+The owner verified **Fluid Compute enabled** for the deployed Vercel project.
+Together with the authored and manifest-preserved 300-second route configuration,
+under the currently documented Vercel Fluid Compute duration model this provides
+sufficient runtime budget relative to the current ~144s conservative SYNC-007
+envelope. No separately inspected deployment metadata field explicitly reporting
+an effective 300-second limit is claimed or required as a second representation.
+This does not prove that a real provider-backed run consumed ~144 seconds.
+Materially different future sync architecture must reassess its runtime needs.
 
 Worker source: `infra/cloudflare/mindmail-sync-wakeup/worker.js` (plain module JS;
 no Wrangler dependency, CI/CD or GitHub connection required). It reads:
 
 * `MINDMAIL_SYNC_URL`: normal Worker variable/non-secret configuration; the exact
   protected Preview deployment HTTPS URL, pathname exactly `/api/cron/sync`.
-* `MINDMAIL_CRON_SECRET`: Cloudflare Worker secret, configured later by the user,
+* `MINDMAIL_CRON_SECRET`: owner-configured Cloudflare Worker secret,
   matching MindMail/Vercel `SYNC_CRON_SECRET` for application authorization.
 * `VERCEL_AUTOMATION_BYPASS_SECRET`: separate required Cloudflare Worker secret,
-  configured later by the user from Vercel Protection Bypass for Automation.
+  owner-configured from Vercel Protection Bypass for Automation.
   The Worker sends it in the exact `x-vercel-protection-bypass` header.
 
-This patch defines bindings and request behavior only: it does not generate or
-configure real credentials, deploy MindMail or update a Cloudflare resource.
+The adapter patch originally defined bindings/request behavior without performing
+cloud actions. The owner subsequently deployed/configured the accepted path; Pi
+performed no cloud configuration, secret generation or deployment during close-out.
 Vercel bypass passes the infrastructure deployment-protection layer; it is **not
 scoped by MindMail to the cron route**. It may permit bypass for deployment URLs
 within the Vercel project's configured scope. Treat it as a sensitive infrastructure
@@ -450,16 +455,22 @@ other status codes fail. Network rejections are caught and **replaced**, with no
 same generic error, containing no URL, either secret/header value, response body
 or raw network text. It does not read/log response bodies or retry requests.
 
-The owner will later configure two distinct credentials: a fresh high-entropy
-MindMail cron secret shared between MindMail and the Worker, and a dedicated
-Vercel-generated automation bypass secret stored separately in the Worker.
-No real secret is generated, configured or committed here. Do not put real values in
+The two credentials retain distinct responsibilities: a high-entropy MindMail cron
+secret shared between MindMail and the Worker, and a separate Vercel-generated
+infrastructure bypass secret. Owner configuration supplied the deployed path;
+Pi did not generate/configure these secrets and no values are recorded here. Do not put real values in
 Git, Worker source, command history, screenshots or logs. `.env.example` contains
 only an empty server-side placeholder; runtime route configuration fails closed
 without it. Worker source in Git does not configure the already-created Worker
 or its Cron Trigger.
 
-### Manual post-Pi acceptance checklist (not performed)
+### Manual acceptance procedure (historical checklist)
+
+The owner-supplied evidence in the final record below completes the required
+external wake-up acceptance path. This original procedure is retained for history
+and future deployment revalidation, **not as outstanding SYNC-005 work**. Only the
+explicit owner observations below are claimed, not independent observation of
+every checklist variant by Pi.
 
 Use an approved environment. This checklist is not permission to reconnect removed
 infrastructure or use historical credentials. Existing migration adoption is
@@ -525,11 +536,12 @@ applying it to any supported environment with real existing linked users.**
 If redeployment changes the Preview URL, update `MINDMAIL_SYNC_URL` and repeat
 relevant protection, authentication and connectivity checks against the **new exact
 URL**. Evidence from an earlier Preview does not automatically accept a later one.
-None of states A/B/C, a Vercel deployment, Cloudflare configuration, actual Cron
-invocation or deployed duration support has been verified/performed by this patch.
-SYNC-005 remains TODO until deployed evidence is collected and reviewed.
+At the adapter-patch stage these deployed outcomes had not been observed by Pi.
+That then-open status is superseded by the final owner-observed A/B/C, recurring
+scheduled no-op and Fluid Compute evidence below. SYNC-005 is now DONE under the
+approved evidence model; no remote provider-backed run is inferred.
 
-### Wake-up patch automated evidence
+### Historical wake-up patch automated evidence
 
 Tests execute the actual middleware callback and Clerk route matcher with a mocked
 unauthenticated Clerk boundary, then dispatch to the actual cron handler. Exact
@@ -548,7 +560,8 @@ zero-sync and SEC-007 regressions. The verified disposable local PostgreSQL
 initializer reports no pending migrations. Typecheck, explicit patch-file ESLint,
 full lint, offline-safe build (zero network attempts), and git diff --check pass;
 only pre-existing full-lint warnings remain. See appended FIX_PLAN evidence.
-Deployed Cron/duration verification remains pending.
+Deployed Cron/duration evidence was still pending at that historical stage;
+the final record below resolves it for the current design.
 
 Wake-up patch files: `src/app/api/cron/sync/route.ts`, `src/middleware.ts`,
 `infra/cloudflare/mindmail-sync-wakeup/worker.js`, `.env.example`, `README.md`,
@@ -563,5 +576,84 @@ offline-safe build (synthetic configuration/local fonts/network denial; zero
 network attempts) and git diff --check pass. Only Worker source/tests and these
 SYNC-005/FIX_PLAN notes changed; application auth, middleware and core are untouched.
 No redundant PostgreSQL tests were added/run for this Worker-only header patch;
-no database action occurred. Deployed outcomes, Cloudflare configuration and
-Vercel duration support remain unverified.
+no database action occurred in that header patch. Deployed outcomes, Cloudflare
+configuration and duration support were not then verified; the final record below
+supplies the later owner evidence.
+
+## Final close-out evidence
+
+**Decision: SYNC-005 DONE.** Current implementation and existing regressions remain
+consistent with the approved design; no scheduler behavior or code changed.
+
+### Automated/local correctness — rerun by Pi
+
+107 targeted unit tests and 36 targeted disposable-local-PostgreSQL integration
+tests passed. Full suites passed **339 unit tests / 28 files** and **138 integration
+tests / 20 files**. Existing tests cover zero external work on UI/thread reads,
+global due discovery, atomic claims, same-Account protection and independent
+Accounts, persisted retry/restart/relink eligibility, stale/incomplete owner
+recovery, generation/schedule-version authority and fencing, blocked/future-due
+protection, successful rescheduling and bounded retry/recovery exhaustion.
+
+The verified local `mindmail-test-pg` PostgreSQL 16 database at 127.0.0.1:55432
+(database/user mindmail_test) passed the guarded initializer with no pending
+migrations. `npm run typecheck`, `npm run lint` (existing warnings only), offline-safe
+`npm run build` and `git diff --check` passed. Build reused synthetic configuration,
+local font mocks, environment-file shielding and network denial: zero network
+attempts during build. The initial extra preload interfered with two Nock foundation
+tests; rerunning with the repository's normal Nock isolation passed without source
+changes. No new tests were manufactured for this close-out.
+
+### Owner-observed deployment — supplied evidence, not reproduced by Pi
+
+The project owner reports a **fresh non-production Neon PostgreSQL project**,
+successful `prisma migrate deploy` of `20261022000000_baseline`,
+`20261023000000_sync_execution_ownership` and `20261024000000_sync_scheduling`, and
+a protected Vercel Preview using that database and Preview-only configuration.
+No historical/removed Neon project or historical credential is involved.
+
+At the owner's exact Preview `/api/cron/sync` endpoint, the owner observed:
+
+| Request | Owner-observed response |
+| --- | --- |
+| No Vercel automation bypass | 302 |
+| Valid bypass, no MindMail Bearer | 401 |
+| Valid bypass and valid MindMail Bearer | 200 with `{"ok":true}` |
+
+These establish independent Vercel protection and MindMail cron authorization.
+The initial Cloudflare deployment was still Hello World and failed with
+`Handler does not export a scheduled() function`. Replacing it with the repository's
+`infra/cloudflare/mindmail-sync-wakeup/worker.js` stopped that error. The owner then
+observed recurring scheduled invocations approximately once per minute without
+new Worker errors, and matching recurring **POST /api/cron/sync → 200** in Vercel
+Request Logs. The Worker rejects invalid targets/configuration/secrets, fetch
+failure and all non-2xx responses.
+
+Together these observations establish Cloudflare Cron → deployed scheduled Worker
+→ Vercel Preview protection bypass → independent MindMail cron Bearer auth →
+durable scheduler → fresh remote PostgreSQL → successful empty/no-due execution.
+The owner confirms recurring calls needed no active Clerk session, UI interaction,
+manual cron request, mailbox/account activity or incidental application traffic.
+Pi made no request to that Preview, Neon, Cloudflare or live providers.
+
+### Runtime budget and remaining limitation
+
+Owner-verified Fluid Compute enablement + authored `maxDuration = 300` + the
+manifest-preserved value provide sufficient configured budget for the current
+~144s conservative SYNC-007 envelope under the documented Fluid Compute model.
+This is **not** a claim of a separately observed effective-limit metadata field,
+nor proof that a real provider-backed run actually consumed that envelope. No
+additional deployment work is required solely to obtain another representation
+of the same duration setting. Future materially different designs must reassess
+their own runtime requirements.
+
+The final review accepts this compositional evidence: local durable semantics +
+owner-observed automatic deployed no-op + sufficient runtime budget. It does not
+prove real-provider unattended Gmail/Outlook/Aurinko sync. That verification remains
+future explicitly authorized **INT-002** work, not a SYNC-005 prerequisite.
+INT-002 stays **BLOCKED**, INT-003 remains the later production-readiness gate,
+and SYNC-009 is separate and unchanged. This is not production readiness.
+
+Cloudflare remains only the `* * * * *` wake-up clock; durable state decides actual
+due work. Successful cadence stays approximately +5m, batch size stays 1, and
+retry/recovery, lease, concurrency and fencing mechanisms are unchanged.
