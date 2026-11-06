@@ -27,39 +27,25 @@ const ReplyBox = () => {
 const Component = ({ replyDetails }: { replyDetails: RouterOutputs["account"]["getReplyDetails"] }) => {
     const { threadId, accountId } = useThreads();
 
-    // if subject not starts with 'Re', manually add it
-    const [subject, setSubject] = React.useState(() => { 
-        if (replyDetails.reply) {
-            return replyDetails.subject?.startsWith('Re:') ? replyDetails.subject : `Re: ${replyDetails.subject}`
-        } else {
-            return replyDetails.subject
-        }
+    const initializeContext = () => ({
+        threadId,
+        subject: replyDetails.reply && !replyDetails.subject.startsWith('Re:')
+            ? `Re: ${replyDetails.subject}` : replyDetails.subject,
+        toValues: replyDetails.to.map(to => ({ label: to.address ?? to.name, value: to.address })),
+        ccValues: replyDetails.cc.map(cc => ({ label: cc.address ?? cc.name, value: cc.address })),
+        // Pinned name metadata never supplies addresses independently of edits.
+        toNames: new Map(replyDetails.to.map(to => [to.address, to.name?.trim() ? to.name : to.address])),
+        ccNames: new Map(replyDetails.cc.map(cc => [cc.address, cc.name?.trim() ? cc.name : cc.address])),
+        inReplyTo: replyDetails.internetMessageId
     });
+    const [context, setContext] = React.useState(initializeContext);
 
-    // construct toValues
-    const [toValues, setToValues] = React.useState<{ label: string, value: string }[]>(replyDetails.to.map(to => ({ label: to.address ?? to.name, value: to.address })) || [])
-
-    // construct ccValues
-    const [ccValues, setCcValues] = React.useState<{ label: string, value: string }[]>(replyDetails.cc.map(cc => ({ label: cc.address ?? cc.name, value: cc.address })) || [])
-
-    // apply reconstruction if change thread
-    React.useEffect(() => { 
-        // check existence
-        if (!threadId || !replyDetails) { 
-            return 
-        }
-        
-        if (replyDetails.reply) { 
-            // Re-construct new data structure
-            if (!replyDetails.subject?.startsWith('Re:')) {
-                setSubject(`Re: ${replyDetails.subject}`)
-            }
-        }
-        
-        setToValues(replyDetails.to.map(to => ({ label: to.address ?? to.name, value: to.address })))
-        setCcValues(replyDetails.cc.map(cc => ({ label: cc.address ?? cc.name, value: cc.address })))
-
-    }, [threadId, replyDetails])
+    // Only user selection establishes a new context, not refreshed reply data.
+    // Adjust before rendering children, without remounting the editor/body.
+    if (context.threadId !== threadId) {
+        setContext(initializeContext());
+    }
+    const { subject, toValues, ccValues, inReplyTo } = context;
 
     const sendEmail = api.account.sendEmail.useMutation();
 
@@ -69,12 +55,12 @@ const Component = ({ replyDetails }: { replyDetails: RouterOutputs["account"]["g
         }
         sendEmail.mutate({
             accountId,
-            threadId: threadId ?? undefined,
+            threadId: context.threadId ?? undefined,
             body: value,
             subject,
-            to: replyDetails.to.map(to => ({ address: to.address, name: to.name ?? to.address})).concat(toValues.map(to => ({ address: to.value, name: to.value }))),
-            cc: replyDetails.cc.map(cc => ({ address: cc.address, name: cc.name ?? cc.address })).concat(ccValues.map(cc => ({ address: cc.value, name: cc.value }))),
-            inReplyTo: replyDetails.internetMessageId
+            to: toValues.map(to => ({ address: to.value, name: context.toNames.get(to.value) ?? to.value })),
+            cc: ccValues.map(cc => ({ address: cc.value, name: context.ccNames.get(cc.value) ?? cc.value })),
+            inReplyTo
         }, {
             onSuccess: () => {
                 toast.success("Email sent");
@@ -89,16 +75,16 @@ const Component = ({ replyDetails }: { replyDetails: RouterOutputs["account"]["g
     return (
         <EmailEditor
             subject={subject}
-            setSubject={setSubject}
+            setSubject={(subject) => setContext(current => ({ ...current, subject }))}
 
             toValues={toValues}
-            setToValues={(values) => setToValues(values)}
+            setToValues={(toValues) => setContext(current => ({ ...current, toValues }))}
 
             ccValues={ccValues}
-            setCCValues={(values) => setCcValues(values)}
+            setCCValues={(ccValues) => setContext(current => ({ ...current, ccValues }))}
 
             // get addresses used to show them on editor
-            to={replyDetails.to.map(to => to.address)}
+            to={toValues.map(to => to.value)}
 
             // for send email button
             isSending={sendEmail.isPending}

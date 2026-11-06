@@ -181,8 +181,12 @@ export const accountRouter = createTRPCRouter({
             throw new Error('Thread not found!')
         }
         
-        // defind the last email of the thread that the send from the external email address (to define the reply details)
-        const lastExternalEmail = thread.emails.reverse().find(email => email.from.address !== account.emailAddress);
+        // Emails are chronological; retain the latest external message without
+        // mutating their order (the self-only fallback needs the latest email).
+        let lastExternalEmail: (typeof thread.emails)[number] | undefined;
+        for (const email of thread.emails) {
+            if (email.from.address !== account.emailAddress) lastExternalEmail = email;
+        }
         // if there is no external email, means there is only emails from the account
         if (!lastExternalEmail) {
             console.log('No external email found!');
