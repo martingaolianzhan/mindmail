@@ -1,6 +1,7 @@
 'use client'
 import { TabsContent, TabsTrigger } from "~/components/ui/tabs";
 import React from "react";
+import { useLocalStorage } from "usehooks-ts";
 import { ResizablePanel, ResizableHandle, ResizablePanelGroup } from "~/components/ui/resizable";
 import { Separator } from "~/components/ui/separator";
 import { Tabs, TabsList } from "~/components/ui/tabs";
@@ -22,6 +23,9 @@ type Props = {
 const Mail = ({ defaultLayout = [20, 32, 48], navCollapseSize, defaultCollapsed }: Props) => { 
     // side bar collapse state
     const [isCollapsed, setCollapsed] = React.useState(defaultCollapsed);
+    const [done, setDone] = useLocalStorage("thread-done", false);
+    const [tabCategory] = useLocalStorage<"inbox" | "sent" | "draft">("tab-category", "inbox");
+    const mailboxHeading = { inbox: "Inbox", sent: "Sent", draft: "Draft" }[tabCategory];
 
     return (
          // define the delay time of tooltip pop-up
@@ -60,14 +64,14 @@ const Mail = ({ defaultLayout = [20, 32, 48], navCollapseSize, defaultCollapsed 
                 </ResizablePanel>
                 <ResizableHandle withHandle />
                 <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
-                    <Tabs defaultValue="Inbox"> 
+                    <Tabs value={done ? "done" : "active"} onValueChange={(value) => setDone(value === "done")}>
                         <div className="flex items-center px-4 py-2">
-                            <h1 className="text-xl font-bold">Inbox</h1>
+                            <h1 className="text-xl font-bold">{mailboxHeading}</h1>
                             <TabsList className="ml-auto">
-                                <TabsTrigger value="Inbox" className="text-xinc-600 dark:text-zinc-200">
-                                    Inbox
+                                <TabsTrigger value="active" className="text-xinc-600 dark:text-zinc-200">
+                                    Active
                                 </TabsTrigger>
-                                <TabsTrigger value="Done" className="text-xinc-600 dark:text-zinc-200">
+                                <TabsTrigger value="done" className="text-xinc-600 dark:text-zinc-200">
                                     Done
                                 </TabsTrigger>
                             </TabsList>
@@ -75,10 +79,10 @@ const Mail = ({ defaultLayout = [20, 32, 48], navCollapseSize, defaultCollapsed 
                         <Separator />
                         {/* Search Bar */}
                         <SearchBar />
-                        <TabsContent value="Inbox">
+                        <TabsContent value="active">
                             <ThreadList></ThreadList>
                         </TabsContent>
-                        <TabsContent value="Done">
+                        <TabsContent value="done">
                             <ThreadList></ThreadList>
                         </TabsContent>
                     </Tabs>
