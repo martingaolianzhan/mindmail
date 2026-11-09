@@ -9,13 +9,13 @@ const { selected, editor, editorMount, mutate, getReplyDetails } = vi.hoisted(()
   selected: { threadId: "A", accountId: "account-reply", threads: [{ id: "A" }] },
   editorMount: vi.fn(),
   editor: vi.fn<(props: ComponentProps<typeof EmailEditor>) => null>(() => null),
-  mutate: vi.fn<(input: RouterInputs["account"]["sendEmail"], options: unknown) => void>(),
+  mutate: vi.fn<(input: RouterInputs["account"]["sendEmail"]) => Promise<void>>(),
   getReplyDetails: vi.fn(),
 }));
 vi.mock("~/hooks/use-threads", () => ({ default: () => selected }));
 vi.mock("~/trpc/react", () => ({ api: { account: {
   getReplyDetails: { useQuery: getReplyDetails },
-  sendEmail: { useMutation: () => ({ mutate, isPending: false }) },
+  sendEmail: { useMutation: () => ({ mutateAsync: mutate, isPending: false }) },
 } } }));
 vi.mock("~/app/mail/components/email-editor/email-editor", () => ({ default: editor }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -60,7 +60,7 @@ function edit() {
   });
 }
 function send() {
-  act(() => { props().handleSend("<p>Synthetic reply body</p>"); });
+  act(() => { void props().handleSend("<p>Synthetic reply body</p>"); });
   return mutate.mock.lastCall?.[0];
 }
 function expectEditedContext() {
@@ -80,6 +80,7 @@ beforeEach(() => {
   selected.threadId = "A";
   selected.threads = [{ id: "A" }];
   currentDetails = details();
+  mutate.mockResolvedValue(undefined);
   editor.mockImplementation(function EditorProbe() {
     React.useEffect(() => { editorMount(); }, []);
     return null;

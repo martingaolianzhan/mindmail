@@ -49,26 +49,26 @@ const Component = ({ replyDetails }: { replyDetails: RouterOutputs["account"]["g
 
     const sendEmail = api.account.sendEmail.useMutation();
 
-    const handleSend = async (value: string) => { 
-        if (!replyDetails) { 
-            return
+    const handleSend = async (value: string): Promise<void> => {
+        if (!accountId || !context.threadId || !replyDetails) {
+            toast.error("Error sending email");
+            throw new Error("Unable to send email.");
         }
-        sendEmail.mutate({
-            accountId,
-            threadId: context.threadId ?? undefined,
-            body: value,
-            subject,
-            to: toValues.map(to => ({ address: to.value, name: context.toNames.get(to.value) ?? to.value })),
-            cc: ccValues.map(cc => ({ address: cc.value, name: context.ccNames.get(cc.value) ?? cc.value })),
-            inReplyTo
-        }, {
-            onSuccess: () => {
-                toast.success("Email sent");
-            },
-            onError: (error) => {
-                toast.error("Error sending email")
-            }
-        }) 
+        try {
+            await sendEmail.mutateAsync({
+                accountId,
+                threadId: context.threadId ?? undefined,
+                body: value,
+                subject,
+                to: toValues.map(to => ({ address: to.value, name: context.toNames.get(to.value) ?? to.value })),
+                cc: ccValues.map(cc => ({ address: cc.value, name: context.ccNames.get(cc.value) ?? cc.value })),
+                inReplyTo
+            });
+            toast.success("Email sent");
+        } catch (error) {
+            toast.error("Error sending email");
+            throw error;
+        }
     }
 
 

@@ -24,7 +24,7 @@ type Props = {
 
     to: string[],
     // send button required 
-    handleSend: (value: string) => void,
+    handleSend: (value: string) => Promise<void>,
     isSending: boolean
 
     defaultToolBarExpanded: boolean
@@ -35,9 +35,16 @@ const EmailEditor = ({ subject, setSubject, toValues, setToValues, ccValues, set
     const [value, setValue] = React.useState<string>('');
     // expand state to control the expand / hide of contact components
     const [expanded, setExpanded] = React.useState<boolean>(defaultToolBarExpanded ?? false);
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const sendInFlight = React.useRef(false);
+    const callerPending = React.useRef(isSending);
+    callerPending.current = isSending;
+    const pending = isSubmitting || isSending;
+
     // initialise editor
     const editor = useEditor({
         autofocus: false,
+        editable: !pending,
         extensions: [
             StarterKit, // common operations like bold and underline, etc
         ],
@@ -47,6 +54,29 @@ const EmailEditor = ({ subject, setSubject, toValues, setToValues, ccValues, set
         }
     })
 
+    React.useEffect(() => {
+        editor?.setEditable(!pending);
+    }, [editor, pending]);
+
+    const send = async () => {
+        // The ref closes the gap before React/mutation pending state rerenders.
+        if (!editor || sendInFlight.current || callerPending.current) return;
+        const body = editor.getHTML();
+        sendInFlight.current = true;
+        setIsSubmitting(true);
+        editor.setEditable(false);
+        try {
+            await handleSend(body);
+            editor.commands.clearContent();
+        } catch {
+            // Callers report failure. Preserve the body; never retry automatically.
+        } finally {
+            sendInFlight.current = false;
+            setIsSubmitting(false);
+            editor.setEditable(!callerPending.current);
+        }
+    };
+
     // check editor existence
     if (!editor) { 
         return null;
@@ -55,7 +85,9 @@ const EmailEditor = ({ subject, setSubject, toValues, setToValues, ccValues, set
     return (
         <div>
             <div className="flex p-4 py-2 border-b">
-                <EditorMenubar editor={editor} />
+                <fieldset disabled={pending} className="min-w-0">
+                    <EditorMenubar editor={editor} />
+                </fieldset>
             </div>
             { /* Contact Components */}
             { /* CC Component */}
@@ -95,12 +127,7 @@ const EmailEditor = ({ subject, setSubject, toValues, setToValues, ccValues, set
             </div>
             <Separator />
             <div className="py-3 px-4 flex items-center justify-end">
-                <Button onClick={async () => {
-                    // clear editor content
-                    editor?.commands?.clearContent()
-                    // send editor value
-                    await handleSend(value)
-                }}>
+                <Button disabled={pending} onClick={send}>
                     Send
                 </Button>
             </div>
