@@ -68,10 +68,10 @@ const Mail = ({ defaultLayout = [20, 32, 48], navCollapseSize, defaultCollapsed 
                         <div className="flex items-center px-4 py-2">
                             <h1 className="text-xl font-bold">{mailboxHeading}</h1>
                             <TabsList className="ml-auto">
-                                <TabsTrigger value="active" className="text-xinc-600 dark:text-zinc-200">
+                                <TabsTrigger value="active" className="text-zinc-600 dark:text-zinc-200">
                                     Active
                                 </TabsTrigger>
-                                <TabsTrigger value="done" className="text-xinc-600 dark:text-zinc-200">
+                                <TabsTrigger value="done" className="text-zinc-600 dark:text-zinc-200">
                                     Done
                                 </TabsTrigger>
                             </TabsList>
