@@ -1,10 +1,18 @@
 # MindMail
 
-**MindMail** is a full-stack email client built with Next.js, React, TypeScript, tRPC and PostgreSQL, with mailbox synchronisation, email composition and AI-assisted drafting.
+**MindMail** is a full-stack email client built with Next.js, React, TypeScript, tRPC and PostgreSQL, with mailbox synchronisation and email composition.
 
 Originally built in 2024–2025, the project returned to active development in 2026 for a structured stabilisation cycle focused on account ownership, OAuth security, synchronisation correctness and regression testing.
 
 > **Current status:** active stabilisation. Public real-mailbox use is not currently treated as production-ready.
+
+---
+
+## Public synthetic Demo
+
+Visit **`/demo`** for a read-only desktop portfolio mailbox with two fictional accounts, Inbox/Sent/Draft, Active/Done filtering, thread reading and local search. No sign-in, Clerk session or real mailbox connection is required. All messages are repository-owned synthetic data; no database seed, OAuth/provider mailbox operation, sync or real email send occurs. Compose/reply are not exposed in this read-only demo, and there is no user-accessible AI interaction.
+
+Demo state is memory-only and separate from `/mail`; mailbox command-palette actions are unavailable in Demo. The application's global Clerk SDK/provider is retained and normal deployment configuration is still required, but Demo data and interactions do not depend on Clerk identity or production account APIs. `/mail` remains authenticated.
 
 ---
 
@@ -128,9 +136,9 @@ Implemented application flows include:
 - Clerk-authenticated mailbox linking through Aurinko OAuth;
 - mailbox synchronisation and inbox/sent/draft thread views;
 - thread reading, composition, replies and email sending;
-- Prisma/PostgreSQL persistence;
-- context-aware AI email drafting;
-- streamed inline AI autocomplete.
+- Prisma/PostgreSQL persistence.
+
+Underlying server-side AI implementation remains in the repository, but AI drafting/autocomplete UI entry points are currently removed (UI-005).
 
 The current redevelopment cycle prioritises correctness and maintainability over new feature development.
 
@@ -173,7 +181,7 @@ Aurinko's [Authentication Scopes table](https://docs.aurinko.io/authentication/a
 ┌────────────────────────────────────────────┐
 │        Next.js / React / TypeScript        │
 │                                            │
-│   Mail UI · Threads · Compose · AI UI      │
+│   Mail UI · Threads · Compose             │
 └─────────────────────┬──────────────────────┘
                       │
                       │ tRPC / server actions
@@ -197,13 +205,13 @@ Main stack:
 
 ---
 
-## AI in the product
+## Server-side AI implementation
 
-MindMail currently implements two AI-assisted user flows.
+Two underlying AI functions remain implemented, but neither is currently exposed through user-accessible mail UI. UI-005 removed their button/dialog and keyboard execution paths; Demo also exposes no AI interaction.
 
-**Context-aware drafting** combines email context with a user instruction and streams the generated draft back to the compose interface.
+**Context-aware drafting** combines email context with a user instruction and produces a text stream.
 
-**Inline autocomplete** generates short continuations intended to follow the user's existing text and tone.
+**Inline autocomplete** generates short text continuations. These describe retained server capabilities, not currently available compose/reply UI flows.
 
 Implementation:
 

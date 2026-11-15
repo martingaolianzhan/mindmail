@@ -6,6 +6,8 @@ import type * as TabsModule from "~/components/ui/tabs";
 import type { Tabs } from "~/components/ui/tabs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("next/navigation", () => ({ usePathname: () => "/mail" }));
+
 const { storage, reads, writes, tabs, actions, getThreads, getAccounts } = vi.hoisted(() => ({
   storage: new Map<string, unknown>(),
   reads: new Set<string>(),
