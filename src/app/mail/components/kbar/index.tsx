@@ -7,7 +7,7 @@ import useThemeSwitching from './use-theme-switching'
 const KBar = ({ children }: { children: React.ReactNode }) => { 
 
     const [tab, setTab] = useLocalStorage<"inbox" | "sent" | "draft">("tab-category", "inbox");
-    const [finishStatus, setFinishStatus] = useLocalStorage("thread-finish", false);
+    const [, setDone] = useLocalStorage("thread-done", false);
     
     // actions will be passed to KBarProvider
     const actions: Action[] = [
@@ -42,23 +42,23 @@ const KBar = ({ children }: { children: React.ReactNode }) => {
             }
         },
         {
-            id: 'pendingAction',
-            name: 'View Pending emails',
+            id: 'activeAction',
+            name: 'View Active threads',
             shortcut: ['g', 'p'], // press g and p to execute action
-            section: 'Email Status',
-            subtitle: 'Switch and view pending emails',
+            section: 'Thread Status',
+            subtitle: 'Switch and view Active threads',
             perform: () => { 
-                setFinishStatus(false);     
+                setDone(false);
             }
         },
         {
-            id: 'finishedAction',
-            name: 'View Finished emails',
-            shortcut: ['g', 'f'], // press g and p to execute action
-            section: 'Email Status',
-            subtitle: 'Switch and view a thread of emails have been finished',
+            id: 'doneAction',
+            name: 'View Done threads',
+            shortcut: ['g', 'f'], // press g and f to execute action
+            section: 'Thread Status',
+            subtitle: 'Switch and view Done threads',
             perform: () => {
-                setFinishStatus(true);
+                setDone(true);
             }
         }
     ]

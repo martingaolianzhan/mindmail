@@ -32,24 +32,27 @@ const ComposeButton = () => {
     
     const sendEmail = api.account.sendEmail.useMutation();   
 
-    const handleSend = (value: string) => { 
-        if (!account) { return }
-        sendEmail.mutate({
-            accountId: account.id,
-            threadId: undefined,
-            body: value,
-            subject,
-            inReplyTo: undefined,
-            to: toValues.map(to => ({ name: to.value, address: to.value })),
-            cc: ccValues.map(cc => ({ name: cc.value, address: cc.value }))
-        }, {
-            onSuccess: () => { 
-                toast.success("Email sent");
-            },
-            onError: (error) => { 
-                toast.error("Error sending email");
-            }
-        });
+    const handleSend = async (value: string): Promise<void> => {
+
+        if (!account?.id) {
+            toast.error("Error sending email");
+            throw new Error("Unable to send email.");
+        }
+        try {
+            await sendEmail.mutateAsync({
+                accountId: account.id,
+                threadId: undefined,
+                body: value,
+                subject,
+                inReplyTo: undefined,
+                to: toValues.map(to => ({ name: to.value, address: to.value })),
+                cc: ccValues.map(cc => ({ name: cc.value, address: cc.value }))
+            });
+            toast.success("Email sent");
+        } catch (error) {
+            toast.error("Error sending email");
+            throw error;
+        }
     }   
 
     return (

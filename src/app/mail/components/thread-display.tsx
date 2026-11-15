@@ -29,25 +29,25 @@ const ThreadDisplay = () => {
             { /* Button Row */ }
             <div className="flex items-center p-2">
                 <div className="flex items-center gap-2">
-                    <Button variant={'ghost'} size={'icon'} disabled={!thread}>
+                    <Button variant={'ghost'} size={'icon'} disabled aria-label="Archive (unavailable)">
                         <Archive className="size-4"></Archive>
                     </Button>
-                    <Button variant={'ghost'} size={'icon'} disabled={!thread}>
+                    <Button variant={'ghost'} size={'icon'} disabled aria-label="ArchiveX (unavailable)">
                         <ArchiveX className="size-4"></ArchiveX>
                     </Button>
-                    <Button variant={'ghost'} size={'icon'} disabled={!thread}>
+                    <Button variant={'ghost'} size={'icon'} disabled aria-label="Delete (unavailable)">
                         <Trash2 className="size-4"></Trash2>
                     </Button>
                 </div>
                 <Separator orientation="vertical"></Separator>
-                <Button variant={'ghost'} size={'icon'} disabled={!thread} className="ml-2">
+                <Button variant={'ghost'} size={'icon'} disabled aria-label="Snooze (unavailable)" className="ml-2">
                     <Clock className="size-4"></Clock>
                 </Button>
                 { /* Drop down */}
                 <div className="flex items-center ml-auto">
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant={'ghost'} size={'icon'} disabled={!thread} className="ml-2">
+                        <DropdownMenuTrigger asChild disabled>
+                            <Button variant={'ghost'} size={'icon'} disabled aria-label="More actions (unavailable)" className="ml-2">
                                 <MoreVertical className="size-4"></MoreVertical>
                             </Button>
                         </DropdownMenuTrigger>
