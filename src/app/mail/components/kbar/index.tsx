@@ -3,8 +3,17 @@ import { Action, KBarAnimator, KBarPortal, KBarPositioner, KBarProvider, KBarSea
 import RenderResults from './render-result'
 import { useLocalStorage } from 'usehooks-ts'
 import useThemeSwitching from './use-theme-switching'
+import { usePathname } from 'next/navigation'
+import { isDemoPath } from '~/lib/demo-path'
 
-const KBar = ({ children }: { children: React.ReactNode }) => { 
+const KBar = ({ children }: { children: React.ReactNode }) => {
+    const pathname = usePathname();
+    // Demo has its own state. Don't mount/register production mailbox commands.
+    if (!pathname || isDemoPath(pathname)) return children;
+    return <MailboxKBar>{children}</MailboxKBar>;
+}
+
+const MailboxKBar = ({ children }: { children: React.ReactNode }) => {
 
     const [tab, setTab] = useLocalStorage<"inbox" | "sent" | "draft">("tab-category", "inbox");
     const [, setDone] = useLocalStorage("thread-done", false);

@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { isDemoPath } from "~/lib/demo-path";
 
 // create public routes
 const isPublicRoute = createRouteMatcher([
@@ -9,8 +10,8 @@ const isPublicRoute = createRouteMatcher([
 // Clerk middleware to protect public routes
 export default clerkMiddleware(async (auth, request) => {
     // protect private routes
-    // Only this exact pathname bypasses Clerk; its handler requires Bearer auth.
-    if (request.nextUrl.pathname !== '/api/cron/sync' && !isPublicRoute(request)) {
+    // Cron keeps its exact independent Bearer boundary; Demo is public UI only.
+    if (request.nextUrl.pathname !== '/api/cron/sync' && !isDemoPath(request.nextUrl.pathname) && !isPublicRoute(request)) {
         // if not logged-in, redirect to sign-in page
         await auth.protect()
     }
