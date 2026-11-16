@@ -6,6 +6,7 @@ import EditorMenubar from "./editor-menubar";
 import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
 import TagInput from "./tag-input";
+import type { RecipientInputProps } from "./recipient-input";
 import { Input } from "~/components/ui/input";
 import { set } from "date-fns";
 
@@ -28,10 +29,13 @@ type Props = {
     isSending: boolean
 
     defaultToolBarExpanded: boolean
+    recipientInput?: React.ComponentType<RecipientInputProps>
+    // Production defaults to HTML; local adapters may request a plain-text snapshot.
+    bodyFormat?: "html" | "text"
 }
 
-const EmailEditor = ({ subject, setSubject, toValues, setToValues, ccValues, setCCValues, to, handleSend, isSending, defaultToolBarExpanded }: Props) => { 
-    // editor value in HTML format (final version), need to be sent to receiver after user finished all editing
+const EmailEditor = ({ subject, setSubject, toValues, setToValues, ccValues, setCCValues, to, handleSend, isSending, defaultToolBarExpanded, recipientInput: RecipientField = TagInput, bodyFormat = "html" }: Props) => {
+    // HTML display state; the send handler snapshots the requested body format.
     const [value, setValue] = React.useState<string>('');
     // expand state to control the expand / hide of contact components
     const [expanded, setExpanded] = React.useState<boolean>(defaultToolBarExpanded ?? false);
@@ -61,7 +65,7 @@ const EmailEditor = ({ subject, setSubject, toValues, setToValues, ccValues, set
     const send = async () => {
         // The ref closes the gap before React/mutation pending state rerenders.
         if (!editor || sendInFlight.current || callerPending.current) return;
-        const body = editor.getHTML();
+        const body = bodyFormat === "text" ? editor.getText() : editor.getHTML();
         sendInFlight.current = true;
         setIsSubmitting(true);
         editor.setEditable(false);
@@ -94,13 +98,13 @@ const EmailEditor = ({ subject, setSubject, toValues, setToValues, ccValues, set
             <div className="p-4 pb-0 space-y-2 shadow-sm">
                 {expanded && (
                     <>
-                        <TagInput
+                        <RecipientField
                             label="TO"
                             onChange={setToValues}
                             placeholder="Add recipent(s)"
                             value={toValues}
                         />
-                        <TagInput
+                        <RecipientField
                             label="CC"
                             onChange={setCCValues}
                             placeholder="Carbon copy to contact(s)"

@@ -1,6 +1,10 @@
 /** Public, deterministic fiction only. Never loaded from a database or test tree. */
 export type DemoCategory = "inbox" | "sent" | "draft";
-export type DemoMessage = { id: string; from: string; sender: string; sentAt: string; body: string };
+export type DemoRecipient = { address: string; name?: string };
+export type DemoMessage = {
+    id: string; from: string; sender: string; sentAt: string; body: string;
+    to?: DemoRecipient[]; cc?: DemoRecipient[]; subject?: string; inReplyTo?: string;
+};
 export type DemoThread = {
     id: string; accountId: string; category: DemoCategory; done: boolean;
     subject: string; messages: DemoMessage[];
@@ -21,7 +25,8 @@ function mailbox(account: typeof demoAccounts[number]): DemoThread[] {
         thread("aurora", "inbox", false, "Aurora launch plan", [
             message("aurora-1", "Mira Chen", "mira@example.test", "Hi team, the Aurora launch checklist is ready. Could you review the accessibility notes and the desktop walkthrough?"),
             message("aurora-2", account.name, account.address, "The desktop walkthrough looks good. I added keyboard navigation notes and a shorter introduction.", "10"),
-            message("aurora-3", "Mira Chen", "mira@example.test", "Thanks! Let's bring the revised checklist to Thursday's design review. The presentation starts at 14:00 UTC.", "11"),
+            { ...message("aurora-3", "Mira Chen", "mira@example.test", "Thanks! Let's bring the revised checklist to Thursday's design review. The presentation starts at 14:00 UTC.", "11"),
+                to: [{ address: account.address, name: account.name }], cc: [{ address: "sam@example.test", name: "Sam Rivera" }] },
         ]),
         thread("ceramics", "inbox", false, "Saturday ceramics workshop", [
             message("ceramics-1", "Sam Rivera", "sam@example.test", "Your place at the ceramics workshop is reserved. Bring an apron; clay and tools are provided. We will meet at the fictional Riverside Studio."),
@@ -45,9 +50,9 @@ function mailbox(account: typeof demoAccounts[number]): DemoThread[] {
 }
 export const demoThreads: readonly DemoThread[] = demoAccounts.flatMap(mailbox);
 
-export function searchDemoThreads(accountId: string, query: string): DemoThread[] {
+export function searchDemoThreads(threads: readonly DemoThread[], accountId: string, query: string): DemoThread[] {
     const term = query.trim().toLowerCase();
-    return demoThreads.filter(thread => thread.accountId === accountId &&
-        [thread.subject, ...thread.messages.flatMap(message => [message.sender, message.from, message.body])]
+    return threads.filter(thread => thread.accountId === accountId &&
+        [thread.subject, ...thread.messages.flatMap(message => [message.subject ?? "", message.sender, message.from, message.body])]
             .join(" ").toLowerCase().includes(term));
 }

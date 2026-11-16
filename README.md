@@ -10,9 +10,9 @@ Originally built in 2024–2025, the project returned to active development in 2
 
 ## Public synthetic Demo
 
-Visit **`/demo`** for a read-only desktop portfolio mailbox with two fictional accounts, Inbox/Sent/Draft, Active/Done filtering, thread reading and local search. No sign-in, Clerk session or real mailbox connection is required. All messages are repository-owned synthetic data; no database seed, OAuth/provider mailbox operation, sync or real email send occurs. Compose/reply are not exposed in this read-only demo, and there is no user-accessible AI interaction.
+Visit **`/demo`** for an interactive synthetic desktop portfolio mailbox with two fictional accounts, Inbox/Sent/Draft, Active/Done filtering, thread reading, Compose, Reply and local search over current Demo messages. No sign-in, Clerk session or real mailbox connection is required. Messages start from repository-owned synthetic fixtures; no database seed, OAuth/provider mailbox operation, sync or real email send occurs. There is no user-accessible AI interaction.
 
-Demo state is memory-only and separate from `/mail`; mailbox command-palette actions are unavailable in Demo. The application's global Clerk SDK/provider is retained and normal deployment configuration is still required, but Demo data and interactions do not depend on Clerk identity or production account APIs. `/mail` remains authenticated.
+Demo changes stay only in the open page and reset on refresh/provider remount. Its memory-only state is separate from `/mail`; **Cmd+K / Ctrl+K** opens Demo-only navigation, Compose and Search commands. Simulated sends store plain-text bodies locally and explicitly report that no email was sent. The application's global Clerk SDK/provider is retained and normal deployment configuration is still required, but Demo data and interactions do not depend on Clerk identity or production account APIs. `/mail` remains authenticated.
 
 ---
 

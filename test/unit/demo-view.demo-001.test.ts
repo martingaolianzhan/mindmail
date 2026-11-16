@@ -34,8 +34,10 @@ describe("DEMO-001 synthetic presentation and hard API isolation", () => {
       const button = [...html.matchAll(/<button\b([^>]*)>/g)].find(match => match[1]?.includes(`aria-label="${label} (unavailable)"`));
       expect(button?.[1]).toContain('disabled=""');
     }
-    expect(html).not.toMatch(/AI Smart Compose|Cmd \+ J|>Send<\/button>|>Compose<\/button>|>Reply<\/button>|>Add account</);
-    expect(html).toContain("Read-only: composing and replying are not available here");
+    expect(html).not.toMatch(/AI Smart Compose|Cmd \+ J|>Add account</);
+    expect(html).toContain('aria-label="Compose in Demo"');
+    expect(html).toContain('aria-label="Reply in Demo"');
+    expect(html).toContain("reset on refresh");
   });
 
   it("provides all six category/status combinations for both fictional accounts", () => {
@@ -55,9 +57,9 @@ describe("DEMO-001 synthetic presentation and hard API isolation", () => {
   });
 
   it("searches only local synthetic content with known and unmatched terms", () => {
-    expect(searchDemoThreads("demo-avery", "  AURORA  ").map(thread => thread.id)).toEqual(["demo-avery-aurora"]);
-    expect(searchDemoThreads("demo-avery", "nonexistent-needle")).toEqual([]);
-    expect(searchDemoThreads("demo-robin", "Aurora").map(thread => thread.id)).toEqual(["demo-robin-aurora"]);
+    expect(searchDemoThreads(demoThreads, "demo-avery", "  AURORA  ").map(thread => thread.id)).toEqual(["demo-avery-aurora"]);
+    expect(searchDemoThreads(demoThreads, "demo-avery", "nonexistent-needle")).toEqual([]);
+    expect(searchDemoThreads(demoThreads, "demo-robin", "Aurora").map(thread => thread.id)).toEqual(["demo-robin-aurora"]);
   });
 
   it("installs a fail-fast account API guard covering current and future procedures", () => {

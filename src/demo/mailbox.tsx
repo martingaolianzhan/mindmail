@@ -8,6 +8,8 @@ import { Input } from "~/components/ui/input";
 import { cn } from "~/lib/utils";
 import { demoAccounts } from "./fixtures";
 import { DemoMailboxProvider, useDemoMailbox } from "./provider";
+import { DemoEditor } from "./editor";
+import { DemoCommands } from "./commands";
 
 function DemoAccount({ collapsed }: { collapsed: boolean }) {
     const { state, selectAccount } = useDemoMailbox();
@@ -37,10 +39,10 @@ function DemoSidebar({ collapsed }: { collapsed: boolean }) {
 }
 
 function DemoSearch() {
-    const { state, search } = useDemoMailbox();
+    const { state, search, searchInput } = useDemoMailbox();
     return <div role="search" className="flex items-center gap-2 p-4">
         <Search className="size-4 shrink-0" aria-hidden="true" />
-        <Input aria-label="Search synthetic mailbox" placeholder="Search synthetic mail..." value={state.query}
+        <Input ref={searchInput} aria-label="Search synthetic mailbox" placeholder="Search synthetic mail..." value={state.query}
             onChange={event => search(event.target.value)} />
         <Button variant="ghost" aria-label="Clear demo search" disabled={!state.query} onClick={() => search("")}>Clear</Button>
     </div>;
@@ -69,12 +71,20 @@ function DemoThreadList() {
 }
 
 function DemoThreadDisplay() {
-    const { selectedThread } = useDemoMailbox();
+    const { state, account, selectedThread, composer, sending, openReply } = useDemoMailbox();
+    const canReply = selectedThread?.messages.some(message => message.from !== account.address);
+    const editor = composer && <div hidden={composer.accountId !== state.accountId || !!(composer.threadId && composer.threadId !== selectedThread?.id)}>
+        <DemoEditor key={composer.id} composer={composer} />
+    </div>;
     return <div className="flex h-full min-h-0 flex-col">
         <ThreadActions />
         <div className="flex-1 overflow-y-auto border-t p-6" aria-label="Demo reading pane">
+            {!composer?.threadId && editor}
             {selectedThread ? <>
-                <h2 className="mb-4 text-xl font-semibold">{selectedThread.subject}</h2>
+                <div className="mb-4 flex items-center justify-between gap-2">
+                    <h2 className="text-xl font-semibold">{selectedThread.subject}</h2>
+                    {canReply && <Button disabled={sending} aria-label="Reply in Demo" onClick={() => openReply(selectedThread.id)}>Reply</Button>}
+                </div>
                 <div className="flex flex-col gap-4">
                     {selectedThread.messages.map(message => <article key={message.id} className="rounded-md border p-4">
                         <header className="mb-3 flex flex-wrap justify-between gap-2 text-sm">
@@ -83,22 +93,30 @@ function DemoThreadDisplay() {
                                 {message.sentAt.slice(0, 16).replace("T", " ")} UTC
                             </time>
                         </header>
+                        {message.to?.length ? <p className="mb-1 text-xs text-muted-foreground">To: {message.to.map(value => value.address).join(", ")}</p> : null}
+                        {message.cc?.length ? <p className="mb-1 text-xs text-muted-foreground">CC: {message.cc.map(value => value.address).join(", ")}</p> : null}
+                        {message.subject && message.subject !== selectedThread.subject && <p className="mb-2 text-sm font-medium">{message.subject}</p>}
                         <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.body}</p>
                     </article>)}
                 </div>
             </> : <p className="text-muted-foreground">No message selected.</p>}
+            {composer?.threadId && editor}
         </div>
     </div>;
 }
 
 function DemoView() {
-    const { state, selectDone } = useDemoMailbox();
+    const { state, selectDone, openCompose, sending, notice } = useDemoMailbox();
     const isSearching = state.query.trim().length > 0;
     return <main className="flex h-screen flex-col overflow-hidden">
         <header className="shrink-0 border-b bg-muted/40 px-4 py-3">
-            <p className="font-semibold">MindMail · Synthetic portfolio demo</p>
-            <p className="text-sm text-muted-foreground">No sign-in or real mailbox connection. Read-only: composing and replying are not available here. No email is sent.</p>
-            <p className="text-xs text-muted-foreground">All accounts and messages are fictional. No OAuth, mailbox sync or AI interaction. Mailbox command-palette shortcuts are unavailable in Demo.</p>
+            <div className="flex items-center justify-between gap-4">
+                <p className="font-semibold">MindMail · Synthetic portfolio demo</p>
+                <Button disabled={sending} aria-label="Compose in Demo" onClick={openCompose}>Compose</Button>
+            </div>
+            <p className="text-sm text-muted-foreground">Interactive synthetic demo. Compose and reply changes stay only in this open Demo page and reset on refresh. No real email is sent.</p>
+            <p className="text-xs text-muted-foreground">All accounts/messages are fictional. No OAuth, mailbox sync or AI interaction. ⌘K / Ctrl+K for commands.</p>
+            {notice && <p role={notice.kind === "error" ? "alert" : "status"} className={cn("mt-1 text-sm", notice.kind === "error" ? "text-red-600" : "text-muted-foreground")}>{notice.text}</p>}
         </header>
         <div className="min-h-0 flex-1">
         <MailLayout className="min-h-0" defaultLayout={[20, 32, 48]} defaultCollapsed={false} navCollapseSize={4}
@@ -113,5 +131,5 @@ function DemoView() {
 }
 
 export default function DemoMailbox() {
-    return <DemoMailboxProvider><DemoView /></DemoMailboxProvider>;
+    return <DemoMailboxProvider><DemoCommands><DemoView /></DemoCommands></DemoMailboxProvider>;
 }
