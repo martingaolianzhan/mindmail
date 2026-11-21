@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EmailEditor from "~/app/mail/components/email-editor/email-editor";
 import { RecipientInput, type RecipientInputProps } from "~/app/mail/components/email-editor/recipient-input";
 import { Button } from "~/components/ui/button";
@@ -13,8 +13,23 @@ function SyntheticRecipients(props: RecipientInputProps) {
 }
 
 /** Only context/field adaptation; editing and send lifecycle belong to EmailEditor. */
-export function DemoEditor({ composer }: { composer: DemoComposer }) {
+export function DemoEditor({ composer, onCancel }: { composer: DemoComposer; onCancel?: () => void }) {
     const { state, sending, sendMessage, closeComposer } = useDemoMailbox();
+    const section = useRef<HTMLElement>(null);
+    useEffect(() => {
+        if (composer.threadId || !section.current) return;
+        const element = section.current;
+        const focus = () => {
+            const input = element.querySelector("input");
+            if (input) { input.focus(); return true; }
+            return false;
+        };
+        if (focus()) return;
+        // Tiptap initialises after the wrapper mounts; focus once its fields appear.
+        const observer = new MutationObserver(() => { if (focus()) observer.disconnect(); });
+        observer.observe(element, { childList: true, subtree: true });
+        return () => observer.disconnect();
+    }, [composer.threadId]);
     const account = demoAccounts.find(account => account.id === composer.accountId) ?? demoAccounts[0];
     const [draft, setDraft] = useState(() => {
         const thread = state.threads.find(thread => thread.id === composer.threadId && thread.accountId === composer.accountId);
@@ -39,11 +54,12 @@ export function DemoEditor({ composer }: { composer: DemoComposer }) {
         to: draft.to.map(value => ({ address: value.value, name: draft.toNames.get(value.value) ?? value.value })),
         cc: draft.cc.map(value => ({ address: value.value, name: draft.ccNames.get(value.value) ?? value.value })),
     });
-    return <section aria-label="Demo composer" className="border-t">
+    return <section ref={section} aria-label={composer.threadId ? "Demo reply editor" : "Demo compose editor"}
+        className={composer.threadId ? "mt-6 rounded-md border" : ""}>
         <header className="flex items-center justify-between gap-2 p-4">
             <div><h3 className="font-semibold">{composer.threadId ? "Reply in Demo" : "Compose in Demo"}</h3>
                 <p className="text-xs text-muted-foreground">From {account.address} · page memory only</p></div>
-            <Button variant="ghost" disabled={sending} onClick={closeComposer}>Close draft</Button>
+            <Button variant="ghost" disabled={sending} onClick={onCancel ?? closeComposer}>Close draft</Button>
         </header>
         <EmailEditor recipientInput={SyntheticRecipients} bodyFormat="text"
             subject={draft.subject} setSubject={subject => setDraft(current => ({ ...current, subject }))}

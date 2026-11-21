@@ -24,7 +24,8 @@ afterEach(() => { expect(forbiddenDemoCalls).toEqual([]); });
 describe("DEMO-001 synthetic presentation and hard API isolation", () => {
   it("renders real shared Mail layout/toolbar and useful synthetic reading content anonymously", () => {
     const html = renderToString(createElement(KBar, null, createElement(DemoPage)));
-    expect(html).toContain("Synthetic portfolio demo");
+    expect(html).toContain("MindMail · Interactive Demo");
+    expect(html).toContain("Synthetic data · No real emails sent · Resets on refresh");
     expect(html).toContain("avery@example.test");
     expect(html).toContain("Aurora launch plan");
     expect(html).toContain("Saturday ceramics workshop");
@@ -37,7 +38,7 @@ describe("DEMO-001 synthetic presentation and hard API isolation", () => {
     expect(html).not.toMatch(/AI Smart Compose|Cmd \+ J|>Add account</);
     expect(html).toContain('aria-label="Compose in Demo"');
     expect(html).toContain('aria-label="Reply in Demo"');
-    expect(html).toContain("reset on refresh");
+    expect(html).toContain("Resets on refresh");
   });
 
   it("provides all six category/status combinations for both fictional accounts", () => {

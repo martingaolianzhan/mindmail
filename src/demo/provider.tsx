@@ -11,7 +11,7 @@ export type DemoSend = { accountId: string; threadId?: string; to: DemoRecipient
 function useLocalMailbox() {
     const [state, setState] = useState(() => ({ ...initialView, threads: structuredClone([...demoThreads]) }));
     const [composer, setComposer] = useState<DemoComposer | null>(null);
-    const [notice, setNotice] = useState<{ kind: "error" | "success"; text: string } | null>(null);
+    const [notice, setNotice] = useState<{ kind: "error" | "success"; text: string; target?: { accountId: string; threadId: string } } | null>(null);
     const [sending, setSending] = useState(false);
     const pending = useRef(false);
     const sequence = useRef(0);
@@ -68,7 +68,11 @@ function useLocalMailbox() {
                 // Keep ALL current navigation unchanged, even after account/thread switches.
                 return { ...current, threads };
             });
-            setNotice({ kind: "success", text: "Demo only — no email was sent." });
+            setNotice(snapshot.threadId
+                ? { kind: "success", text: "Reply added to demo thread. No real email was sent." }
+                : { kind: "success", text: "Saved to Demo Sent · Simulated successfully. No real email was sent.",
+                    target: { accountId: sender.id, threadId: `${sender.id}-sent-${id}` } });
+            setComposer(null);
         } finally {
             pending.current = false; setSending(false);
         }
@@ -78,6 +82,11 @@ function useLocalMailbox() {
         state, visibleThreads, selectedThread, account, composer, notice, sending, suggestions, searchInput,
         openCompose, openReply, sendMessage,
         closeComposer: () => { if (!pending.current) { setComposer(null); setNotice(null); } },
+        viewSent: (target: { accountId: string; threadId: string }) => setState(current => {
+            if (!current.threads.some(thread => thread.id === target.threadId && thread.accountId === target.accountId
+                && thread.category === "sent" && !thread.done)) return current;
+            return { ...current, accountId: target.accountId, query: "", category: "sent", done: false, threadId: target.threadId };
+        }),
         focusSearch: () => searchInput.current?.focus(),
         counts: {
             inbox: accountThreads.filter(thread => thread.category === "inbox").length,

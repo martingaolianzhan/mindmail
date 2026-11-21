@@ -102,7 +102,9 @@ vi.mock("react/jsx-runtime", async original => {
           const button = tag === "button" && typeof props.children === "string" ? `button-${props.children}` : undefined;
           const id = String(props["aria-label"] ?? props["data-demo-thread"] ?? props.id ?? button ?? props.role ?? tag);
           hosts.set(id, props);
-          React.useImperativeHandle(ref, () => ({ focus: () => { view.focused = id; } }) as HTMLElement, [id]);
+          React.useImperativeHandle(ref, () => ({ focus: () => { view.focused = id; },
+            querySelector: () => ({ focus: () => { view.focused = "compose input"; } }),
+            scrollIntoView: vi.fn() }) as unknown as HTMLElement, [id]);
           React.useEffect(() => () => { if (hosts.get(id) === props) hosts.delete(id); }, [id, props]);
           return React.Children.toArray(props.children).filter(React.isValidElement);
         });
@@ -252,13 +254,14 @@ describe("DEMO-002 shared-editor workflows and isolated memory mutations", () =>
     expect(control("button-Send").disabled).toBe(true);
     await finishSend(Promise.resolve(first!));
     expect(editor.commands.clearContent).toHaveBeenCalledOnce();
-    expect(body.text).toBe(""); expect(body.editable).toBe(true);
+    expect(body.text).toBe(""); // Compose unmounts after success.
     expect(mailbox().state.threads).toHaveLength(15);
     const sent = mailbox().state.threads[0]!;
     expect(sent).toMatchObject({ accountId: "demo-avery", category: "sent", done: false, subject: "Composed subject needle" });
     expect(sent.messages[0]).toMatchObject({ from: "avery@example.test", body: "Composed body needle",
       to: [{ address: "carol@example.test", name: "carol@example.test" }], cc: [{ address: "cc@example.test", name: "cc@example.test" }] });
-    expect(mailbox().notice).toEqual({ kind: "success", text: "Demo only — no email was sent." });
+    expect(mailbox().notice).toEqual({ kind: "success", text: "Saved to Demo Sent · Simulated successfully. No real email was sent.",
+      target: { accountId: "demo-avery", threadId: sent.id } });
     click("Sent demo category"); expect(subject()).toBe("Composed subject needle");
     const html = renderedDemo(); expect(html).toContain("Composed body needle"); expect(html).not.toContain("&lt;p&gt;");
     for (const query of ["Composed subject needle", "Composed body needle"]) {
@@ -288,7 +291,7 @@ describe("DEMO-002 shared-editor workflows and isolated memory mutations", () =>
     expect(mailbox().state.threads.flatMap(thread => thread.messages)).toHaveLength(18);
     expect(mailbox().notice?.kind).toBe("error");
     const html = renderedDemo();
-    expect(html).toMatch(/role="alert"[^>]*>Add a To recipient to continue\./);
+    expect(html).toMatch(/role="alert"[^>]*><span>Add a To recipient to continue\.<\/span>/);
     expect(html).not.toContain("Demo only — no email was sent.");
     expect(body.text).toBe("Preserved draft body"); expect(body.editable).toBe(true);
     expect(editor.commands.clearContent).not.toHaveBeenCalled();
@@ -314,7 +317,7 @@ describe("DEMO-002 shared-editor workflows and isolated memory mutations", () =>
       to: [{ address: "reply-to@example.test", name: "reply-to@example.test" }],
       cc: [{ address: "reply-cc@example.test", name: "reply-cc@example.test" }] });
     expect(renderedDemo()).toContain("Reply body search needle");
-    expect(mailbox().notice?.text).toBe("Demo only — no email was sent.");
+    expect(mailbox().notice?.text).toBe("Reply added to demo thread. No real email was sent.");
     change("Search synthetic mailbox", "Reply body search needle");
     expect(mailbox().visibleThreads.map(thread => thread.id)).toEqual([conversation.id]);
     change("Synthetic demo account", "demo-robin"); change("Search synthetic mailbox", "Reply body search needle");
@@ -383,7 +386,7 @@ describe("DEMO-002 shared-editor workflows and isolated memory mutations", () =>
     command("Compose"); expect(mailbox().composer?.accountId).toBe("demo-avery");
     registry.hidden = false;
     command("Search mailbox");
-    expect(view.focused).toBe(""); // Do not race KBar's close-time focus restoration.
+    expect(view.focused).toBe("compose input"); // Do not race KBar's close-time focus restoration.
     registry.hidden = true; renderDemo();
     expect(view.focused).toBe("Search synthetic mailbox");
     expectProductionUnchanged();
@@ -392,6 +395,113 @@ describe("DEMO-002 shared-editor workflows and isolated memory mutations", () =>
   it("does not expose Reply on self-only Sent conversations", () => {
     renderDemo(); click("Sent demo category");
     expect(renderedDemo()).not.toContain('aria-label="Reply in Demo"');
+  });
+});
+
+describe("DEMO-003 portfolio interactions", () => {
+  it("renders a compact disclosed header and a separate non-modal, keyboard-accessible Compose", () => {
+    renderDemo();
+    const initial = renderedDemo();
+    expect(initial).toContain("MindMail · Interactive Demo");
+    expect(initial).toContain("Synthetic data · No real emails sent · Resets on refresh");
+    expect(initial).toContain("⌘K / Ctrl+K for commands");
+    expect(initial).not.toContain("All accounts/messages are fictional");
+    expect(initial).toContain('aria-label="Compose in Demo"');
+    click("Compose in Demo");
+    expect(view.focused).toBe("compose input");
+    const open = renderedDemo();
+    expect(open).toMatch(/aria-label="Demo reading pane"[\s\S]*<\/div><\/div><div class="fixed inset-x-2 bottom-2/);
+    expect(open).toContain('role="region"');
+    expect(open).toContain('aria-label="Floating Demo compose"');
+    expect(open).not.toContain("fixed inset-0 z-50 bg-black");
+    click("demo-avery-ceramics"); click("Sent demo category");
+    expect(mailbox().composer?.accountId).toBe("demo-avery");
+    click("button-Close draft");
+    expect(mailbox().composer).toBeNull();
+    expect(view.focused).toBe("Compose in Demo");
+    expect(mailbox().state.threads).toHaveLength(14);
+    click("Compose in Demo");
+    expect(control("subject").value).toBe("");
+  });
+
+  it("preserves the exact success target and atomically opens Sent/Active across account, search and Done", async () => {
+    renderDemo(); click("Compose in Demo"); recipients("TO", "target@example.test");
+    change("subject", "Exact portfolio target"); editBody("Exact portfolio message");
+    await finishSend(startSend());
+    const sent = mailbox().state.threads[0]!;
+    expect(mailbox().state.threads.filter(thread => thread.id === sent.id)).toHaveLength(1);
+    expect(mailbox().composer).toBeNull();
+    expect(renderedDemo()).toContain("Saved to Demo Sent");
+    expect(control("button-View in Sent").children).toBe("View in Sent");
+    click("Draft demo category"); status(true);
+    change("Synthetic demo account", "demo-robin");
+    change("Search synthetic mailbox", "aurora");
+    expect(mailbox().state).toMatchObject({ accountId: "demo-robin", category: "inbox", done: false, query: "aurora" });
+    // Re-establish Done and a different category before searching, on the other account.
+    click("Draft demo category"); status(true); change("Search synthetic mailbox", "aurora");
+    click("button-View in Sent");
+    expect(mailbox().state).toMatchObject({ accountId: "demo-avery", category: "sent", done: false, query: "", threadId: sent.id });
+    expect(mailbox().selectedThread?.id).toBe(sent.id);
+    expect(renderedDemo()).toContain("Exact portfolio message");
+    expect(mailbox().notice?.target?.threadId).toBe(sent.id);
+  });
+
+  it("keeps Compose open and locked while pending; completion does not steal navigation, explicit action does", async () => {
+    renderDemo(); click("Compose in Demo"); recipients("TO", "a@example.test"); editBody("Pending source A");
+    const attempt = startSend();
+    expect(control("button-Close draft").disabled).toBe(true);
+    click("button-Close draft");
+    expect(mailbox().composer).not.toBeNull();
+    change("Synthetic demo account", "demo-robin"); click("Draft demo category"); status(true);
+    await finishSend(attempt);
+    expect(mailbox().state).toMatchObject({ accountId: "demo-robin", category: "draft", done: true });
+    expect(mailbox().composer).toBeNull();
+    expect(mailbox().notice?.target?.accountId).toBe("demo-avery");
+    click("button-View in Sent");
+    expect(mailbox().selectedThread?.messages[0]?.body).toBe("Pending source A");
+  });
+
+  it("pins a pending inline Reply to its original thread without dismissing or redirecting", async () => {
+    renderDemo(); click("Reply in Demo"); editBody("Pinned portfolio reply");
+    const attempt = startSend();
+    expect(control("button-Close draft").disabled).toBe(true);
+    click("button-Close draft"); expect(mailbox().composer?.threadId).toBe("demo-avery-aurora");
+    click("demo-avery-ceramics"); change("Synthetic demo account", "demo-robin");
+    await finishSend(attempt);
+    expect(mailbox().state.accountId).toBe("demo-robin");
+    expect(mailbox().composer).toBeNull();
+    expect(mailbox().state.threads.find(thread => thread.id === "demo-avery-aurora")?.messages.at(-1)?.body).toBe("Pinned portfolio reply");
+    expect(mailbox().state.threads.find(thread => thread.id === "demo-avery-ceramics")?.messages).toHaveLength(1);
+    expect(mailbox().notice?.text).toContain("Reply added");
+  });
+
+  it("retains invalid Compose, retries, then closes inline Reply and resets both mutations on remount", async () => {
+    renderDemo(); click("Compose in Demo"); recipients("TO", "bad-address");
+    change("subject", "Retry subject"); editBody("Retry body");
+    await act(async () => { await startSend(); });
+    expect(mailbox().notice?.kind).toBe("error");
+    expect(mailbox().composer).not.toBeNull();
+    expect(control("subject").value).toBe("Retry subject");
+    expect(body.text).toBe("Retry body");
+    expect(mailbox().state.threads).toHaveLength(14);
+    recipients("TO", "valid@example.test"); await finishSend(startSend());
+    expect(mailbox().composer).toBeNull();
+    click("button-View in Sent");
+    change("Search synthetic mailbox", "Retry body");
+    expect(mailbox().visibleThreads).toHaveLength(1);
+    click("Inbox demo category"); click("demo-avery-aurora"); click("Reply in Demo");
+    expect(renderedDemo()).toContain('aria-label="Demo reply editor"');
+    expect(renderedDemo()).not.toContain('aria-label="Floating Demo compose"');
+    editBody("Appended reply needle"); await finishSend(startSend());
+    expect(mailbox().composer).toBeNull();
+    expect(mailbox().notice?.text).toContain("Reply added");
+    expect(mailbox().selectedThread?.messages).toHaveLength(4);
+    expect(renderedDemo()).toContain("Appended reply needle");
+    change("Search synthetic mailbox", "Appended reply needle"); expect(mailbox().visibleThreads).toHaveLength(1);
+    act(() => root.render(null)); renderDemo();
+    expect(mailbox().state.threads).toEqual(demoThreads);
+    expect(mailbox().notice).toBeNull();
+    change("Search synthetic mailbox", "Appended reply needle"); expect(mailbox().visibleThreads).toHaveLength(0);
   });
 });
 

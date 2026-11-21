@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from "react";
 import { File, Inbox, Send, Search } from "lucide-react";
 import { MailLayout } from "~/app/mail/components/mail-layout";
 import { ThreadActions } from "~/app/mail/components/thread-actions";
@@ -73,20 +74,29 @@ function DemoThreadList() {
 function DemoThreadDisplay() {
     const { state, account, selectedThread, composer, sending, openReply } = useDemoMailbox();
     const canReply = selectedThread?.messages.some(message => message.from !== account.address);
-    const editor = composer && <div hidden={composer.accountId !== state.accountId || !!(composer.threadId && composer.threadId !== selectedThread?.id)}>
+    const lastMessage = useRef<HTMLElement>(null);
+    const previous = useRef({ threadId: selectedThread?.id, count: selectedThread?.messages.length, replyId: composer?.threadId });
+    useEffect(() => {
+        if (previous.current.threadId === selectedThread?.id && (selectedThread?.messages.length ?? 0) > (previous.current.count ?? 0)
+            && previous.current.replyId === selectedThread?.id && selectedThread?.accountId === state.accountId) {
+            lastMessage.current?.scrollIntoView?.({ block: "nearest" });
+        }
+        previous.current = { threadId: selectedThread?.id, count: selectedThread?.messages.length, replyId: composer?.threadId };
+    }, [selectedThread, composer, state.accountId]);
+    const reply = composer?.threadId && <div hidden={composer.accountId !== state.accountId || composer.threadId !== selectedThread?.id}>
         <DemoEditor key={composer.id} composer={composer} />
     </div>;
     return <div className="flex h-full min-h-0 flex-col">
         <ThreadActions />
         <div className="flex-1 overflow-y-auto border-t p-6" aria-label="Demo reading pane">
-            {!composer?.threadId && editor}
             {selectedThread ? <>
                 <div className="mb-4 flex items-center justify-between gap-2">
                     <h2 className="text-xl font-semibold">{selectedThread.subject}</h2>
                     {canReply && <Button disabled={sending} aria-label="Reply in Demo" onClick={() => openReply(selectedThread.id)}>Reply</Button>}
                 </div>
                 <div className="flex flex-col gap-4">
-                    {selectedThread.messages.map(message => <article key={message.id} className="rounded-md border p-4">
+                    {selectedThread.messages.map((message, index) => <article ref={index === selectedThread.messages.length - 1 ? lastMessage : undefined}
+                        key={message.id} className="rounded-md border p-4">
                         <header className="mb-3 flex flex-wrap justify-between gap-2 text-sm">
                             <div><strong>{message.sender}</strong><div className="text-muted-foreground">{message.from}</div></div>
                             <time className="text-xs text-muted-foreground" dateTime={message.sentAt}>
@@ -100,24 +110,34 @@ function DemoThreadDisplay() {
                     </article>)}
                 </div>
             </> : <p className="text-muted-foreground">No message selected.</p>}
-            {composer?.threadId && editor}
+            {reply}
         </div>
     </div>;
 }
 
 function DemoView() {
-    const { state, selectDone, openCompose, sending, notice } = useDemoMailbox();
+    const { state, selectDone, openCompose, closeComposer, composer, sending, notice, viewSent } = useDemoMailbox();
+    const composeButton = useRef<HTMLButtonElement>(null);
     const isSearching = state.query.trim().length > 0;
     return <main className="flex h-screen flex-col overflow-hidden">
-        <header className="shrink-0 border-b bg-muted/40 px-4 py-3">
-            <div className="flex items-center justify-between gap-4">
-                <p className="font-semibold">MindMail · Synthetic portfolio demo</p>
-                <Button disabled={sending} aria-label="Compose in Demo" onClick={openCompose}>Compose</Button>
+        <header className="shrink-0 border-b bg-muted/40 px-4 py-2">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+                <div>
+                    <h1 className="font-semibold">MindMail · Interactive Demo</h1>
+                    <p className="text-xs text-foreground/80">Synthetic data · No real emails sent · Resets on refresh</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <span className="text-xs text-foreground/80">⌘K / Ctrl+K for commands</span>
+                    <Button ref={composeButton} disabled={sending} aria-label="Compose in Demo" onClick={openCompose}>Compose</Button>
+                </div>
             </div>
-            <p className="text-sm text-muted-foreground">Interactive synthetic demo. Compose and reply changes stay only in this open Demo page and reset on refresh. No real email is sent.</p>
-            <p className="text-xs text-muted-foreground">All accounts/messages are fictional. No OAuth, mailbox sync or AI interaction. ⌘K / Ctrl+K for commands.</p>
-            {notice && <p role={notice.kind === "error" ? "alert" : "status"} className={cn("mt-1 text-sm", notice.kind === "error" ? "text-red-600" : "text-muted-foreground")}>{notice.text}</p>}
         </header>
+        {notice && <div role={notice.kind === "error" ? "alert" : "status"}
+            className={cn("fixed left-4 top-20 z-[60] flex max-w-[min(26rem,calc(100vw-2rem))] flex-wrap items-center gap-2 rounded-md border bg-background p-3 text-sm shadow-lg md:bottom-4 md:top-auto",
+                notice.kind === "error" && "border-destructive text-destructive")}>
+            <span>{notice.text}</span>
+            {notice.target && <Button size="sm" onClick={() => { if (notice.target) viewSent(notice.target); }}>View in Sent</Button>}
+        </div>}
         <div className="min-h-0 flex-1">
         <MailLayout className="min-h-0" defaultLayout={[20, 32, 48]} defaultCollapsed={false} navCollapseSize={4}
             done={state.done} onDoneChange={selectDone}
@@ -127,6 +147,10 @@ function DemoView() {
             sidebar={collapsed => <DemoSidebar collapsed={collapsed} />}
             searchBar={<DemoSearch />} threadList={<DemoThreadList />} threadDisplay={<DemoThreadDisplay />} />
         </div>
+        {composer && !composer.threadId && <div className="fixed inset-x-2 bottom-2 z-40 max-h-[min(80vh,680px)] overflow-y-auto rounded-lg border bg-background shadow-2xl sm:inset-x-auto sm:bottom-4 sm:right-4 sm:w-[min(32rem,calc(100vw-2rem))]"
+            aria-label="Floating Demo compose" role="region">
+            <DemoEditor key={composer.id} composer={composer} onCancel={() => { closeComposer(); composeButton.current?.focus(); }} />
+        </div>}
     </main>;
 }
 
